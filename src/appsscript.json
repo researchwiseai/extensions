@@ -1,0 +1,29 @@
+{
+    "timeZone": "Europe/London",
+    "dependencies": {
+      "enabledAdvancedServices": [],
+      "libraries": []
+    },
+    "exceptionLogging": "STACKDRIVER",
+    "runtimeVersion": "V8",
+    "oauthScopes": [
+      "https://www.googleapis.com/auth/spreadsheets.currentonly",
+      "https://www.googleapis.com/auth/script.container.ui",
+      "https://www.googleapis.com/auth/script.external_request"
+    ],
+    "addOns": {
+      "common": {
+        "name": "Pulse",
+        "logoUrl": "https://researchwiseai.com/wise_logo_icon.png",
+        "useLocaleFromApp": true,
+        "homepageTrigger": {
+          "runFunction": "onOpen"
+        }
+      },
+      "sheets": {
+        "homepageTrigger": {
+          "runFunction": "onOpen"
+        }
+      }
+    }
+  }
