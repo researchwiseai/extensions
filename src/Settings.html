@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <h5>Settings</h5>
+      <div class="input-field">
+        <input id="clientId" type="text">
+        <label for="clientId">Client ID</label>
+      </div>
+      <div class="input-field">
+        <input id="clientSecret" type="text">
+        <label for="clientSecret">Client Secret</label>
+      </div>
+      <button class="btn waves-effect waves-light" onclick="saveSettings()">Save</button>
+      <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+      function onSuccess() {
+        M.toast({html: 'Settings saved'});
+      }
+      function onFailure(err) {
+        M.toast({html: 'Error: ' + err.message});
+      }
+      function saveSettings() {
+        const settings = {
+          clientId: document.getElementById('clientId').value,
+          clientSecret: document.getElementById('clientSecret').value
+        };
+        google.script.run
+          .withSuccessHandler(onSuccess)
+          .withFailureHandler(onFailure)
+          .saveSettings(settings);
+      }
+      function loadSettings() {
+        google.script.run.withSuccessHandler(function(res) {
+          document.getElementById('clientId').value = res.clientId;
+          document.getElementById('clientSecret').value = res.clientSecret;
+          M.updateTextFields();
+        }).getSettings();
+      }
+      document.addEventListener('DOMContentLoaded', function() {
+        M.AutoInit();
+        loadSettings();
+      });
+    </script>
+  </body>
+</html>

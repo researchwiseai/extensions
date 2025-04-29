@@ -7,9 +7,14 @@
     "exceptionLogging": "STACKDRIVER",
     "runtimeVersion": "V8",
     "oauthScopes": [
-      "https://www.googleapis.com/auth/spreadsheets.currentonly",
-      "https://www.googleapis.com/auth/script.container.ui",
-      "https://www.googleapis.com/auth/script.external_request"
+    "https://www.googleapis.com/auth/spreadsheets.currentonly",
+    "https://www.googleapis.com/auth/script.container.ui",
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/script.storage"
+    ],
+    "urlFetchWhitelist": [
+      "https://core-dev-pulsefilesystembucket-bvkfxrtm.s3.eu-west-1.amazonaws.com/jobs/",
+      "https://dev.core.researchwiseai.com/pulse/v1/"
     ],
     "addOns": {
       "common": {
