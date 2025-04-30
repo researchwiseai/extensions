@@ -14,21 +14,25 @@ const API_AUD = SCRIPT_PROPS.getProperty("API_AUD");
 const ORG_LOOKUP_URL = `${WEB_BASE}/users`;
 // OAuth2 for Apps Script integration (requires adding the OAuth2 library in appsscript.json)
 
+/**
+ * Runs when the add-on is opened or installed: builds menu based on login state.
+ */
 function onOpen(e) {
     const ui = SpreadsheetApp.getUi();
     const pulseMenu = ui.createMenu("Pulse");
-    pulseMenu
-        .addItem("Analyze Sentiment", "analyzeSentiment")
-        .addSubMenu(
-            ui
-                .createMenu("Themes")
-                .addItem("Generate", "generateThemes")
-                .addItem("Allocate", "allocateThemes")
-                .addItem("Manage", "showManageThemesDialog")
-        )
-        .addSeparator()
-        .addItem("Settings", "showSettingsSidebar")
-        .addToUi();
+    // If user is authorized, expose analysis and themes
+    if (getOAuthService().hasAccess()) {
+        pulseMenu.addItem("Analyze Sentiment", "analyzeSentiment");
+        const themesMenu = ui.createMenu("Themes")
+            .addItem("Generate", "generateThemes")
+            .addItem("Allocate", "allocateThemes")
+            .addItem("Manage", "showManageThemesDialog");
+        pulseMenu.addSubMenu(themesMenu);
+        pulseMenu.addSeparator();
+    }
+    // Always include settings
+    pulseMenu.addItem("Settings", "showSettingsSidebar");
+    pulseMenu.addToUi();
 }
 /**
  * Automatically generate themes, save as a named set, then allocate to data.
@@ -803,47 +807,34 @@ function showSettingsSidebar() {
     // Pass webBase to the HTML template for registration links
     const template = HtmlService.createTemplateFromFile("Settings");
     template.webBase = WEB_BASE;
-    const html = template.evaluate().setTitle("Settings");
+    const html = template.evaluate().setTitle("Pulse");
     SpreadsheetApp.getUi().showSidebar(html);
 }
 /**
- * Retrieves stored user settings.
- * @return {{authMode: string, clientId: string, clientSecret: string, email: string, orgId: string}}
+ * Retrieves stored user email and authorization status.
+ * @return {{email: string, isAuthorized: boolean}}
  */
 function getSettings() {
     const props = PropertiesService.getUserProperties();
     return {
-        authMode: props.getProperty("AUTH_MODE") || "client",
-        clientId: props.getProperty("CLIENT_ID") || "",
-        clientSecret: props.getProperty("CLIENT_SECRET") || "",
         email: props.getProperty("USER_EMAIL") || "",
-        orgId: props.getProperty("ORG_ID") || "",
+        isAuthorized: isAuthorized()
     };
 }
 
-/**
- * Saves user settings from the sidebar.
- * @param {{authMode: string, clientId?: string, clientSecret?: string, email?: string}} settings
- * @return {{success: boolean}}
- */
-function saveSettings(settings) {
-    const props = PropertiesService.getUserProperties();
-    props.setProperty("AUTH_MODE", settings.authMode || "client");
-    if (settings.clientId !== undefined) {
-        props.setProperty("CLIENT_ID", settings.clientId);
-    }
-    if (settings.clientSecret !== undefined) {
-        props.setProperty("CLIENT_SECRET", settings.clientSecret);
-    }
-    // email storage removed for OAuth2 flow
-    return { success: true };
-}
 /**
  * Configures and returns the OAuth2 service.
  * @return {OAuth2.Service}
  */
 function getOAuthService() {
     const orgId = PropertiesService.getUserProperties().getProperty("ORG_ID");
+
+    if (!orgId) {
+        return {
+            hasAccess: () => false
+        }
+    }
+
     const orgIdParts = orgId.split("/");
     const auth0OrgId = orgIdParts[orgIdParts.length - 1];
 
@@ -904,6 +895,17 @@ function resetAuth() {
  */
 function isAuthorized() {
     return getOAuthService().hasAccess();
+}
+/**
+ * Disconnects the user by clearing stored credentials.
+ * @return {{success: boolean}}
+ */
+function disconnect() {
+    const props = PropertiesService.getUserProperties();
+    props.deleteProperty("USER_EMAIL");
+    props.deleteProperty("ORG_ID");
+    getOAuthService().reset();
+    return { success: true };
 }
 /**
  * Finds the organization ID by email and persists it.

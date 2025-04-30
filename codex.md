@@ -1,0 +1,4 @@
+- use Bun
+- Ignore dist/ directory
+- Ignore node_modules/ directory
+- Ignore .git/ directory
