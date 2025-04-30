@@ -4,9 +4,9 @@ const API_KEY  = 'YOUR_API_KEY_HERE';  // <- set your key here!
 function onOpen(e) {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu('Pulse')
-    .addItem('Analyze Sentiment…', 'analyzeSentiment')
-    .addItem('Generate Themes…', 'generateThemes')
-    .addItem('Allocate Themes…', 'allocateThemes')
+    .addItem('Analyze Sentiment', 'analyzeSentiment')
+    .addItem('Generate Themes', 'generateThemes')
+    .addItem('Allocate Themes', 'allocateThemes')
     .addSeparator()
     .addItem('Settings', 'showSettingsSidebar')
     .addToUi();
@@ -300,7 +300,7 @@ function showInputRangeDialog() {
   const html = template.evaluate()
     .setWidth(400)
     .setHeight(200);
-  ui.showModalDialog(html, 'Select Input Range');
+  ui.showModelessDialog(html, 'Select Input Range');
 }
 /**
  * Callback after input range is selected; opens dialog to pick custom theme ranges.
@@ -324,7 +324,7 @@ function showAllocationModeDialog(dataRange) {
   const html = template.evaluate()
     .setWidth(400)
     .setHeight(200);
-  ui.showModalDialog(html, 'Theme Allocation Mode');
+  ui.showModelessDialog(html, 'Theme Allocation Mode');
 }
 
 /**
