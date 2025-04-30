@@ -437,6 +437,22 @@ function generateThemes() {
 
     if (data.themes && Array.isArray(data.themes)) {
         writeResults(data.themes);
+        // Save generated themes as a theme set named by timestamp
+        try {
+            const minimal = data.themes.map(function(t) {
+                return {
+                    label: t.label,
+                    representatives: [
+                        (t.representatives && t.representatives[0]) || "",
+                        (t.representatives && t.representatives[1]) || ""
+                    ]
+                };
+            });
+            const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+            saveThemeSet(timestamp, minimal);
+        } catch (e) {
+            ui.alert('Warning: failed to save generated theme set: ' + e.toString());
+        }
         ss.toast("Theme generation complete", "Pulse");
         return;
     }
@@ -505,6 +521,22 @@ function generateThemes() {
     }
 
     writeResults(resultData.themes);
+    // Save generated themes as a theme set named by timestamp
+    try {
+        const minimal = resultData.themes.map(function(t) {
+            return {
+                label: t.label,
+                representatives: [
+                    (t.representatives && t.representatives[0]) || "",
+                    (t.representatives && t.representatives[1]) || ""
+                ]
+            };
+        });
+        const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+        saveThemeSet(timestamp, minimal);
+    } catch (e) {
+        ui.alert('Warning: failed to save generated theme set: ' + e.toString());
+    }
     ss.toast("Theme generation complete", "Pulse");
 
     function writeResults(themes) {
@@ -1133,6 +1165,7 @@ function allocateThemesAutomatic(dataRange) {
         outputSheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
     }
 
+    // Build minimal themes for saving and allocation
     const themes = themesData.map((theme) => ({
         label: theme.label,
         representatives: [
@@ -1140,6 +1173,15 @@ function allocateThemesAutomatic(dataRange) {
             theme.representatives[1] || "",
         ],
     }));
+    // Save the new theme set with current timestamp as name
+    try {
+        const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+        saveThemeSet(timestamp, themes);
+    } catch (e) {
+        // If saving fails, notify but continue allocation
+        SpreadsheetApp.getUi().alert('Warning: failed to save automatic theme set: ' + e.toString());
+    }
+    // Allocate themes to data
     allocateThemesProcess(inputs, positions, themes, dataSheet);
 }
 /**
