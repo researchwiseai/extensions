@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  </head>
+  <body class="container">
+    <input id="dataRange" type="hidden" value="<?= dataRange ?>">
+    <h5>Theme Allocation Mode</h5>
+    <div class="row">
+      <div class="col s12">
+        <button class="btn waves-effect waves-light" style="width:100%" onclick="doAutomatic()">
+          Automatic Theme Generation
+        </button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col s12">
+        <button class="btn waves-effect waves-light" style="width:100%" onclick="doCustom()">
+          Use Custom Theme Ranges
+        </button>
+      </div>
+    </div>
+    <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        M.AutoInit();
+      });
+      function doAutomatic() {
+        var dr = document.getElementById('dataRange').value;
+        google.script.run.withFailureHandler(onFailure).allocateThemesAutomatic(dr);
+        google.script.host.close();
+      }
+      function doCustom() {
+        var dr = document.getElementById('dataRange').value;
+        google.script.run.showRangeDialog(dr);
+        google.script.host.close();
+      }
+      function onFailure(err) {
+        M.toast({html: 'Error: ' + err.message});
+      }
+    </script>
+  </body>
+</html>
