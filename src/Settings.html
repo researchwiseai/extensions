@@ -7,30 +7,86 @@
   <body>
     <div class="container">
       <h5>Settings</h5>
-      <div class="input-field">
-        <input id="clientId" type="text">
-        <label for="clientId">Client ID</label>
+      <div class="row">
+        <span>Authentication mode:</span>
+        <p>
+          <label>
+            <input name="authMode" type="radio" value="client" id="authClient"/>
+            <span>Client ID/Secret</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input name="authMode" type="radio" value="login" id="authLogin"/>
+            <span>ResearchWiseAI Account Login</span>
+          </label>
+        </p>
       </div>
-      <div class="input-field">
-        <input id="clientSecret" type="text">
-        <label for="clientSecret">Client Secret</label>
+      <div id="clientFields">
+        <div class="input-field">
+          <input id="clientId" type="text">
+          <label for="clientId">Client ID</label>
+        </div>
+        <div class="input-field">
+          <input id="clientSecret" type="text">
+          <label for="clientSecret">Client Secret</label>
+        </div>
+      </div>
+      <div id="emailFields" style="display: none;">
+        <div class="input-field">
+          <input id="email" type="email">
+          <label for="email">Email Address</label>
+        </div>
+        <button id="loginButton" class="btn waves-effect waves-light" onclick="lookupOrganization()">Find Account</button>
       </div>
       <button class="btn waves-effect waves-light" onclick="saveSettings()">Save</button>
       <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <?/* Pass in webBase from server: used for registration URL */?>
     <script>
+      const webBase = '<?= webBase ?>';
       function onSuccess() {
         M.toast({html: 'Settings saved'});
       }
       function onFailure(err) {
         M.toast({html: 'Error: ' + err.message});
       }
+      function onOrgFound(res) {
+        if (res.success) {
+          M.toast({html: 'Organization found: ' + res.orgId});
+          authorize();
+        } else if (res.notFound) {
+          // No account found: prompt user to register with a clickable link
+          M.toast({
+            html: 'No account found for that email address. To <a href="' + webBase + '/register" target="_blank">register for ResearchWiseAI, click here</a>.',
+          });
+        } else {
+          M.toast({html: 'Error finding organization'});
+        }
+      }
+      function lookupOrganization() {
+        const email = document.getElementById('email').value;
+        google.script.run
+          .withSuccessHandler(onOrgFound)
+          .withFailureHandler(onFailure)
+          .findOrganization(email);
+      }
+      function authorize() {
+        google.script.run
+          .withSuccessHandler(function(url) { window.open(url, '_blank'); })
+          .withFailureHandler(onFailure)
+          .getAuthorizationUrl();
+      }
       function saveSettings() {
-        const settings = {
-          clientId: document.getElementById('clientId').value,
-          clientSecret: document.getElementById('clientSecret').value
-        };
+        const authMode = document.querySelector('input[name="authMode"]:checked').value;
+        const settings = { authMode };
+        if (authMode === 'client') {
+          settings.clientId = document.getElementById('clientId').value;
+          settings.clientSecret = document.getElementById('clientSecret').value;
+        } else {
+          settings.email = document.getElementById('email').value;
+        }
         google.script.run
           .withSuccessHandler(onSuccess)
           .withFailureHandler(onFailure)
@@ -38,13 +94,33 @@
       }
       function loadSettings() {
         google.script.run.withSuccessHandler(function(res) {
-          document.getElementById('clientId').value = res.clientId;
-          document.getElementById('clientSecret').value = res.clientSecret;
+          const authMode = res.authMode || 'client';
+          document.getElementById('authClient').checked = authMode === 'client';
+          document.getElementById('authLogin').checked = authMode === 'login';
+          document.getElementById('clientId').value = res.clientId || '';
+          document.getElementById('clientSecret').value = res.clientSecret || '';
+          document.getElementById('email').value = res.email || '';
           M.updateTextFields();
+          toggleFields();
         }).getSettings();
+      }
+      function toggleFields() {
+        const authMode = document.querySelector('input[name="authMode"]:checked').value;
+        const clientFields = document.getElementById('clientFields');
+        const emailFields = document.getElementById('emailFields');
+        if (authMode === 'client') {
+          clientFields.style.display = '';
+          emailFields.style.display = 'none';
+        } else {
+          clientFields.style.display = 'none';
+          emailFields.style.display = '';
+        }
       }
       document.addEventListener('DOMContentLoaded', function() {
         M.AutoInit();
+        document.querySelectorAll('input[name="authMode"]').forEach(function(el) {
+          el.addEventListener('change', toggleFields);
+        });
         loadSettings();
       });
     </script>

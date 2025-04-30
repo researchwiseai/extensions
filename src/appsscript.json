@@ -2,7 +2,13 @@
     "timeZone": "Europe/London",
     "dependencies": {
       "enabledAdvancedServices": [],
-      "libraries": []
+      "libraries": [
+        {
+          "userSymbol": "OAuth2",
+          "libraryId": "1B7FSrk5Zi6L1rSxxTDgDEUsPzlukDsi4KGuTMorsTQHhGBzBkMun4iDF",
+          "version": "43"
+        }
+      ]
     },
     "exceptionLogging": "STACKDRIVER",
     "runtimeVersion": "V8",
@@ -14,7 +20,9 @@
     ],
     "urlFetchWhitelist": [
       "https://core-dev-pulsefilesystembucket-bvkfxrtm.s3.eu-west-1.amazonaws.com/jobs/",
-      "https://dev.core.researchwiseai.com/pulse/v1/"
+      "https://dev.core.researchwiseai.com/pulse/v1/",
+      "https://dev.researchwiseai.com/",
+      "https://wise-dev.eu.auth0.com/"
     ],
     "addOns": {
       "common": {
