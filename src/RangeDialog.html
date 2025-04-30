@@ -5,22 +5,28 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
   </head>
   <body class="container">
-    <!-- carry along the original data range for allocation -->
-    <input id="dataRange" type="hidden" value="<?= dataRange ?>">
-    <div class="input-field">
-      <input id="labelsRange" type="text" onfocus="pickRange('labelsRange')">
-      <label for="labelsRange">Labels Range (A1 notation)</label>
+    <div id="form">
+      <!-- carry along the original data range for allocation -->
+      <input id="dataRange" type="hidden" value="<?= dataRange ?>">
+      <div class="input-field">
+        <input id="labelsRange" type="text" onfocus="pickRange('labelsRange')">
+        <label for="labelsRange">Labels Range (A1 notation)</label>
+      </div>
+      <div class="input-field">
+        <input id="rep1Range" type="text" onfocus="pickRange('rep1Range')">
+        <label for="rep1Range">First Representative Range</label>
+      </div>
+      <div class="input-field">
+        <input id="rep2Range" type="text" onfocus="pickRange('rep2Range')">
+        <label for="rep2Range">Second Representative Range</label>
+      </div>
+      <button class="btn waves-effect waves-light" onclick="submitRanges()">OK</button>
+      <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
     </div>
-    <div class="input-field">
-      <input id="rep1Range" type="text" onfocus="pickRange('rep1Range')">
-      <label for="rep1Range">First Representative Range</label>
+    <div id="progress" style="display:none; text-align:center; margin-top:20px;">
+      <p>Theme allocation has started and may take 2-3 minutes.</p>
+      <button class="btn waves-effect waves-light" onclick="google.script.host.close()">Close</button>
     </div>
-    <div class="input-field">
-      <input id="rep2Range" type="text" onfocus="pickRange('rep2Range')">
-      <label for="rep2Range">Second Representative Range</label>
-    </div>
-    <button class="btn waves-effect waves-light" onclick="submitRanges()">OK</button>
-    <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
       document.addEventListener('DOMContentLoaded', function() {
@@ -45,12 +51,14 @@
           rep1:      document.getElementById('rep1Range').value,
           rep2:      document.getElementById('rep2Range').value
         };
+        // Show progress panel
+        document.getElementById('form').style.display = 'none';
+        document.getElementById('progress').style.display = 'block';
         google.script.run
-          .withSuccessHandler(function() {
-            M.toast({html: 'Custom themes applied'});
-            google.script.host.close();
-          })
           .withFailureHandler(function(err) {
+            // On error, restore form and show message
+            document.getElementById('progress').style.display = 'none';
+            document.getElementById('form').style.display = 'block';
             M.toast({html: 'Error: ' + err.message});
           })
           .processCustomThemes(ranges);
