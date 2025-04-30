@@ -11,6 +11,182 @@ function onOpen(e) {
     .addItem('Settings', 'showSettingsSidebar')
     .addToUi();
 }
+/**
+ * Automatically generate themes, save as a named set, then allocate to data.
+ * @param {string} dataRange A1 notation of the data range to allocate.
+ * @param {string} name Name for the new theme set.
+ */
+function allocateAndSaveThemeSet(dataRange, name) {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let dataRangeObj;
+  try {
+    dataRangeObj = ss.getRange(dataRange);
+  } catch (e) {
+    ui.alert('Error reading data range: ' + e.toString());
+    return;
+  }
+  const dataSheet = dataRangeObj.getSheet();
+  const values = dataRangeObj.getValues();
+  const inputs = [];
+  const positions = [];
+  const startRow = dataRangeObj.getRow();
+  const startCol = dataRangeObj.getColumn();
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[0].length; j++) {
+      const text = values[i][j];
+      if (text != null && text !== '') {
+        inputs.push(text.toString());
+        positions.push({row: startRow + i, col: startCol + j});
+      }
+    }
+  }
+  if (inputs.length === 0) {
+    ui.alert('No text found in selected data range for theme allocation.');
+    return;
+  }
+  // Sample inputs if needed
+  const total = inputs.length;
+  let usedInputs = inputs;
+  let pct = 100;
+  if (inputs.length > 1000) {
+    usedInputs = inputs.slice();
+    for (let i = usedInputs.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [usedInputs[i], usedInputs[j]] = [usedInputs[j], usedInputs[i]];
+    }
+    usedInputs = usedInputs.slice(0, 1000);
+    pct = Math.round((usedInputs.length / total) * 100);
+    ui.alert('Sampling input: using ' + usedInputs.length + ' of ' + total +
+      ' strings (' + pct + '%) for theme generation.');
+  }
+  // Call themes API
+  const url = `${API_BASE}/themes`;
+  const options = {
+    method: 'post',
+    contentType: 'application/json',
+    headers: {'X-API-Key': API_KEY},
+    payload: JSON.stringify({inputs: usedInputs})
+  };
+  let data;
+  try {
+    const response = UrlFetchApp.fetch(url, options);
+    data = JSON.parse(response.getContentText());
+  } catch (e) {
+    ui.alert('Error calling themes API: ' + e.toString());
+    return;
+  }
+  let themesData;
+  if (data.themes && Array.isArray(data.themes)) {
+    themesData = data.themes;
+  } else if (data.jobId) {
+    const jobId = data.jobId;
+    ss.toast('Theme generation job submitted, polling for completion...', 'Pulse');
+    let resultUrl;
+    let attempt = 0;
+    while (true) {
+      Utilities.sleep(2000);
+      if (attempt % 5 === 0) {
+        ss.toast('Waiting for theme generation job to complete...', 'Pulse');
+      }
+      attempt++;
+      let jobData;
+      try {
+        const jobResp = UrlFetchApp.fetch(
+          `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`, {
+            method: 'get',
+            headers: {'X-API-Key': API_KEY}
+          }
+        );
+        jobData = JSON.parse(jobResp.getContentText());
+      } catch (e) {
+        ui.alert('Error checking theme generation job status: ' + e.toString());
+        return;
+      }
+      if (jobData.status === 'pending') {
+        continue;
+      } else if (jobData.status === 'completed') {
+        resultUrl = jobData.resultUrl;
+        break;
+      } else {
+        ui.alert('Theme generation job failed: ' + (jobData.status || 'unknown'));
+        return;
+      }
+    }
+    let resultData;
+    try {
+      const resultResp = UrlFetchApp.fetch(resultUrl, {
+        method: 'get',
+        headers: {'X-API-Key': API_KEY}
+      });
+      resultData = JSON.parse(resultResp.getContentText());
+    } catch (e) {
+      ui.alert('Error fetching theme generation results: ' + e.toString());
+      return;
+    }
+    if (!resultData.themes || !Array.isArray(resultData.themes)) {
+      ui.alert('Invalid theme generation results returned: ' + JSON.stringify(resultData));
+      return;
+    }
+    themesData = resultData.themes;
+  } else {
+    ui.alert('Unexpected response from themes API: ' + JSON.stringify(data));
+    return;
+  }
+  // Build minimal themes for saving and allocation
+  const themes = themesData.map(function(t) {
+    return {
+      label: t.label,
+      representatives: [(t.representatives && t.representatives[0]) || '', (t.representatives && t.representatives[1]) || '']
+    };
+  });
+  // Save the new theme set
+  saveThemeSet(name, themes);
+  // Allocate themes to data
+  allocateThemesProcess(inputs, positions, themes, dataSheet);
+}
+/**
+ * Allocate themes from an existing saved set.
+ * @param {string} dataRange A1 notation of the data range.
+ * @param {string} name Name of the saved theme set.
+ */
+function allocateThemesFromSet(dataRange, name) {
+  const ui = SpreadsheetApp.getUi();
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let dataRangeObj;
+  try {
+    dataRangeObj = ss.getRange(dataRange);
+  } catch (e) {
+    ui.alert('Error reading data range: ' + e.toString());
+    return;
+  }
+  const dataSheet = dataRangeObj.getSheet();
+  const values = dataRangeObj.getValues();
+  const inputs = [];
+  const positions = [];
+  const startRow = dataRangeObj.getRow();
+  const startCol = dataRangeObj.getColumn();
+  for (let i = 0; i < values.length; i++) {
+    for (let j = 0; j < values[0].length; j++) {
+      const text = values[i][j];
+      if (text != null && text !== '') {
+        inputs.push(text.toString());
+        positions.push({row: startRow + i, col: startCol + j});
+      }
+    }
+  }
+  if (inputs.length === 0) {
+    ui.alert('No text found in selected data range for theme allocation.');
+    return;
+  }
+  const setObj = getThemeSets().find(function(s) { return s.name === name; });
+  if (!setObj) {
+    ui.alert('Theme set not found: ' + name);
+    return;
+  }
+  const themes = setObj.themes;
+  allocateThemesProcess(inputs, positions, themes, dataSheet);
+}
 function analyzeSentiment() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -314,6 +490,44 @@ function allocateThemesWithRange(dataRange) {
   showAllocationModeDialog(dataRange);
 }
 /**
+ * Retrieve stored theme sets from user properties.
+ * @return {Array<{name: string, themes: Array<{label: string, representatives: string[]}>}>}
+ */
+function getThemeSets() {
+  const props = PropertiesService.getUserProperties();
+  const raw = props.getProperty('THEME_SETS');
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    return [];
+  }
+}
+/**
+ * Save or update a named theme set.
+ * @param {string} name
+ * @param {Array<{label: string, representatives: string[]}>} themes
+ * @return {{success: boolean}}
+ */
+function saveThemeSet(name, themes) {
+  const props = PropertiesService.getUserProperties();
+  const sets = getThemeSets().filter(function(s) { return s.name !== name; });
+  sets.push({name: name, themes: themes});
+  props.setProperty('THEME_SETS', JSON.stringify(sets));
+  return { success: true };
+}
+/**
+ * Delete a named theme set.
+ * @param {string} name
+ * @return {{success: boolean}}
+ */
+function deleteThemeSet(name) {
+  const props = PropertiesService.getUserProperties();
+  const sets = getThemeSets().filter(function(s) { return s.name !== name; });
+  props.setProperty('THEME_SETS', JSON.stringify(sets));
+  return { success: true };
+}
+/**
  * Opens a dialog to choose automatic theme generation or custom theme ranges.
  * @param {string} dataRange A1 notation of the data range to allocate.
  */
@@ -321,6 +535,8 @@ function showAllocationModeDialog(dataRange) {
   const ui = SpreadsheetApp.getUi();
   const template = HtmlService.createTemplateFromFile('AllocationModeDialog');
   template.dataRange = dataRange;
+  // Pass existing saved theme set names to the dialog template
+  template.themeSetNames = getThemeSets().map(function(s) { return s.name; });
   const html = template.evaluate()
     .setWidth(400)
     .setHeight(200);
