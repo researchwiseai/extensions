@@ -30,7 +30,7 @@
       }
       function onOrgFound(res) {
         if (res.success) {
-          M.toast({html: 'Organization found: ' + res.orgId});
+          M.toast({html: 'Account found. Authorizing...'});
           authorize();
         } else if (res.notFound) {
           M.toast({
@@ -41,15 +41,56 @@
         }
       }
       function lookupOrganization() {
+        // Provide feedback and prevent repeat clicks
+        const btn = document.getElementById('connectButton');
+        const origText = btn.innerText;
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.innerText = 'Connecting...';
         const email = document.getElementById('email').value;
         google.script.run
-          .withSuccessHandler(onOrgFound)
-          .withFailureHandler(onFailure)
+          .withSuccessHandler(function(res) {
+            // Restore button state
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+            btn.innerText = origText;
+            onOrgFound(res);
+          })
+          .withFailureHandler(function(err) {
+            // Restore button state
+            btn.disabled = false;
+            btn.classList.remove('disabled');
+            btn.innerText = origText;
+            onFailure(err);
+          })
           .findOrganization(email);
       }
       function authorize() {
         google.script.run
-          .withSuccessHandler(function(url) { window.open(url, '_blank'); })
+          .withSuccessHandler(function(authUrl) {
+            var authWin = window.open(authUrl, '_blank', 'width=600,height=600');
+            var startTime = Date.now();
+            var timeout = 15 * 60 * 1000; // 15 minutes
+            var pollInterval = 1000; // 1 second
+            var poll = setInterval(function() {
+              if (Date.now() - startTime > timeout) {
+                clearInterval(poll);
+                if (authWin && !authWin.closed) authWin.close();
+                M.toast({ html: 'Authorization timed out. Please try again.' });
+                return;
+              }
+              google.script.run
+                .withSuccessHandler(function(settings) {
+                  if (settings.isAuthorized) {
+                    clearInterval(poll);
+                    if (authWin && !authWin.closed) authWin.close();
+                    renderSettings(settings);
+                    google.script.run.updateMenu();
+                  }
+                })
+                .getSettings();
+            }, pollInterval);
+          })
           .withFailureHandler(onFailure)
           .getAuthorizationUrl();
       }

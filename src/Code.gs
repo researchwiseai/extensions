@@ -494,7 +494,6 @@ function generateThemes() {
                 {
                     method: "get",
                     headers: {
-                        "X-API-Key": API_KEY,
                         "Authorization": "Bearer " + getOAuthService().getAccessToken()
                     },
                 }
@@ -519,10 +518,6 @@ function generateThemes() {
     try {
         const resultResp = UrlFetchApp.fetch(resultUrl, {
             method: "get",
-            headers: {
-                "X-API-Key": API_KEY,
-                "Authorization": "Bearer " + getOAuthService().getAccessToken()
-            },
         });
         resultData = JSON.parse(resultResp.getContentText());
     } catch (e) {
@@ -718,7 +713,6 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
         method: "post",
         contentType: "application/json",
         headers: {
-            "X-API-Key": API_KEY,
             "Authorization": "Bearer " + getOAuthService().getAccessToken()
         },
         // fast=false triggers async polling behavior
@@ -772,7 +766,6 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
                 {
                     method: "get",
                     headers: {
-                        "X-API-Key": API_KEY,
                         "Authorization": "Bearer " + getOAuthService().getAccessToken()
                     },
                 }
@@ -801,10 +794,6 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
         try {
             const resultResp = UrlFetchApp.fetch(resultUrl, {
                 method: "get",
-                headers: {
-                    "X-API-Key": API_KEY,
-                    "Authorization": "Bearer " + getOAuthService().getAccessToken()
-                },
             });
             resultData = JSON.parse(resultResp.getContentText());
         } catch (e) {
@@ -941,10 +930,23 @@ function getAuthorizationUrl() {
 }
 
 /**
- * Resets the OAuth2 service (for reauthorization).
+ * Updates the Pulse menu based on the current authorization state.
  */
-function resetAuth() {
-    getOAuthService().reset();
+function updateMenu() {
+  const ui = SpreadsheetApp.getUi();
+  try { ui.removeMenu('Pulse'); } catch (e) {}
+  const pulseMenu = ui.createMenu('Pulse');
+  if (getOAuthService().hasAccess()) {
+    pulseMenu.addItem('Analyze Sentiment', 'analyzeSentiment');
+    const themesMenu = ui.createMenu('Themes')
+      .addItem('Generate', 'generateThemes')
+      .addItem('Allocate', 'allocateThemes')
+      .addItem('Manage', 'showManageThemesDialog');
+    pulseMenu.addSubMenu(themesMenu);
+    pulseMenu.addSeparator();
+  }
+  pulseMenu.addItem('Settings', 'showSettingsSidebar');
+  pulseMenu.addToUi();
 }
 
 /**
@@ -1078,7 +1080,6 @@ function allocateThemesAutomatic(dataRange) {
         method: "post",
         contentType: "application/json",
         headers: {
-            "X-API-Key": API_KEY,
             "Authorization": "Bearer " + getOAuthService().getAccessToken()
         },
         payload: JSON.stringify({ inputs: usedInputs }),
@@ -1118,7 +1119,6 @@ function allocateThemesAutomatic(dataRange) {
                     {
                         method: "get",
                         headers: {
-                            "X-API-Key": API_KEY,
                             "Authorization": "Bearer " + getOAuthService().getAccessToken()
                         },
                     }
@@ -1148,10 +1148,6 @@ function allocateThemesAutomatic(dataRange) {
         try {
             const resultResp = UrlFetchApp.fetch(resultUrl, {
                 method: "get",
-                headers: {
-                    "X-API-Key": API_KEY,
-                    "Authorization": "Bearer " + getOAuthService().getAccessToken()
-                },
             });
             resultData = JSON.parse(resultResp.getContentText());
         } catch (e) {
