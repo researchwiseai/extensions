@@ -962,9 +962,13 @@ function isAuthorized() {
  */
 function disconnect() {
     const props = PropertiesService.getUserProperties();
+    try {
+        getOAuthService().reset();
+    } catch {
+        console.warn("Error resetting OAuth service");
+    }
     props.deleteProperty("USER_EMAIL");
     props.deleteProperty("ORG_ID");
-    getOAuthService().reset();
     return { success: true };
 }
 /**

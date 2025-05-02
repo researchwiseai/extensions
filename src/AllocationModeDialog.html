@@ -3,6 +3,14 @@
   <head>
     <base target="_top">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Accessibility: Ensure high-contrast text for theme selection options -->
+    <style>
+      /* High-emphasis text (87% black) for better readability */
+      body,
+      label span {
+        color: rgba(0, 0, 0, 0.87) !important;
+      }
+    </style>
   </head>
   <body class="container">
     <input id="dataRange" type="hidden" value="<?= dataRange ?>">
