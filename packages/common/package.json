@@ -1,11 +1,24 @@
 {
   "name": "pulse-common",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "private": true,
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "source": "src/index.ts",
+  "dependencies": {
+    "cross-fetch": "^3.1.5"
+  },
   "scripts": {
-    "build": "echo \"No common build step\"",
-    "test": "echo \"No tests yet\"",
-    "lint": "echo \"No lint configured\""
+    "build": "tsc -b",
+    "test": "jest",
+    "lint": "eslint src --ext .ts",
+    "prepublishOnly": "bun run build"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.14",
+    "eslint": "^9.25.1",
+    "jest": "^29.7.0",
+    "prettier": "^3.5.3",
+    "ts-jest": "^29.3.2",
+    "typescript": "^5.8.3"
   }
 }
