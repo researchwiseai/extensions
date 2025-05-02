@@ -1,4 +1,4 @@
-import { configureAuth, signIn, signOut, getAccessToken, AuthProvider } from '../src/auth';
+import { configureAuth, signIn, signOut, getAccessToken, AuthProvider } from '../src/auth.js';
 
 /**
  * Dummy AuthProvider for testing.
@@ -25,6 +25,7 @@ class DummyAuth implements AuthProvider {
 
 describe('Authentication abstraction', () => {
   it('throws if used before configureAuth', async () => {
+    configureAuth(null)
     await expect(signIn()).rejects.toThrow('AuthProvider not configured');
     await expect(signOut()).rejects.toThrow('AuthProvider not configured');
     await expect(getAccessToken()).rejects.toThrow('AuthProvider not configured');

@@ -56,17 +56,42 @@ export async function analyzeSentiment(
     throw new Error('API client not configured. Call configureClient first.');
   }
   const token = await getAccessToken();
-  const url = `${baseUrl}/sentiment?fast=${fast}`;
+  const url = `${baseUrl}/pulse/v1/sentiment`;
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ inputs }),
+    body: JSON.stringify({ fast, inputs }),
   });
+
+  if (response.ok) {
+    const data = await response.json();
+    if (Array.isArray(data.results)) {
+      return { results: data.results };
+    } else {
+      throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+    }
+  } else if (response.status === 202) {
+    const data = await response.json();
+    if (typeof data.jobId === 'string') {
+      return { jobId: data.jobId };
+    } else {
+      throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+    }
+  } else {
+    const errorText = await response.text();
+    throw new Error(`${response.statusText}: ${errorText}`);
+  }
+
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    if (response.status === 404) {
+      throw new Error('Endpoint not found: ' + url);
+    }
+
+    throw new Error(`${response.statusText}: ${await response.text()}`);
   }
   const data = await response.json();
   if (Array.isArray(data.results)) {
@@ -77,36 +102,48 @@ export async function analyzeSentiment(
   throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
+interface GenerateThemesOptions {
+  fast?: boolean; 
+}
+
 /**
  * Call the theme generation endpoint.
  * Returns either immediate themes or a jobId for polling.
  */
 export async function generateThemes(
-  inputs: string[]
-): Promise<{ themes?: Theme[]; jobId?: string }> {
+  inputs: string[], options?: GenerateThemesOptions): Promise<{ themes?: Theme[]; jobId?: string }> {
   if (!baseUrl || !getAccessToken) {
     throw new Error('API client not configured. Call configureClient first.');
   }
   const token = await getAccessToken();
-  const url = `${baseUrl}/themes`;
+  const url = `${baseUrl}/pulse/v1/themes`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ inputs }),
+    body: JSON.stringify({ inputs, fast: options?.fast ?? false }),
   });
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+
+  if (response.ok) {
+    const data = await response.json();
+    if (Array.isArray(data.themes)) {
+      return { themes: data.themes };
+    } else {
+      throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+    }
+  } else if (response.status === 202) {
+    const data = await response.json();
+    if (typeof data.jobId === 'string') {
+      return { jobId: data.jobId };
+    } else {
+      throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+    }
+  } else {
+    const errorText = await response.text();
+    throw new Error(`${response.statusText}: ${errorText}`);
   }
-  const data = await response.json();
-  if (Array.isArray(data.themes)) {
-    return { themes: data.themes };
-  } else if (typeof data.jobId === 'string') {
-    return { jobId: data.jobId };
-  }
-  throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
 /**
@@ -122,7 +159,7 @@ export async function allocateThemes(
     throw new Error('API client not configured. Call configureClient first.');
   }
   const token = await getAccessToken();
-  const url = `${baseUrl}/similarity`;
+  const url = `${baseUrl}/pulse/v1/similarity`;
   const response = await fetch(url, {
     method: 'POST',
     headers: {
@@ -161,7 +198,7 @@ export async function pollJobStatus(
     throw new Error('API client not configured. Call configureClient first.');
   }
   const token = await getAccessToken();
-  const url = `${baseUrl}/jobs?jobId=${encodeURIComponent(jobId)}`;
+  const url = `${baseUrl}/pulse/v1/jobs?jobId=${encodeURIComponent(jobId)}`;
   const response = await fetch(url, {
     method: 'GET',
     headers: {

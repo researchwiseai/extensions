@@ -1,3 +1,5 @@
+// Load environment variables from .env file at project root
+import 'dotenv/config';
 import { Polly } from '@pollyjs/core';
 import NodeHTTPAdapter from '@pollyjs/adapter-node-http';
 import FSPersister from '@pollyjs/persister-fs';
@@ -7,18 +9,18 @@ import {
   analyzeSentiment,
   generateThemes,
   allocateThemes,
-} from '../src/apiClient';
-import { configureAuth, createAuth0Provider, getAccessToken } from '../src/auth';
+} from '../src/apiClient.js';
+import { configureAuth, createAuth0Provider, getAccessToken } from '../src/auth.js';
 
 // Skip integration tests if env vars not set
-const apiBase = process.env.API_BASE;
-const authDomain = process.env.AUTH_DOMAIN;
-const clientId = process.env.CLIENT_ID;
-const clientSecret = process.env.CLIENT_SECRET;
-const apiAud = process.env.API_AUD;
+const apiBase = `https://${process.env.TEST_DOMAIN}`;
+const authDomain = process.env.TEST_CLIENT_TENANT;
+const clientId = process.env.TEST_CLIENT_ID;
+const clientSecret = process.env.TEST_CLIENT_SECRET;
+const apiAud = process.env.TEST_AUDIENCE;
 if (!apiBase || !authDomain || !clientId || !clientSecret || !apiAud) {
   console.warn(
-    'Skipping Polly integration tests: missing one of API_BASE, AUTH_DOMAIN, CLIENT_ID, CLIENT_SECRET, or API_AUD'
+    'Skipping Polly integration tests: missing one of API_BASE, TEST_CLIENT_TENANT, TEST_CLIENT_ID, TEST_CLIENT_SECRET, or API_AUD'
   );
 } else {
   // Configure Auth0 client credentials provider
@@ -63,7 +65,7 @@ if (!apiBase || !authDomain || !clientId || !clientSecret || !apiAud) {
     });
 
     it('generateThemes returns themes synchronously (fast)', async () => {
-      const { themes } = await generateThemes(['test text', 'another text']);
+      const { themes } = await generateThemes(['test text', 'another text'], { fast: true });
       expect(themes).toBeDefined();
       expect(Array.isArray(themes)).toBe(true);
       expect(themes!.length).toBeGreaterThan(0);
@@ -76,7 +78,7 @@ if (!apiBase || !authDomain || !clientId || !clientSecret || !apiAud) {
       const { matrix } = await allocateThemes(setA, setB, true);
       expect(matrix).toBeDefined();
       expect(Array.isArray(matrix)).toBe(true);
-      expect(matrix.length).toBe(setA.length);
+      expect(matrix!.length).toBe(setA.length);
     });
   });
 }

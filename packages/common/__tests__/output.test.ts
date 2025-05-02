@@ -24,7 +24,8 @@ describe('mapResults', () => {
   it('throws error when lengths differ', () => {
     const pos: Pos[] = [{ row: 0, col: 0 }];
     const res = ['only', 'two'];
-    const writer = jest.fn();
+    // Using a no-op writer function as writer should not be called
+    const writer = (_pos: Pos, _value: string) => {};
     expect(() => mapResults(res, pos, writer)).toThrow(
       'Results length (2) does not match positions length (1)'
     );

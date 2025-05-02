@@ -3,6 +3,7 @@
       "javascript",
       "javascriptreact",
       "typescript"
-    ]
+    ],
+    "typescript.tsdk": "node_modules/typescript/lib"
   }
   
