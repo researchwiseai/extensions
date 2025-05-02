@@ -95,7 +95,9 @@ function allocateAndSaveThemeSet(dataRange, name) {
     const options = {
         method: "post",
         contentType: "application/json",
-        headers: { "X-API-Key": API_KEY },
+        headers: {
+            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+        },
         payload: JSON.stringify({ inputs: usedInputs }),
     };
     let data;
@@ -132,7 +134,9 @@ function allocateAndSaveThemeSet(dataRange, name) {
                     `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
                     {
                         method: "get",
-                        headers: { "X-API-Key": API_KEY },
+                        headers: {
+                            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                        }
                     }
                 );
                 jobData = JSON.parse(jobResp.getContentText());
@@ -160,7 +164,9 @@ function allocateAndSaveThemeSet(dataRange, name) {
         try {
             const resultResp = UrlFetchApp.fetch(resultUrl, {
                 method: "get",
-                headers: { "X-API-Key": API_KEY },
+                headers: {
+                    "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                }
             });
             resultData = JSON.parse(resultResp.getContentText());
         } catch (e) {
@@ -274,7 +280,9 @@ function analyzeSentiment() {
     const options = {
         method: "post",
         contentType: "application/json",
-        headers: { "X-API-Key": API_KEY },
+        headers: {
+            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+        },
         payload: JSON.stringify({ inputs }),
     };
 
@@ -321,7 +329,9 @@ function analyzeSentiment() {
                 `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
                 {
                     method: "get",
-                    headers: { "X-API-Key": API_KEY },
+                    headers: {
+                        "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                    }
                 }
             );
             jobData = JSON.parse(jobResp.getContentText());
@@ -344,7 +354,6 @@ function analyzeSentiment() {
     try {
         const resultResp = UrlFetchApp.fetch(resultUrl, {
             method: "get",
-            headers: { "X-API-Key": API_KEY },
         });
         resultData = JSON.parse(resultResp.getContentText());
     } catch (e) {
@@ -422,7 +431,9 @@ function generateThemes() {
     const options = {
         method: "post",
         contentType: "application/json",
-        headers: { "X-API-Key": API_KEY },
+        headers: {
+            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+        },
         payload: JSON.stringify({ inputs: usedInputs }),
     };
 
@@ -482,7 +493,10 @@ function generateThemes() {
                 `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
                 {
                     method: "get",
-                    headers: { "X-API-Key": API_KEY },
+                    headers: {
+                        "X-API-Key": API_KEY,
+                        "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                    },
                 }
             );
             jobData = JSON.parse(jobResp.getContentText());
@@ -505,7 +519,10 @@ function generateThemes() {
     try {
         const resultResp = UrlFetchApp.fetch(resultUrl, {
             method: "get",
-            headers: { "X-API-Key": API_KEY },
+            headers: {
+                "X-API-Key": API_KEY,
+                "Authorization": "Bearer " + getOAuthService().getAccessToken()
+            },
         });
         resultData = JSON.parse(resultResp.getContentText());
     } catch (e) {
@@ -700,7 +717,10 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
     const options = {
         method: "post",
         contentType: "application/json",
-        headers: { "X-API-Key": API_KEY },
+        headers: {
+            "X-API-Key": API_KEY,
+            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+        },
         // fast=false triggers async polling behavior
         payload: JSON.stringify({ set_a: setA, set_b: setB, fast: false }),
     };
@@ -747,13 +767,16 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
 
             let jobData;
             try {
-                const jobResp = UrlFetchApp.fetch(
-                    `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
-                    {
-                        method: "get",
-                        headers: { "X-API-Key": API_KEY },
-                    }
-                );
+            const jobResp = UrlFetchApp.fetch(
+                `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
+                {
+                    method: "get",
+                    headers: {
+                        "X-API-Key": API_KEY,
+                        "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                    },
+                }
+            );
                 jobData = JSON.parse(jobResp.getContentText());
             } catch (e) {
                 ui.alert(
@@ -778,7 +801,10 @@ function allocateThemesProcess(inputs, positions, themes, sheet) {
         try {
             const resultResp = UrlFetchApp.fetch(resultUrl, {
                 method: "get",
-                headers: { "X-API-Key": API_KEY },
+                headers: {
+                    "X-API-Key": API_KEY,
+                    "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                },
             });
             resultData = JSON.parse(resultResp.getContentText());
         } catch (e) {
@@ -1051,7 +1077,10 @@ function allocateThemesAutomatic(dataRange) {
     const options = {
         method: "post",
         contentType: "application/json",
-        headers: { "X-API-Key": API_KEY },
+        headers: {
+            "X-API-Key": API_KEY,
+            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+        },
         payload: JSON.stringify({ inputs: usedInputs }),
     };
     let data;
@@ -1088,7 +1117,10 @@ function allocateThemesAutomatic(dataRange) {
                     `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
                     {
                         method: "get",
-                        headers: { "X-API-Key": API_KEY },
+                        headers: {
+                            "X-API-Key": API_KEY,
+                            "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                        },
                     }
                 );
                 jobData = JSON.parse(jobResp.getContentText());
@@ -1116,7 +1148,10 @@ function allocateThemesAutomatic(dataRange) {
         try {
             const resultResp = UrlFetchApp.fetch(resultUrl, {
                 method: "get",
-                headers: { "X-API-Key": API_KEY },
+                headers: {
+                    "X-API-Key": API_KEY,
+                    "Authorization": "Bearer " + getOAuthService().getAccessToken()
+                },
             });
             resultData = JSON.parse(resultResp.getContentText());
         } catch (e) {
