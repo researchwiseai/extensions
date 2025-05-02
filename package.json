@@ -10,5 +10,9 @@
     "build": "bun workspace run build",
     "test": "bun workspace run test",
     "lint": "bun workspace run lint"
+  },
+  "devDependencies": {
+    "generator-office": "^3.0.1",
+    "yo": "^5.1.0"
   }
 }
