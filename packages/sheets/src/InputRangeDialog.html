@@ -1,24 +1,36 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <base target="_top" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
   </head>
   <body class="container">
     <div class="input-field">
-      <input id="dataRange" type="text" onfocus="pickRange()" value="<?= dataRange ?>">
+      <input
+        id="dataRange"
+        type="text"
+        onfocus="pickRange()"
+        value="<?= dataRange ?>"
+      />
       <label for="dataRange">Input Range (A1 notation)</label>
     </div>
-    <button class="btn waves-effect waves-light" onclick="submitRange()">OK</button>
-    <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+    <button class="btn waves-effect waves-light" onclick="submitRange()">
+      OK
+    </button>
+    <button class="btn-flat" onclick="google.script.host.close()">
+      Cancel
+    </button>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         M.AutoInit();
       });
       function pickRange() {
         google.script.run
-          .withSuccessHandler(function(a1Notation) {
+          .withSuccessHandler(function (a1Notation) {
             const input = document.getElementById('dataRange');
             input.value = a1Notation;
             M.updateTextFields();
@@ -28,12 +40,12 @@
       function submitRange() {
         const dataRange = document.getElementById('dataRange').value;
         google.script.run
-          .withSuccessHandler(function() {
-            M.toast({html: 'Input range selected'});
+          .withSuccessHandler(function () {
+            M.toast({ html: 'Input range selected' });
             google.script.host.close();
           })
-          .withFailureHandler(function(err) {
-            M.toast({html: 'Error: ' + err.message});
+          .withFailureHandler(function (err) {
+            M.toast({ html: 'Error: ' + err.message });
           })
           .allocateThemesWithRange(dataRange);
       }

@@ -1,90 +1,144 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <base target="_top" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
     <style>
-      html, body { height: 100%; margin: 0; padding: 0; }
-      .container { position: relative; height: 100%; padding-bottom: 80px; box-sizing: border-box; }
-      #list-view, #create-view, #detail-view { overflow-y: auto; max-height: 100%; }
-      .footer-panel { position: absolute; bottom: 0; left: 0; width: 100%; background-color: #fff;
-                      padding: 8px 16px; box-shadow: 0 -2px 4px rgba(0,0,0,0.1); }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        position: relative;
+        height: 100%;
+        padding-bottom: 80px;
+        box-sizing: border-box;
+      }
+      #list-view,
+      #create-view,
+      #detail-view {
+        overflow-y: auto;
+        max-height: 100%;
+      }
+      .footer-panel {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background-color: #fff;
+        padding: 8px 16px;
+        box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
   <body class="container">
     <div id="list-view">
       <? if (!themeSets || themeSets.length === 0) { ?>
-        <p>No saved theme sets.</p>
+      <p>No saved theme sets.</p>
       <? } else { ?>
-        <ul class="collection">
+      <ul class="collection">
         <? for (var i = 0; i < themeSets.length; i++) { ?>
-            <li class="collection-item avatar" style="cursor:pointer;" onclick="showDetails(<?= i ?>)">
-              <i class="material-icons circle">folder</i>
-              <span class="title"><?= themeSets[i].name ?></span>
-              <span class="secondary-content">
-                <a href="#" onclick="event.stopPropagation(); renameSet(<?= i ?>)">
-                  <i class="material-icons">edit</i>
-                </a>
-                <a href="#" onclick="event.stopPropagation(); deleteSet('<?= themeSets[i].name ?>')">
-                  <i class="material-icons">delete</i>
-                </a>
-              </span>
-            </li>
-          <? } ?>
-        </ul>
+        <li
+          class="collection-item avatar"
+          style="cursor: pointer"
+          onclick="showDetails(<?= i ?>)"
+        >
+          <i class="material-icons circle">folder</i>
+          <span class="title"><?= themeSets[i].name ?></span>
+          <span class="secondary-content">
+            <a href="#" onclick="event.stopPropagation(); renameSet(<?= i ?>)">
+              <i class="material-icons">edit</i>
+            </a>
+            <a
+              href="#"
+              onclick="event.stopPropagation(); deleteSet('<?= themeSets[i].name ?>')"
+            >
+              <i class="material-icons">delete</i>
+            </a>
+          </span>
+        </li>
+        <? } ?>
+      </ul>
       <? } ?>
-    <div class="footer-panel">
-      <div class="row" style="margin-bottom:0;">
-        <div class="col s6">
-          <button class="btn waves-effect waves-light" onclick="showCreate()">Create New</button>
-        </div>
-        <div class="col s6" style="text-align:right;">
-          <button class="btn-flat" onclick="google.script.host.close()">Close</button>
+      <div class="footer-panel">
+        <div class="row" style="margin-bottom: 0">
+          <div class="col s6">
+            <button class="btn waves-effect waves-light" onclick="showCreate()">
+              Create New
+            </button>
+          </div>
+          <div class="col s6" style="text-align: right">
+            <button class="btn-flat" onclick="google.script.host.close()">
+              Close
+            </button>
+          </div>
         </div>
       </div>
     </div>
-    </div>
-    <div id="create-view" style="display:none;">
+    <div id="create-view" style="display: none">
       <h5>New Theme Set</h5>
       <form id="newSetForm">
         <div class="input-field">
-          <input id="setName" type="text" required>
+          <input id="setName" type="text" required />
           <label for="setName">Theme Set Name</label>
         </div>
         <table class="striped">
           <thead>
-            <tr><th>Label</th><th>Example 1</th><th>Example 2</th><th></th></tr>
+            <tr>
+              <th>Label</th>
+              <th>Example 1</th>
+              <th>Example 2</th>
+              <th></th>
+            </tr>
           </thead>
           <tbody id="themesBody"></tbody>
         </table>
       </form>
       <div class="footer-panel">
-        <div class="row" style="margin-bottom:0;">
+        <div class="row" style="margin-bottom: 0">
           <div class="col s6">
             <button type="button" class="btn-flat" onclick="addRow()">
               <i class="material-icons left">add</i>Add Theme
             </button>
           </div>
         </div>
-        <div class="row" style="margin-bottom:0;">
+        <div class="row" style="margin-bottom: 0">
           <div class="col s6">
-            <button type="button" class="btn" onclick="submitNew()">Save</button>
+            <button type="button" class="btn" onclick="submitNew()">
+              Save
+            </button>
           </div>
-          <div class="col s6" style="text-align:right;">
-            <button type="button" class="btn-flat" onclick="cancelNew()">Cancel</button>
+          <div class="col s6" style="text-align: right">
+            <button type="button" class="btn-flat" onclick="cancelNew()">
+              Cancel
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <div id="detail-view" style="display:none;">
+    <div id="detail-view" style="display: none">
       <h5 id="detail-title"></h5>
       <table class="striped">
-        <thead><tr><th>Label</th><th>Example 1</th><th>Example 2</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Example 1</th>
+            <th>Example 2</th>
+          </tr>
+        </thead>
         <tbody id="detail-body"></tbody>
       </table>
       <div class="footer-panel">
-        <div class="row" style="margin-bottom:0;">
+        <div class="row" style="margin-bottom: 0">
           <div class="col s6">
             <button class="btn-flat" onclick="goBack()">Back</button>
           </div>

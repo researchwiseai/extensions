@@ -6,10 +6,17 @@
     "build": "cp -R src/* dist/",
     "push": "bun run build && clasp push",
     "deploy:dev": "clasp deploy --description 'dev build' --deploymentId $(clasp deployments | tail -n1 | awk '{print $2}')",
-    "deploy:prod": "clasp deploy --description 'Production release' --deploymentId [YOUR_PROD_DEPLOYMENT_ID]"
+    "deploy:prod": "clasp deploy --description 'Production release' --deploymentId [YOUR_PROD_DEPLOYMENT_ID]",
+    "lint": "eslint \"src/**/*.{js,gs}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{js,gs}\"",
+    "format": "prettier --write \"src/**/*.{js,gs,html,json}\""
   },
   "devDependencies": {
-    "@types/google-apps-script": "^1.0.0"
+    "@types/google-apps-script": "^1.0.0",
+    "eslint": "^8.23.0",
+    "prettier": "^2.8.4",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1"
   },
   "dependencies": {
     "pulse-common": "workspace:*"

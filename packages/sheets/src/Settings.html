@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <base target="_top" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div class="container">
@@ -10,15 +13,27 @@
       <!-- Disconnected state: show email input and Connect button -->
       <div id="disconnectedSection">
         <div class="input-field">
-          <input id="email" type="email">
+          <input id="email" type="email" />
           <label for="email">Email Address</label>
         </div>
-        <button id="connectButton" class="btn waves-effect waves-light" onclick="lookupOrganization()">Connect</button>
+        <button
+          id="connectButton"
+          class="btn waves-effect waves-light"
+          onclick="lookupOrganization()"
+        >
+          Connect
+        </button>
       </div>
       <!-- Connected state: show status and Disconnect button -->
-      <div id="connectedSection" style="display: none;">
+      <div id="connectedSection" style="display: none">
         <p><span class="green-text text-darken-2">Connected</span></p>
-        <button id="disconnectButton" class="btn waves-effect waves-light" onclick="disconnect()">Disconnect</button>
+        <button
+          id="disconnectButton"
+          class="btn waves-effect waves-light"
+          onclick="disconnect()"
+        >
+          Disconnect
+        </button>
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -26,18 +41,21 @@
     <script>
       const webBase = '<?= webBase ?>';
       function onFailure(err) {
-        M.toast({html: 'Error: ' + err.message});
+        M.toast({ html: 'Error: ' + err.message });
       }
       function onOrgFound(res) {
         if (res.success) {
-          M.toast({html: 'Account found. Authorizing...'});
+          M.toast({ html: 'Account found. Authorizing...' });
           authorize();
         } else if (res.notFound) {
           M.toast({
-            html: 'No account found for that email address. To <a href="' + webBase + '/register" target="_blank">register for ResearchWiseAI, click here</a>.',
+            html:
+              'No account found for that email address. To <a href="' +
+              webBase +
+              '/register" target="_blank">register for ResearchWiseAI, click here</a>.',
           });
         } else {
-          M.toast({html: 'Error finding organization'});
+          M.toast({ html: 'Error finding organization' });
         }
       }
       function lookupOrganization() {
@@ -49,14 +67,14 @@
         btn.innerText = 'Connecting...';
         const email = document.getElementById('email').value;
         google.script.run
-          .withSuccessHandler(function(res) {
+          .withSuccessHandler(function (res) {
             // Restore button state
             btn.disabled = false;
             btn.classList.remove('disabled');
             btn.innerText = origText;
             onOrgFound(res);
           })
-          .withFailureHandler(function(err) {
+          .withFailureHandler(function (err) {
             // Restore button state
             btn.disabled = false;
             btn.classList.remove('disabled');
@@ -67,12 +85,16 @@
       }
       function authorize() {
         google.script.run
-          .withSuccessHandler(function(authUrl) {
-            var authWin = window.open(authUrl, '_blank', 'width=600,height=600');
+          .withSuccessHandler(function (authUrl) {
+            var authWin = window.open(
+              authUrl,
+              '_blank',
+              'width=600,height=600',
+            );
             var startTime = Date.now();
             var timeout = 15 * 60 * 1000; // 15 minutes
             var pollInterval = 1000; // 1 second
-            var poll = setInterval(function() {
+            var poll = setInterval(function () {
               if (Date.now() - startTime > timeout) {
                 clearInterval(poll);
                 if (authWin && !authWin.closed) authWin.close();
@@ -80,7 +102,7 @@
                 return;
               }
               google.script.run
-                .withSuccessHandler(function(settings) {
+                .withSuccessHandler(function (settings) {
                   if (settings.isAuthorized) {
                     clearInterval(poll);
                     if (authWin && !authWin.closed) authWin.close();
@@ -104,8 +126,12 @@
       // Render UI based on authorization status
       function renderSettings(res) {
         const connected = res.isAuthorized;
-        document.getElementById('connectedSection').style.display = connected ? '' : 'none';
-        document.getElementById('disconnectedSection').style.display = connected ? 'none' : '';
+        document.getElementById('connectedSection').style.display = connected
+          ? ''
+          : 'none';
+        document.getElementById('disconnectedSection').style.display = connected
+          ? 'none'
+          : '';
         if (!connected) {
           document.getElementById('email').value = res.email || '';
           M.updateTextFields();
@@ -118,7 +144,7 @@
           .withFailureHandler(onFailure)
           .disconnect();
       }
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         M.AutoInit();
         loadSettings();
       });
