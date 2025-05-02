@@ -22,7 +22,11 @@
       "https://core-dev-pulsefilesystembucket-bvkfxrtm.s3.eu-west-1.amazonaws.com/jobs/",
       "https://dev.core.researchwiseai.com/pulse/v1/",
       "https://dev.researchwiseai.com/",
-      "https://wise-dev.eu.auth0.com/"
+      "https://wise-dev.eu.auth0.com/",
+      "https://core-prod-pulsefilesystembucket-hfkvzfaf.s3.eu-west-1.amazonaws.com/jobs/",
+      "https://core.researchwiseai.com/pulse/v1/",
+      "https://researchwiseai.com/",
+      "https://research-wise-ai-eu.eu.auth0.com/"
     ],
     "addOns": {
       "common": {
