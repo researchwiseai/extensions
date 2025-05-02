@@ -1,3 +1,4 @@
+import fetch from 'cross-fetch';
 /**
  * Authentication provider interface.
  */
@@ -49,4 +50,67 @@ export async function signOut(): Promise<void> {
 export async function getAccessToken(): Promise<string> {
   const p = ensureProvider();
   return p.getAccessToken();
+}
+/**
+ * Configuration for Auth0 Client Credentials authentication.
+ */
+export interface Auth0Config {
+  /** Auth0 domain (e.g., tenant.auth0.com) */
+  domain: string;
+  /** Client ID for the application */
+  clientId: string;
+  /** Client secret for the application */
+  clientSecret: string;
+  /** Audience (API identifier) for the token */
+  audience: string;
+}
+
+/**
+ * Create an AuthProvider that uses Auth0 client credentials flow.
+ */
+// Import fetch for HTTP requests in Auth0 provider
+import fetch from 'cross-fetch';
+/**
+ * Create an AuthProvider that uses Auth0 client credentials flow.
+ */
+export function createAuth0Provider(config: Auth0Config): AuthProvider {
+  let token: string | null = null;
+  let expiresAt = 0;
+  const tokenUrl = `https://${config.domain}/oauth/token`;
+  return {
+    async signIn(): Promise<void> {
+      // no-op for client credentials
+    },
+    async signOut(): Promise<void> {
+      token = null;
+      expiresAt = 0;
+    },
+    async getAccessToken(): Promise<string> {
+      const now = Date.now();
+      if (token && now < expiresAt) {
+        return token;
+      }
+      // Request a new token
+      const res = await fetch(tokenUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          grant_type: 'client_credentials',
+          client_id: config.clientId,
+          client_secret: config.clientSecret,
+          audience: config.audience,
+        }),
+      });
+      if (!res.ok) {
+        throw new Error(`Auth0 token request failed: ${res.status}`);
+      }
+      const data = await res.json();
+      if (!data.access_token || !data.expires_in) {
+        throw new Error(`Invalid Auth0 response: ${JSON.stringify(data)}`);
+      }
+      token = data.access_token;
+      expiresAt = now + data.expires_in * 1000 - 60000; // refresh 1 min early
+      return token;
+    },
+  };
 }

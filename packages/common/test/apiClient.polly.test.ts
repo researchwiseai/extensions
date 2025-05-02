@@ -8,24 +8,26 @@ import {
   generateThemes,
   allocateThemes,
 } from '../src/apiClient';
-import { configureAuth, AuthProvider, getAccessToken } from '../src/auth';
+import { configureAuth, createAuth0Provider, getAccessToken } from '../src/auth';
 
 // Skip integration tests if env vars not set
 const apiBase = process.env.API_BASE;
-const apiToken = process.env.API_TOKEN;
-if (!apiBase || !apiToken) {
-  console.warn('Skipping Polly integration tests: API_BASE or API_TOKEN not set');
+const authDomain = process.env.AUTH_DOMAIN;
+const clientId = process.env.CLIENT_ID;
+const clientSecret = process.env.CLIENT_SECRET;
+const apiAud = process.env.API_AUD;
+if (!apiBase || !authDomain || !clientId || !clientSecret || !apiAud) {
+  console.warn(
+    'Skipping Polly integration tests: missing one of API_BASE, AUTH_DOMAIN, CLIENT_ID, CLIENT_SECRET, or API_AUD'
+  );
 } else {
-  /**
-   * AuthProvider using environment token.
-   */
-  class EnvAuth implements AuthProvider {
-    async signIn(): Promise<void> {}
-    async signOut(): Promise<void> {}
-    async getAccessToken(): Promise<string> {
-      return apiToken!;
-    }
-  }
+  // Configure Auth0 client credentials provider
+  const authProvider = createAuth0Provider({
+    domain: authDomain,
+    clientId: clientId,
+    clientSecret: clientSecret,
+    audience: apiAud,
+  });
 
   describe('Integration: Pulse API via Polly', () => {
     let polly: Polly;
@@ -45,7 +47,7 @@ if (!apiBase || !apiToken) {
         },
         persisterOptions: { fs: { recordingsDir: 'test/recordings' } },
       });
-      configureAuth(new EnvAuth());
+      configureAuth(authProvider);
       configureClient({ baseUrl: apiBase, getAccessToken });
     });
 
