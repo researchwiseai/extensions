@@ -1,0 +1,13 @@
+{
+  "name": "pulse-excel-addon",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "echo \"Building Excel add-in...\"",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No lint configured\""
+  },
+  "dependencies": {
+    "pulse-common": "workspace:*"
+  }
+}

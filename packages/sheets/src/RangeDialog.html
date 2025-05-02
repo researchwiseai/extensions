@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+  </head>
+  <body class="container">
+    <div id="form">
+      <!-- carry along the original data range for allocation -->
+      <input id="dataRange" type="hidden" value="<?= dataRange ?>">
+      <p>Select a range in the sheet, then click “Select Range” for each field.</p>
+      <div class="row">
+        <div class="input-field col s8">
+          <input id="labelsRange" type="text">
+          <label for="labelsRange">Labels Range (A1 notation)</label>
+        </div>
+        <div class="col s4">
+          <button class="btn" type="button" onclick="pickRange('labelsRange')">Select Range</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s8">
+          <input id="rep1Range" type="text">
+          <label for="rep1Range">First Representative Range</label>
+        </div>
+        <div class="col s4">
+          <button class="btn" type="button" onclick="pickRange('rep1Range')">Select Range</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s8">
+          <input id="rep2Range" type="text">
+          <label for="rep2Range">Second Representative Range</label>
+        </div>
+        <div class="col s4">
+          <button class="btn" type="button" onclick="pickRange('rep2Range')">Select Range</button>
+        </div>
+      </div>
+      <button class="btn waves-effect waves-light" onclick="submitRanges()">OK</button>
+      <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+    </div>
+    <div id="progress" style="display:none; text-align:center; margin-top:20px;">
+      <p>Theme allocation has started and may take 2-3 minutes.</p>
+      <button class="btn waves-effect waves-light" onclick="google.script.host.close()">Close</button>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        M.AutoInit();
+      });
+
+      // when user clicks "Select Range", grab the current sheet selection
+      function pickRange(fieldId) {
+        google.script.run
+          .withSuccessHandler(function(a1Notation) {
+            const input = document.getElementById(fieldId);
+            input.value = a1Notation;
+            M.updateTextFields();
+          })
+          .getActiveRangeA1Notation();
+      }
+
+      function submitRanges() {
+        const ranges = {
+          dataRange: document.getElementById('dataRange').value,
+          labels:    document.getElementById('labelsRange').value,
+          rep1:      document.getElementById('rep1Range').value,
+          rep2:      document.getElementById('rep2Range').value
+        };
+        // Show progress panel
+        document.getElementById('form').style.display = 'none';
+        document.getElementById('progress').style.display = 'block';
+        google.script.run
+          .withFailureHandler(function(err) {
+            // On error, restore form and show message
+            document.getElementById('progress').style.display = 'none';
+            document.getElementById('form').style.display = 'block';
+            M.toast({html: 'Error: ' + err.message});
+          })
+          .processCustomThemes(ranges);
+      }
+    </script>
+  </body>
+</html>

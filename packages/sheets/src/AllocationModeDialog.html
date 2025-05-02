@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <!-- Accessibility: Ensure high-contrast text for theme selection options -->
+    <style>
+      /* High-emphasis text (87% black) for better readability */
+      body,
+      label span {
+        color: rgba(0, 0, 0, 0.87) !important;
+      }
+    </style>
+  </head>
+  <body class="container">
+    <input id="dataRange" type="hidden" value="<?= dataRange ?>">
+    <form id="modeForm">
+      <p>
+        <label>
+          <input name="mode" type="radio" value="auto" checked/>
+          <span>Automatically Generate (one-off)</span>
+        </label>
+      </p>
+      <? for (var i = 0; i < themeSetNames.length; i++) { ?>
+        <p>
+          <label>
+            <input name="mode" type="radio" value="<?= themeSetNames[i] ?>"/>
+            <span>Use Theme Set "<?= themeSetNames[i] ?>"</span>
+          </label>
+        </p>
+      <? } ?>
+      <p>
+        <label>
+          <input name="mode" type="radio" value="new"/>
+          <span>Create &amp; Save New Theme Set</span>
+        </label>
+      </p>
+    </form>
+    <div class="row">
+      <div class="col s6">
+        <button class="btn waves-effect waves-light" onclick="submitMode()">OK</button>
+      </div>
+      <div class="col s6">
+        <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        M.AutoInit();
+      });
+      function submitMode() {
+        const form = document.getElementById('modeForm');
+        const mode = form.mode.value;
+        const dr = document.getElementById('dataRange').value;
+        // Start the allocation job and close the dialog immediately
+        if (mode === 'new') {
+          const name = prompt('Name for this Theme Set?');
+          if (!name) return;
+          google.script.run.allocateAndSaveThemeSet(dr, name);
+        } else if (mode === 'auto') {
+          google.script.run.allocateThemesAutomatic(dr);
+        } else {
+          google.script.run.allocateThemesFromSet(dr, mode);
+        }
+        google.script.host.close();
+      }
+    </script>
+  </body>
+</html>

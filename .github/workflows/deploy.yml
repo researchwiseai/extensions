@@ -1,0 +1,24 @@
+name: Deploy Sheets Add-on
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  deploy-sheets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "::add-path::${HOME}/.bun/bin"
+      - name: Install dependencies
+        run: bun install
+      - name: Build and Push Sheets Add-on
+        run: bun workspace run push --filter pulse-sheets-addon
+        env:
+          CLASP_CREDENTIALS: ${{ secrets.CLASP_CREDENTIALS }}
+          CLASP_TOKEN: ${{ secrets.CLASP_TOKEN }}

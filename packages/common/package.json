@@ -1,0 +1,11 @@
+{
+  "name": "pulse-common",
+  "version": "1.0.0",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "build": "echo \"No common build step\"",
+    "test": "echo \"No tests yet\"",
+    "lint": "echo \"No lint configured\""
+  }
+}
