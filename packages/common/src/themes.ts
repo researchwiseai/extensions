@@ -1,3 +1,5 @@
+import { Theme } from "./apiClient.js";
+
 /**
  * Interface for persistent storage of key/value data.
  */
@@ -8,12 +10,6 @@ export interface Storage {
   set<T>(key: string, value: T): Promise<void>;
   /** Delete a value by key. */
   delete(key: string): Promise<void>;
-}
-
-/** A single theme: label and representative strings */
-export interface Theme {
-  label: string;
-  representatives: string[];
 }
 
 /** A named set of themes */

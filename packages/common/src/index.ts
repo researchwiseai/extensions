@@ -1,6 +1,10 @@
 /**
  * Common package stub functions and shared utilities.
  */
-export function commonStub(): void {
-  console.log("Common package stub");
-}
+// Pulse Common: shared API client, utilities, and abstractions
+
+export * from './apiClient';
+export * from './input';
+export * from './output';
+export * from './themes';
+export * from './auth';

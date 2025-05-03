@@ -1,4 +1,4 @@
-import { Pos } from './input';
+import { Pos } from './input.js';
 
 /**
  * Map results to positions using a writer callback.
