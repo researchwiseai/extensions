@@ -3,20 +3,26 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cp -R src/* dist/",
+    "clean": "rm -rf dist/*",
+    "bundle": "bun build ./src/Code.ts --target=node --outfile=./dist/Code.js",
+    "build": "bun run clean && bun run bundle && ./scripts/remove_export.ts ./dist/Code.js && cp src/appsscript.json dist/ && cp src/*.html dist/",
     "push": "bun run build && clasp push",
     "deploy:dev": "clasp deploy --description 'dev build' --deploymentId $(clasp deployments | tail -n1 | awk '{print $2}')",
     "deploy:prod": "clasp deploy --description 'Production release' --deploymentId [YOUR_PROD_DEPLOYMENT_ID]",
-    "lint": "eslint \"src/**/*.{js,gs}\"",
-    "lint:fix": "eslint --fix \"src/**/*.{js,gs}\"",
-    "format": "prettier --write \"src/**/*.{js,gs,html,json}\""
+    "lint": "eslint \"src/**/*.{ts}\"",
+    "lint:fix": "eslint --fix \"src/**/*.{ts}\"",
+    "format": "prettier --write \"src/**/*.{ts,html,json}\""
   },
   "devDependencies": {
     "@types/google-apps-script": "^1.0.0",
+    "@types/google-apps-script-oauth2": "^38.0.4",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
     "eslint": "^8.23.0",
-    "prettier": "^2.8.4",
     "eslint-config-prettier": "^8.5.0",
-    "eslint-plugin-prettier": "^4.2.1"
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.4",
+    "typescript": "^5.8.3"
   },
   "dependencies": {
     "pulse-common": "workspace:*"

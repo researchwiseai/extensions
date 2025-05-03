@@ -1,8 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <base target="_top">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+    <base target="_top" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+      rel="stylesheet"
+    />
     <!-- Accessibility: Ensure high-contrast text for theme selection options -->
     <style>
       /* High-emphasis text (87% black) for better readability */
@@ -13,40 +16,44 @@
     </style>
   </head>
   <body class="container">
-    <input id="dataRange" type="hidden" value="<?= dataRange ?>">
+    <input id="dataRange" type="hidden" value="<?= dataRange ?>" />
     <form id="modeForm">
       <p>
         <label>
-          <input name="mode" type="radio" value="auto" checked/>
+          <input name="mode" type="radio" value="auto" checked />
           <span>Automatically Generate (one-off)</span>
         </label>
       </p>
       <? for (var i = 0; i < themeSetNames.length; i++) { ?>
-        <p>
-          <label>
-            <input name="mode" type="radio" value="<?= themeSetNames[i] ?>"/>
-            <span>Use Theme Set "<?= themeSetNames[i] ?>"</span>
-          </label>
-        </p>
+      <p>
+        <label>
+          <input name="mode" type="radio" value="<?= themeSetNames[i] ?>" />
+          <span>Use Theme Set "<?= themeSetNames[i] ?>"</span>
+        </label>
+      </p>
       <? } ?>
       <p>
         <label>
-          <input name="mode" type="radio" value="new"/>
+          <input name="mode" type="radio" value="new" />
           <span>Create &amp; Save New Theme Set</span>
         </label>
       </p>
     </form>
     <div class="row">
       <div class="col s6">
-        <button class="btn waves-effect waves-light" onclick="submitMode()">OK</button>
+        <button class="btn waves-effect waves-light" onclick="submitMode()">
+          OK
+        </button>
       </div>
       <div class="col s6">
-        <button class="btn-flat" onclick="google.script.host.close()">Cancel</button>
+        <button class="btn-flat" onclick="google.script.host.close()">
+          Cancel
+        </button>
       </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
+      document.addEventListener('DOMContentLoaded', function () {
         M.AutoInit();
       });
       function submitMode() {

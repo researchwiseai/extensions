@@ -3,8 +3,7 @@
   "rootDir": "dist",
   "parentId": "1I1s2aeyGZymZw75L3hN9_F-wXrG-y4x46IUf8nwAlgQ",
   "scriptExtensions": [
-    ".js",
-    ".gs"
+    ".js"
   ],
   "htmlExtensions": [
     ".html"
