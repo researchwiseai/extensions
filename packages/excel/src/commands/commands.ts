@@ -31,5 +31,18 @@ function action(event: Office.AddinCommands.Event) {
   event.completed();
 }
 
-// Register the function with Office.
+// Register the existing command with Office.
 Office.actions.associate("action", action);
+
+/**
+ * Stub for Analyze Sentiment command.
+ * @param event - The event object from the button click.
+ */
+function analyzeSentiment(event: Office.AddinCommands.Event) {
+  console.log("Analyze Sentiment button clicked");
+  // TODO: Implement sentiment analysis functionality
+  event.completed();
+}
+
+// Register the analyzeSentiment function with Office.
+Office.actions.associate("analyzeSentiment", analyzeSentiment);
