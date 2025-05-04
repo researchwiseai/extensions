@@ -1,180 +1,92 @@
-import { allocateThemesProcess } from './allocateThemesProcess';
-import { API_BASE } from './config';
-import { getOAuthService } from './getOAuthService';
-import { saveThemeSet } from "./saveThemeSet";
+import { allocateThemes, extractInputs } from 'pulse-common';
+import { writeAllocationsToSheet } from './writeAllocationsToSheet';
 
 /**
- * Automatically generate themes, save as a named set, then allocate to data.
- * 
+ * Processes custom themes after the user submits ranges via dialog.
+ *
  * Called by FE
- * 
- * @param {string} dataRange A1 notation of the data range to allocate.
- * @param {string} name Name for the new theme set.
+ *
+ * @param {{dataRange: string, labels: string, rep1: string, rep2: string}} ranges
  */
-export function allocateAndSaveThemeSet(dataRange: string, name: string) {
+export async function allocateAndSaveThemeSet(ranges: {
+    dataRange: string;
+    labels: string;
+    rep1: string;
+    rep2: string;
+}) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let dataRangeObj: GoogleAppsScript.Spreadsheet.Range;
+    // Read data cells using full A1 notation (including sheet name) for safety across sheets
+    let dataRangeObj;
     try {
-        dataRangeObj = ss.getRange(dataRange);
+        dataRangeObj = ss.getRange(ranges.dataRange);
     } catch (e) {
         ui.alert('Error reading data range: ' + e.toString());
         return;
     }
+
     const dataSheet = dataRangeObj.getSheet();
     const values = dataRangeObj.getValues();
-    const inputs = [];
-    const positions = [];
-    const startRow = dataRangeObj.getRow();
-    const startCol = dataRangeObj.getColumn();
-    for (let i = 0; i < values.length; i++) {
-        for (let j = 0; j < values[0].length; j++) {
-            const text = values[i][j];
-            if (text != null && text !== '') {
-                inputs.push(text.toString());
-                positions.push({ row: startRow + i, col: startCol + j });
-            }
-        }
-    }
+
+    const { inputs, positions } = extractInputs(values, {
+        rowOffset: dataRangeObj.getRow(),
+        colOffset: dataRangeObj.getColumn(),
+    });
+    // Determine sheet and values for data range
+
     if (inputs.length === 0) {
         ui.alert('No text found in selected data range for theme allocation.');
         return;
     }
-    // Sample inputs if needed
-    const total = inputs.length;
-    let usedInputs = inputs;
-    let pct = 100;
-    if (inputs.length > 1000) {
-        usedInputs = inputs.slice();
-        for (let i = usedInputs.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [usedInputs[i], usedInputs[j]] = [usedInputs[j], usedInputs[i]];
-        }
-        usedInputs = usedInputs.slice(0, 1000);
-        pct = Math.round((usedInputs.length / total) * 100);
-        ui.alert(
-            'Sampling input: using ' +
-                usedInputs.length +
-                ' of ' +
-                total +
-                ' strings (' +
-                pct +
-                '%) for theme generation.',
-        );
-    }
-    // Call themes API
-    const url = `${API_BASE}/themes`;
-    const options = {
-        method: 'post' as const,
-        contentType: 'application/json',
-        headers: {
-            Authorization: 'Bearer ' + getOAuthService().getAccessToken(),
-        },
-        payload: JSON.stringify({ inputs: usedInputs }),
-    };
-    let data;
+
+    // Read custom theme ranges
+    let labels: any[], rep1: any[], rep2: any[];
     try {
-        const response = UrlFetchApp.fetch(url, options);
-        data = JSON.parse(response.getContentText());
+        // Read custom theme ranges (supports sheet-qualified A1 notation)
+        labels = ss.getRange(ranges.labels).getValues().flat();
+        rep1 = ss.getRange(ranges.rep1).getValues().flat();
+        rep2 = ss.getRange(ranges.rep2).getValues().flat();
     } catch (e) {
-        ui.alert('Error calling themes API: ' + e.toString());
+        ui.alert('Error reading custom ranges: ' + e.toString());
         return;
     }
-    let themesData;
-    if (data.themes && Array.isArray(data.themes)) {
-        themesData = data.themes;
-    } else if (data.jobId) {
-        const jobId = data.jobId;
-        ss.toast(
-            'Theme generation job submitted, polling for completion...',
-            'Pulse',
-        );
-        let resultUrl;
-        let attempt = 0;
-        while (true) {
-            Utilities.sleep(2000);
-            if (attempt % 5 === 0) {
-                ss.toast(
-                    'Waiting for theme generation job to complete...',
-                    'Pulse',
-                );
-            }
-            attempt++;
-            let jobData;
-            try {
-                const jobResp = UrlFetchApp.fetch(
-                    `${API_BASE}/jobs?jobId=${encodeURIComponent(jobId)}`,
-                    {
-                        method: 'get',
-                        headers: {
-                            Authorization:
-                                'Bearer ' + getOAuthService().getAccessToken(),
-                        },
-                    },
-                );
-                jobData = JSON.parse(jobResp.getContentText());
-            } catch (e) {
-                ui.alert(
-                    'Error checking theme generation job status: ' +
-                        e.toString(),
-                );
-                return;
-            }
-            if (jobData.status === 'pending') {
-                continue;
-            } else if (jobData.status === 'completed') {
-                resultUrl = jobData.resultUrl;
-                break;
-            } else {
-                ui.alert(
-                    'Theme generation job failed: ' +
-                        (jobData.status || 'unknown'),
-                );
-                return;
-            }
-        }
-        let resultData;
-        try {
-            const resultResp = UrlFetchApp.fetch(resultUrl, {
-                method: 'get',
-                headers: {
-                    Authorization:
-                        'Bearer ' + getOAuthService().getAccessToken(),
-                },
+
+    if (labels.length !== rep1.length || labels.length !== rep2.length) {
+        ui.alert('Selected ranges must have the same number of cells');
+        return;
+    }
+    const themes = [];
+    for (let i = 0; i < labels.length; i++) {
+        const label = labels[i];
+        const ex1 = rep1[i];
+        const ex2 = rep2[i];
+        if (
+            label != null &&
+            label !== '' &&
+            ex1 != null &&
+            ex1 !== '' &&
+            ex2 != null &&
+            ex2 !== ''
+        ) {
+            themes.push({
+                label: label.toString(),
+                representatives: [ex1.toString(), ex2.toString()],
             });
-            resultData = JSON.parse(resultResp.getContentText());
-        } catch (e) {
-            ui.alert(
-                'Error fetching theme generation results: ' + e.toString(),
-            );
-            return;
         }
-        if (!resultData.themes || !Array.isArray(resultData.themes)) {
-            ui.alert(
-                'Invalid theme generation results returned: ' +
-                    JSON.stringify(resultData),
-            );
-            return;
-        }
-        themesData = resultData.themes;
-    } else {
-        ui.alert(
-            'Unexpected response from themes API: ' + JSON.stringify(data),
-        );
+    }
+    if (themes.length === 0) {
+        ui.alert('No themes provided for allocation.');
         return;
     }
-    // Build minimal themes for saving and allocation
-    const themes = themesData.map(function (t) {
-        return {
-            label: t.label,
-            representatives: [
-                (t.representatives && t.representatives[0]) || '',
-                (t.representatives && t.representatives[1]) || '',
-            ],
-        };
-    });
-    // Save the new theme set
-    saveThemeSet(name, themes);
-    // Allocate themes to data
-    allocateThemesProcess(inputs, positions, themes, dataSheet);
+    // Perform allocation on the original data sheet
+    writeAllocationsToSheet(
+        await allocateThemes(inputs, themes, {
+            fast: false,
+            onProgress: (message: string) => {
+                ss.toast(message, 'Pulse');
+            }
+        }),
+        dataSheet,
+        positions,
+    );
 }

@@ -8,6 +8,7 @@
     />
   </head>
   <body class="container">
+    <input id="mode" type="hidden" value="<?= mode ?>" />
     <div class="input-field">
       <input
         id="dataRange"
@@ -39,15 +40,14 @@
       }
       function submitRange() {
         const dataRange = document.getElementById('dataRange').value;
+        const mode = document.getElementById('mode').value;
         google.script.run
-          .withSuccessHandler(function () {
-            M.toast({ html: 'Input range selected' });
-            google.script.host.close();
-          })
           .withFailureHandler(function (err) {
             M.toast({ html: 'Error: ' + err.message });
           })
-          .allocateThemesWithRange(dataRange);
+          .submitSelectedInputRangeForGeneration(dataRange, mode);
+
+        google.script.host.close();
       }
     </script>
   </body>

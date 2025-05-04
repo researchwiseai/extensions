@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "clean": "rm -rf dist/*",
-    "bundle": "bun build ./src/Code.ts --target=node --outfile=./dist/Code.js",
+    "bundle": "bun build ./src/Code.ts --target=browser --outfile=./dist/Code.js",
     "build": "bun run clean && bun run bundle && ./scripts/remove_export.ts ./dist/Code.js && cp src/appsscript.json dist/ && cp src/*.html dist/",
     "push": "bun run build && clasp push",
     "deploy:dev": "clasp deploy --description 'dev build' --deploymentId $(clasp deployments | tail -n1 | awk '{print $2}')",

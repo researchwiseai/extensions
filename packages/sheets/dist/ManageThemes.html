@@ -165,6 +165,7 @@
         }).renameThemeSet(oldName, newName);
       }
       document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOMContentLoaded', themeSetsData);
         M.AutoInit();
         addRow();
       });

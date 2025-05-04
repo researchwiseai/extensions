@@ -11,6 +11,7 @@
     <div id="form">
       <!-- carry along the original data range for allocation -->
       <input id="dataRange" type="hidden" value="<?= dataRange ?>" />
+      <input id="name" type="hidden" value="<?= name ?>" />
       <p>
         Select a range in the sheet, then click “Select Range” for each field.
       </p>
@@ -100,7 +101,7 @@
             document.getElementById('form').style.display = 'block';
             M.toast({ html: 'Error: ' + err.message });
           })
-          .processCustomThemes(ranges);
+          .allocateAndSaveThemeSet(ranges);
       }
     </script>
   </body>
