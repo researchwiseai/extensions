@@ -9,7 +9,10 @@
 Office.onReady(() => {
   document.getElementById("sideload-msg").style.display = "none";
   document.getElementById("app-body").style.display = "flex";
-  document.getElementById("run").onclick = run;
+  const connectButton = document.getElementById("connect");
+  if (connectButton) {
+    connectButton.onclick = connect;
+  }
 });
 
 export async function run() {
@@ -32,4 +35,13 @@ export async function run() {
   } catch (error) {
     console.error(error);
   }
+}
+/**
+ * Handles user connection via email input.
+ */
+export async function connect() {
+  const emailInput = document.getElementById("email-input") as HTMLInputElement;
+  const email = emailInput ? emailInput.value : "";
+  console.log(`Connect with email: ${email}`);
+  // TODO: implement connection/sign-in logic here
 }

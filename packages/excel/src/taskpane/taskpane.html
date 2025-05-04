@@ -32,27 +32,30 @@
         <h2 class="ms-font-xl">AI-Powered Text Analysis for Excel</h2>
         <ul class="ms-List ms-welcome__features">
             <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Emoji2 ms-font-xl"></i>
+                <i class="ms-Icon ms-Icon--Emoji2 ms-font-xl" aria-hidden="true"></i>
                 <span class="ms-font-m">Analyze Sentiment</span>
             </li>
             <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--BulletedList ms-font-xl"></i>
+                <i class="ms-Icon ms-Icon--BulletedListText ms-font-xl" aria-hidden="true"></i>
                 <span class="ms-font-m">Generate Themes</span>
             </li>
             <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Tag ms-font-xl"></i>
+                <i class="ms-Icon ms-Icon--Tag ms-font-xl" aria-hidden="true"></i>
                 <span class="ms-font-m">Allocate Themes</span>
             </li>
             <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Settings ms-font-xl"></i>
+                <i class="ms-Icon ms-Icon--Settings ms-font-xl" aria-hidden="true"></i>
                 <span class="ms-font-m">Manage Theme Sets &amp; Settings</span>
             </li>
         </ul>
-        <p class="ms-font-l">Select a range of cells containing text, then click <b>Analyze Sentiment</b>.</p>
-        <div role="button" id="run" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
-            <span class="ms-Button-label">Analyze Sentiment</span>
+        <p class="ms-font-l">Please enter your email to connect:</p>
+        <div class="ms-TextField" style="width:100%; margin-bottom:12px;">
+            <label class="ms-Label" for="email-input">Email address</label>
+            <input type="email" id="email-input" placeholder="you@contoso.com" class="ms-TextField-field" />
         </div>
-        <p><label id="item-subject"></label></p>
+        <div role="button" id="connect" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
+            <span class="ms-Button-label">Connect</span>
+        </div>
     </main>
 </body>
 
