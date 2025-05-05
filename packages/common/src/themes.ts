@@ -1,5 +1,5 @@
-import { compareSimilarity, Theme } from './apiClient.js';
-import { topN } from './similarity.js';
+import { compareSimilarity, Theme } from './apiClient';
+import { topN } from './similarity';
 
 /**
  * Interface for persistent storage of key/value data.

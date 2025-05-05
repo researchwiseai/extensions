@@ -128,8 +128,8 @@
       <bt:ShortStrings>
         <bt:String id="Functions.Namespace" DefaultValue="Pulse"/>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with Pulse"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Pulse"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Open Pulse Pane"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="RWAI"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Pulse"/>
         <!-- Pulse tab and controls labels -->
         <bt:String id="PulseTab.Label" DefaultValue="Pulse"/>
         <bt:String id="PulseGroup.Label" DefaultValue="Pulse"/>

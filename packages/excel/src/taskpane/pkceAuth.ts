@@ -35,7 +35,7 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
     this.scope = opts.scope;
     this.organization = opts.organization;
 
-    const orgIdParts = opts.organization.split('/');
+    const orgIdParts = opts.organization.split("/");
     this.organization = orgIdParts[orgIdParts.length - 1];
   }
 
@@ -56,7 +56,7 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
       this.scope,
       codeChallenge,
       state,
-      this.organization,
+      this.organization
     );
 
     console.log("Opening auth dialog", url);

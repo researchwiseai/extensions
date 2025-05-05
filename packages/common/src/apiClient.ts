@@ -139,7 +139,7 @@ export function configureClient(opts: ConfigureOptions): void {
 
 /** Result of a sentiment analysis call */
 export interface SentimentResult {
-    sentiment: number;
+    sentiment: string;
     [key: string]: any;
 }
 

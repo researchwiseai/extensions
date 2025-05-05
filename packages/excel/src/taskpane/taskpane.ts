@@ -9,6 +9,7 @@ import { signIn, getAccessToken, signOut } from "pulse-common/auth";
 import { findOrganization } from "pulse-common/org";
 import { configureClient } from "pulse-common/api";
 import { analyzeSentiment } from "../analyzeSentiment";
+import { allocateThemesAutomatic } from "../allocateThemesAutomatic";
 
 /**
  * Prompts the user to confirm or change the range via a dialog.
@@ -111,11 +112,11 @@ const jobs: Job[] = [];
 /** Add a new job entry to the running jobs list */
 function addJob(name: string): string {
   const id = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-  const li = document.createElement('li');
+  const li = document.createElement("li");
   li.id = id;
-  li.className = 'ms-ListItem';
+  li.className = "ms-ListItem";
   li.textContent = `${name}: Running...`;
-  const list = document.getElementById('jobs-list');
+  const list = document.getElementById("jobs-list");
   if (list) {
     list.appendChild(li);
   }
@@ -125,7 +126,7 @@ function addJob(name: string): string {
 
 /** Remove a job entry from the running jobs list */
 function removeJob(id: string): void {
-  const index = jobs.findIndex(j => j.id === id);
+  const index = jobs.findIndex((j) => j.id === id);
   if (index >= 0) {
     const [job] = jobs.splice(index, 1);
     job.element.remove();
@@ -134,54 +135,58 @@ function removeJob(id: string): void {
 
 /** Initialize the authenticated UI: show menu, bind handlers, and hide login */
 function initializeAuthenticatedUI(email: string): void {
-  const loginEl = document.getElementById('app-body');
-  const authEl = document.getElementById('authenticated-app');
+  const loginEl = document.getElementById("app-body");
+  const authEl = document.getElementById("authenticated-app");
   if (loginEl && authEl) {
-    loginEl.style.display = 'none';
-    authEl.style.display = 'flex';
+    loginEl.style.display = "none";
+    authEl.style.display = "flex";
   }
-  const emailDisplay = document.getElementById('user-email-display');
+  const emailDisplay = document.getElementById("user-email-display");
   if (emailDisplay) {
     emailDisplay.textContent = email;
   }
   // Logout handler
-  const logoutBtn = document.getElementById('logout');
+  const logoutBtn = document.getElementById("logout");
   if (logoutBtn) {
     // Show logout in header
-    (logoutBtn as HTMLElement).style.display = 'inline-block';
+    (logoutBtn as HTMLElement).style.display = "inline-block";
     logoutBtn.onclick = async () => {
       // Hide logout button
-      (logoutBtn as HTMLElement).style.display = 'none';
+      (logoutBtn as HTMLElement).style.display = "none";
       await signOut();
       // Clear stored email
-      sessionStorage.removeItem('user-email');
+      sessionStorage.removeItem("user-email");
+      sessionStorage.removeItem("pkce_token");
+      sessionStorage.removeItem("org-id");
       // Reset UI
       if (authEl && loginEl) {
-        authEl.style.display = 'none';
-        loginEl.style.display = 'flex';
+        authEl.style.display = "none";
+        loginEl.style.display = "flex";
       }
       // Clear jobs
-      jobs.slice().forEach(j => removeJob(j.id));
+      jobs.slice().forEach((j) => removeJob(j.id));
       // Clear email input
-      const emailInput = document.getElementById('email-input') as HTMLInputElement;
-      if (emailInput) { emailInput.value = ''; }
+      const emailInput = document.getElementById("email-input") as HTMLInputElement;
+      if (emailInput) {
+        emailInput.value = "";
+      }
     };
   }
   // Analyze Sentiment: confirm range via dialog, then run analysis
-  const analyzeBtn = document.getElementById('menu-analyze-sentiment');
-  if (analyzeBtn) {
-    analyzeBtn.onclick = () => {
-      const jobId = addJob('Analyze Sentiment');
+  const analyzeSentimentBtn = document.getElementById("menu-analyze-sentiment");
+  if (analyzeSentimentBtn) {
+    analyzeSentimentBtn.onclick = () => {
+      const jobId = addJob("Analyze Sentiment");
       Excel.run(async (context) => {
         const sel = context.workbook.getSelectedRange();
-        sel.load('address');
+        sel.load("address");
         await context.sync();
         const defaultAddr: string = sel.address;
         let confirmed: string | null;
         try {
           confirmed = await promptRange(defaultAddr);
         } catch (e) {
-          console.error('Dialog error', e);
+          console.error("Dialog error", e);
           removeJob(jobId);
           return;
         }
@@ -189,8 +194,40 @@ function initializeAuthenticatedUI(email: string): void {
           removeJob(jobId);
           return;
         }
-      
+
         await analyzeSentiment(context, confirmed);
+        removeJob(jobId);
+      }).catch((err) => {
+        console.error(err);
+        removeJob(jobId);
+      });
+    };
+  }
+
+  // Allocate Themes: confirm range via dialog, then run analysis
+  const allocateThemesBtn = document.getElementById("menu-allocate-themes");
+  if (allocateThemesBtn) {
+    allocateThemesBtn.onclick = () => {
+      const jobId = addJob("Allocating Themes");
+      Excel.run(async (context) => {
+        const sel = context.workbook.getSelectedRange();
+        sel.load("address");
+        await context.sync();
+        const defaultAddr: string = sel.address;
+        let confirmed: string | null;
+        try {
+          confirmed = await promptRange(defaultAddr);
+        } catch (e) {
+          console.error("Dialog error", e);
+          removeJob(jobId);
+          return;
+        }
+        if (!confirmed) {
+          removeJob(jobId);
+          return;
+        }
+
+        await allocateThemesAutomatic(context, confirmed);
         removeJob(jobId);
       }).catch((err) => {
         console.error(err);
@@ -203,9 +240,23 @@ function initializeAuthenticatedUI(email: string): void {
  * Handles user sign-in and API client configuration using PKCE.
  */
 export async function connect() {
+  // Update Connect button to indicate ongoing connection
+  const connectBtn = document.getElementById("connect") as HTMLButtonElement | null;
+  let connectBtnLabel: HTMLElement | null = null;
+  let originalBtnText: string | null = null;
+  if (connectBtn) {
+    connectBtnLabel = connectBtn.querySelector(".ms-Button-label");
+    originalBtnText = connectBtnLabel?.textContent || connectBtn.textContent;
+    connectBtn.disabled = true;
+    if (connectBtnLabel) {
+      connectBtnLabel.textContent = "Connecting...";
+    } else {
+      connectBtn.textContent = "Connecting...";
+    }
+  }
   try {
     // TODO: replace with your actual Auth0 / OIDC settings
-    const domain = "wise-dev.eu.auth0.com";       // e.g. 'your-tenant.auth0.com'
+    const domain = "wise-dev.eu.auth0.com"; // e.g. 'your-tenant.auth0.com'
     const clientId = "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W";
     // Redirect URI must match your Auth0 app and maps to auth-callback.html
     const redirectUri = `${window.location.origin}/auth-callback.html`;
@@ -222,6 +273,15 @@ export async function connect() {
     if (!orgResult.success) {
       if (orgResult.notFound) {
         window.alert(`No organization found for ${email}.`);
+        // Restore Connect button state on early exit
+        if (connectBtn) {
+          connectBtn.disabled = false;
+          if (connectBtnLabel && originalBtnText !== null) {
+            connectBtnLabel.textContent = originalBtnText;
+          } else if (originalBtnText !== null) {
+            connectBtn.textContent = originalBtnText;
+          }
+        }
         return;
       }
       throw new Error(`Error finding organization`);
@@ -243,5 +303,14 @@ export async function connect() {
     initializeAuthenticatedUI(email);
   } catch (err) {
     console.error("Authentication failed", err);
+    // Restore Connect button state on failure
+    if (connectBtn) {
+      connectBtn.disabled = false;
+      if (connectBtnLabel && originalBtnText !== null) {
+        connectBtnLabel.textContent = originalBtnText;
+      } else if (originalBtnText !== null) {
+        connectBtn.textContent = originalBtnText;
+      }
+    }
   }
 }

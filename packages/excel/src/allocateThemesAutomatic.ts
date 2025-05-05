@@ -1,7 +1,8 @@
+import { generateThemes } from "pulse-common/api";
 import { extractInputs } from "pulse-common/input";
-import { analyzeSentiment as analyzeSentimentApi } from "pulse-common/api";
+import { allocateThemes as allocateThemesApi } from "pulse-common/themes";
 
-export async function analyzeSentiment(context: Excel.RequestContext, range: string) {
+export async function allocateThemesAutomatic(context: Excel.RequestContext, range: string) {
   const parts = range.split("!");
   const sheetName = parts[0];
   const rangeNotation = parts.slice(1).join("!");
@@ -18,20 +19,28 @@ export async function analyzeSentiment(context: Excel.RequestContext, range: str
   });
 
   if (inputs.length === 0) {
-    console.warn("No text found in selected data range for sentiment analysis.");
+    console.warn("No text found in selected data range for theme generation.");
     return;
   }
 
-  const result = await analyzeSentimentApi(inputs, {
+  const result = await generateThemes(inputs, {
     fast: false,
     onProgress: (message) => {
       console.log(message);
     },
   });
-  positions.forEach((pos, i) => {
-    const sentiment = result.results[i].sentiment;
-    const cell = sheet.getCell(pos.row - 1, pos.col);
-    cell.values = [[sentiment]];
+
+  const allocations = await allocateThemesApi(inputs, result.themes, {
+    fast: false,
+    onProgress: (message) => {
+      console.log(message);
+    },
   });
+
+  positions.forEach((pos, i) => {
+    const cell = sheet.getCell(pos.row - 1, pos.col);
+    cell.values = [[allocations[i].theme.label]];
+  });
+
   await context.sync();
 }

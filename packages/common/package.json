@@ -13,7 +13,8 @@
     "./auth": "./src/auth.ts",
     "./api": "./src/apiClient.ts",
     "./input": "./src/input.ts",
-    "./org": "./src/org.ts"
+    "./org": "./src/org.ts",
+    "./themes": "./src/themes.ts"
   },
   "scripts": {
     "build": "tsc -b",
