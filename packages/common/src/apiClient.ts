@@ -19,7 +19,7 @@ type FetchFunction = (url: string, options?: FetchOptions) => Promise<{
   json: () => Promise<any>;
   text: () => Promise<string>;
 }>;
-let fetchFn: FetchFunction = fetchOriginal;
+export let fetchFn: FetchFunction = fetchOriginal;
 let sleepFn = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 /**
  * Override the fetch implementation used by the API client.

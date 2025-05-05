@@ -4,6 +4,7 @@
     "baseUrl": ".",
     "esModuleInterop": true,
     "experimentalDecorators": true,
+    "moduleResolution": "nodenext",
     "jsx": "react",
     "noEmitOnError": true,
     "outDir": "lib",

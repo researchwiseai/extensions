@@ -31,6 +31,9 @@ module.exports = async (env, options) => {
     },
     resolve: {
       extensions: [".ts", ".html", ".js"],
+      fallback: {
+        "crypto": false,
+      }
     },
     module: {
       rules: [
@@ -86,6 +89,11 @@ module.exports = async (env, options) => {
                 return content.toString().replace(new RegExp(urlDev + "(?:public/)?", "g"), urlProd);
               }
             },
+          },
+          // Include OAuth2 PKCE redirect callback
+          {
+            from: "src/taskpane/auth-callback.html",
+            to: "auth-callback.html",
           },
         ],
       }),

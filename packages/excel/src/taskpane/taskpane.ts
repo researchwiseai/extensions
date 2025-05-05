@@ -4,6 +4,9 @@
  */
 
 /* global console, document, Excel, Office */
+import { setupExcelPKCEAuth } from "./pkceAuth";
+import { signIn, getAccessToken } from "pulse-common/auth";
+import { configureClient } from "pulse-common/api";
 
 // The initialize function must be run each time a new page is loaded
 Office.onReady(() => {
@@ -37,11 +40,29 @@ export async function run() {
   }
 }
 /**
- * Handles user connection via email input.
+ * Handles user sign-in and API client configuration using PKCE.
  */
 export async function connect() {
-  const emailInput = document.getElementById("email-input") as HTMLInputElement;
-  const email = emailInput ? emailInput.value : "";
-  console.log(`Connect with email: ${email}`);
-  // TODO: implement connection/sign-in logic here
+  try {
+    // TODO: replace with your actual Auth0 / OIDC settings
+    const domain = "wise-dev.eu.auth0.com";       // e.g. 'your-tenant.auth0.com'
+    const clientId = "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W";
+    // Redirect URI must match your Auth0 app and maps to auth-callback.html
+    const redirectUri = `${window.location.origin}/auth-callback.html`;
+    const scope = "openid profile email offline_access";
+    const apiBase = "https://dev.core.researchwiseai.com/pulse/v1";
+    const email = (document.getElementById("email-input") as HTMLInputElement).value;
+
+    // Configure the PKCE AuthProvider
+    setupExcelPKCEAuth({ domain, clientId, email, redirectUri, scope });
+    // Perform interactive sign-in
+    await signIn();
+
+    // Initialize the Pulse API client
+    configureClient({ baseUrl: apiBase, getAccessToken });
+
+    console.log("✅ Connected and authenticated");
+  } catch (err) {
+    console.error("Authentication failed", err);
+  }
 }

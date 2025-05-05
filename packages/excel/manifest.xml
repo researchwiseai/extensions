@@ -11,6 +11,7 @@
   <SupportUrl DefaultValue="https://researchwiseai.com/docs"/>
   <AppDomains>
     <AppDomain>https://researchwiseai.com</AppDomain>
+    <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
