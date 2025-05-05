@@ -7,9 +7,9 @@
   ],
   "scripts": {
     "bootstrap": "bun install",
-    "build": "bun workspace run build",
-    "test": "bun workspace run test",
-    "lint": "bun workspace run lint"
+    "build": "bun run --filter '*' build",
+    "test": "bun run --filter '*' test",
+    "lint": "bun run --filter '*' lint"
   },
   "devDependencies": {
     "generator-office": "^3.0.1",
