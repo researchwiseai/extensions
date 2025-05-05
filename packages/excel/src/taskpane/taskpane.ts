@@ -59,14 +59,14 @@ Office.onReady(() => {
   if (storedToken && storedEmail && loginEl && authEl && organization) {
     // Already authenticated: configure and show authenticated view
     setupExcelPKCEAuth({
-      domain: "wise-dev.eu.auth0.com",
-      clientId: "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W",
+      domain: "research-wise-ai-eu.eu.auth0.com",
+      clientId: "kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O",
       email: storedEmail,
       redirectUri,
       organization,
       scope: "openid profile email offline_access",
     });
-    configureClient({ baseUrl: "https://dev.core.researchwiseai.com", getAccessToken });
+    configureClient({ baseUrl: "https://core.researchwiseai.com", getAccessToken });
     initializeAuthenticatedUI(storedEmail);
   } else if (loginEl && authEl) {
     // Not authenticated: show login and bind connect
@@ -255,19 +255,20 @@ export async function connect() {
     }
   }
   try {
-    // TODO: replace with your actual Auth0 / OIDC settings
-    const domain = "wise-dev.eu.auth0.com"; // e.g. 'your-tenant.auth0.com'
-    const clientId = "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W";
+    const domain = "research-wise-ai-eu.eu.auth0.com";
+    const clientId = "kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O";
+
     // Redirect URI must match your Auth0 app and maps to auth-callback.html
     const redirectUri = `${window.location.origin}/auth-callback.html`;
     const scope = "openid profile email offline_access";
-    const apiBase = "https://dev.core.researchwiseai.com";
+    const apiBase = "https://core.researchwiseai.com";
+
     const email = (document.getElementById("email-input") as HTMLInputElement).value;
     // Persist user email for session
     sessionStorage.setItem("user-email", email);
 
     // Lookup the user's organization ID before authentication using shared common code
-    const webBase = "https://dev.researchwiseai.com";
+    const webBase = "https://researchwiseai.com";
     const orgLookupUrl = `${webBase}/users`;
     const orgResult = await findOrganization(orgLookupUrl, email);
     if (!orgResult.success) {

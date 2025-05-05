@@ -11,6 +11,7 @@
   <SupportUrl DefaultValue="https://researchwiseai.com/docs"/>
   <AppDomains>
     <AppDomain>https://researchwiseai.com</AppDomain>
+    <AppDomain>https://research-wise-ai-eu.eu.auth0.com</AppDomain>
     <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
     <!-- Dialog host for range confirmation -->
     <AppDomain>https://localhost:3000</AppDomain>
