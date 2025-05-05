@@ -17,6 +17,8 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
   private redirectUri: string;
   private email: string;
   private scope: string;
+  // Auth0 organization ID for tenant
+  private organization: string;
 
   constructor(opts: {
     domain: string;
@@ -24,12 +26,17 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
     redirectUri: string;
     email: string;
     scope: string;
+    organization: string;
   }) {
     this.domain = opts.domain;
     this.clientId = opts.clientId;
     this.redirectUri = opts.redirectUri;
     this.email = opts.email;
     this.scope = opts.scope;
+    this.organization = opts.organization;
+
+    const orgIdParts = opts.organization.split('/');
+    this.organization = orgIdParts[orgIdParts.length - 1];
   }
 
   /** Open the OAuth2 authorize dialog with PKCE. */
@@ -48,8 +55,11 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
       this.email,
       this.scope,
       codeChallenge,
-      state
+      state,
+      this.organization,
     );
+
+    console.log("Opening auth dialog", url);
 
     // Launch Office dialog
     return new Promise<void>((resolve, reject) => {
@@ -63,11 +73,12 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
           const dialog = result.value;
           dialog.addEventHandler(Office.EventType.DialogMessageReceived, async (args) => {
             try {
-              const msg = JSON.parse(args.message);
+              const msg = JSON.parse((args as { message: string }).message);
               const code = msg.code as string;
               const returnedState = msg.state as string;
               const expected = sessionStorage.getItem("pkce_state");
               if (returnedState !== expected || !code) {
+                console.error("Invalid state or code", returnedState, expected, code);
                 throw new Error("Invalid OAuth2 response");
               }
               const verifier = sessionStorage.getItem("pkce_code_verifier")!;
@@ -147,6 +158,7 @@ export function setupExcelPKCEAuth(opts: {
   redirectUri: string;
   email: string;
   scope: string;
+  organization: string;
 }) {
   const provider = new ExcelPKCEAuthProvider(opts);
   configureAuth(provider);

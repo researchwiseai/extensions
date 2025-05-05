@@ -1,5 +1,6 @@
 import { ORG_LOOKUP_URL } from "./config";
 import { getOAuthService } from "./getOAuthService";
+import { findOrganization as commonFindOrganization, OrgLookupResult } from "pulse-common/org";
 
 /**
  * Handles the OAuth2 callback.
@@ -52,32 +53,16 @@ export function disconnect(): { success: boolean; } {
 }
 /**
  * Finds the organization ID by email and persists it.
- * @param {string} email
- * @return {{success: boolean, orgId?: string, notFound?: boolean}}
+ * Delegates to shared implementation.
+ * @param email The user's email address.
+ * @returns OrgLookupResult indicating success, orgId, or notFound.
  */
-export function findOrganization(email: string): { success: boolean; orgId?: string; notFound?: boolean; } {
-    const props = PropertiesService.getUserProperties();
-    // Unauthenticated lookup: POST email to /users endpoint
-    const url = ORG_LOOKUP_URL;
-    const options = {
-        method: 'post' as const,
-        contentType: 'application/json',
-        payload: JSON.stringify({ email: email }),
-    };
-    try {
-        const response = UrlFetchApp.fetch(url, options);
-        const data = JSON.parse(response.getContentText());
-        if (data.organizationId) {
-            props.setProperty('USER_EMAIL', email);
-            props.setProperty('ORG_ID', data.organizationId);
-            return { success: true, orgId: data.organizationId };
-        } else {
-            return { success: false };
-        }
-    } catch (e) {
-        if (e.toString().indexOf('returned code 404') !== -1) {
-            return { success: false, notFound: true };
-        }
-        throw new Error('Error finding organization: ' + e);
-    }
+export async function findOrganization(email: string): Promise<OrgLookupResult> {
+  const props = PropertiesService.getUserProperties();
+  const result = await commonFindOrganization(ORG_LOOKUP_URL, email);
+  if (result.success && result.orgId) {
+    props.setProperty('USER_EMAIL', email);
+    props.setProperty('ORG_ID', result.orgId);
+  }
+  return result;
 }

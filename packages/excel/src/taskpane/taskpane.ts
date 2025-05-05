@@ -6,6 +6,7 @@
 /* global console, document, Excel, Office */
 import { setupExcelPKCEAuth } from "./pkceAuth";
 import { signIn, getAccessToken, signOut } from "pulse-common/auth";
+import { findOrganization } from "pulse-common/org";
 import { configureClient } from "pulse-common/api";
 import { analyzeSentiment } from "../analyzeSentiment";
 
@@ -52,14 +53,16 @@ Office.onReady(() => {
   // Determine login state from sessionStorage
   const storedToken = sessionStorage.getItem("pkce_token");
   const storedEmail = sessionStorage.getItem("user-email");
+  const organization = sessionStorage.getItem("org-id");
   const redirectUri = `${window.location.origin}/auth-callback.html`;
-  if (storedToken && storedEmail && loginEl && authEl) {
+  if (storedToken && storedEmail && loginEl && authEl && organization) {
     // Already authenticated: configure and show authenticated view
     setupExcelPKCEAuth({
       domain: "wise-dev.eu.auth0.com",
       clientId: "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W",
       email: storedEmail,
       redirectUri,
+      organization,
       scope: "openid profile email offline_access",
     });
     configureClient({ baseUrl: "https://dev.core.researchwiseai.com", getAccessToken });
@@ -212,8 +215,23 @@ export async function connect() {
     // Persist user email for session
     sessionStorage.setItem("user-email", email);
 
-    // Configure the PKCE AuthProvider
-    setupExcelPKCEAuth({ domain, clientId, email, redirectUri, scope });
+    // Lookup the user's organization ID before authentication using shared common code
+    const webBase = "https://dev.researchwiseai.com";
+    const orgLookupUrl = `${webBase}/users`;
+    const orgResult = await findOrganization(orgLookupUrl, email);
+    if (!orgResult.success) {
+      if (orgResult.notFound) {
+        window.alert(`No organization found for ${email}.`);
+        return;
+      }
+      throw new Error(`Error finding organization`);
+    }
+    const organization = orgResult.orgId!;
+
+    // Configure the PKCE AuthProvider with the user's organization
+    setupExcelPKCEAuth({ domain, clientId, email, redirectUri, scope, organization });
+    // Save the organization ID in sessionStorage
+    sessionStorage.setItem("org-id", organization);
     // Perform interactive sign-in
     await signIn();
 

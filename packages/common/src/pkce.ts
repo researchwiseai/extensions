@@ -44,6 +44,18 @@ export async function generatePKCECodes(): Promise<{ codeVerifier: string; codeC
 }
 
 /** Build the OAuth2 authorization URL with PKCE parameters. */
+/**
+ * Build the OAuth2 authorization URL with PKCE parameters.
+ * @param domain Auth0 domain
+ * @param clientId Client ID
+ * @param redirectUri Redirect URI
+ * @param email Login hint email
+ * @param scope Scopes to request
+ * @param codeChallenge PKCE code challenge
+ * @param state State parameter
+ * @param organization Auth0 organization ID
+ * @returns Authorization URL
+ */
 export function buildAuthorizeUrl(
   domain: string,
   clientId: string,
@@ -52,6 +64,7 @@ export function buildAuthorizeUrl(
   scope: string,
   codeChallenge: string,
   state: string,
+  organization: string,
 ): string {
   const url = new URL(`https://${domain}/authorize`);
   url.searchParams.set('response_type', 'code');
@@ -63,7 +76,8 @@ export function buildAuthorizeUrl(
   url.searchParams.set('code_challenge_method', 'S256');
   url.searchParams.set('state', state);
   url.searchParams.set('login_hint', email);
-  url.searchParams.set('organization', 'org_VpBsMIGiuBPZZWLF');
+  // Include organization for Auth0
+  url.searchParams.set('organization', organization);
   return url.toString();
 }
 
