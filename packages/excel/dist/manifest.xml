@@ -11,6 +11,9 @@
   <SupportUrl DefaultValue="https://researchwiseai.com/docs"/>
   <AppDomains>
     <AppDomain>https://researchwiseai.com</AppDomain>
+    <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
+    <!-- Dialog host for range confirmation -->
+    <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
@@ -119,6 +122,8 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://researchwiseai.com/docs"/>
         <bt:Url id="Commands.Url" DefaultValue="https://www.contoso.com/commands.html"/>
         <bt:Url id="Taskpane.Url" DefaultValue="https://www.contoso.com/taskpane.html"/>
+        <!-- URL for the range selection dialog -->
+        <bt:Url id="SelectRangeDialog.Url" DefaultValue="https://www.contoso.com/SelectRangeDialog.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="Functions.Namespace" DefaultValue="Pulse"/>

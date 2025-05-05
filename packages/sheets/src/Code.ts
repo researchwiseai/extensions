@@ -93,7 +93,8 @@ export function onOpen() {
     const pulseMenu = ui.createMenu('Pulse');
     // If user is authorized, expose analysis and themes
     if (getOAuthService().hasAccess()) {
-        pulseMenu.addItem('Analyze Sentiment', 'analyzeSentimentFlow');
+        // Prompt for range before running sentiment analysis
+        pulseMenu.addItem('Analyze Sentiment', 'clickAnalyzeSentiment');
         const themesMenu = ui
             .createMenu('Themes')
             .addItem('Generate', 'clickGenerateThemes')
@@ -118,6 +119,14 @@ export function clickGenerateThemes() {
  */
 export function clickAllocateThemes() {
     showInputRangeDialog("allocation");
+}
+/**
+ * Prompts the user to select the input range for sentiment analysis.
+ *
+ * Called by UI
+ */
+export function clickAnalyzeSentiment() {
+    showInputRangeDialog('sentiment');
 }
 
 /**

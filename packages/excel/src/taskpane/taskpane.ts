@@ -5,16 +5,73 @@
 
 /* global console, document, Excel, Office */
 import { setupExcelPKCEAuth } from "./pkceAuth";
-import { signIn, getAccessToken } from "pulse-common/auth";
+import { signIn, getAccessToken, signOut } from "pulse-common/auth";
 import { configureClient } from "pulse-common/api";
+import { analyzeSentiment } from "../analyzeSentiment";
+
+/**
+ * Prompts the user to confirm or change the range via a dialog.
+ * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
+ * @returns The confirmed range string, or null if cancelled.
+ */
+function promptRange(defaultRange: string): Promise<string | null> {
+  return new Promise((resolve, reject) => {
+    const url = `${window.location.origin}/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`;
+    Office.context.ui.displayDialogAsync(
+      url,
+      { height: 30, width: 20, displayInIframe: true },
+      (result) => {
+        if (result.status === Office.AsyncResultStatus.Failed) {
+          reject(result.error);
+        } else {
+          const dialog = result.value;
+          dialog.addEventHandler(Office.EventType.DialogMessageReceived, (arg) => {
+            try {
+              const msg = JSON.parse(arg.message);
+              dialog.close();
+              resolve(msg.range);
+            } catch (e) {
+              dialog.close();
+              reject(e);
+            }
+          });
+        }
+      }
+    );
+  });
+}
 
 // The initialize function must be run each time a new page is loaded
 Office.onReady(() => {
-  document.getElementById("sideload-msg").style.display = "none";
-  document.getElementById("app-body").style.display = "flex";
-  const connectButton = document.getElementById("connect");
-  if (connectButton) {
-    connectButton.onclick = connect;
+  const sideloadEl = document.getElementById("sideload-msg");
+  const loginEl = document.getElementById("app-body");
+  const authEl = document.getElementById("authenticated-app");
+  if (sideloadEl) {
+    sideloadEl.style.display = "none";
+  }
+  // Determine login state from sessionStorage
+  const storedToken = sessionStorage.getItem("pkce_token");
+  const storedEmail = sessionStorage.getItem("user-email");
+  const redirectUri = `${window.location.origin}/auth-callback.html`;
+  if (storedToken && storedEmail && loginEl && authEl) {
+    // Already authenticated: configure and show authenticated view
+    setupExcelPKCEAuth({
+      domain: "wise-dev.eu.auth0.com",
+      clientId: "SC5e4aoZKvcfH1MoPTxzMaA1d5LnxV4W",
+      email: storedEmail,
+      redirectUri,
+      scope: "openid profile email offline_access",
+    });
+    configureClient({ baseUrl: "https://dev.core.researchwiseai.com", getAccessToken });
+    initializeAuthenticatedUI(storedEmail);
+  } else if (loginEl && authEl) {
+    // Not authenticated: show login and bind connect
+    loginEl.style.display = "flex";
+    authEl.style.display = "none";
+    const connectButton = document.getElementById("connect");
+    if (connectButton) {
+      connectButton.onclick = connect;
+    }
   }
 });
 
@@ -39,6 +96,106 @@ export async function run() {
     console.error(error);
   }
 }
+
+// --- Authenticated UI and Job Manager ---
+interface Job {
+  id: string;
+  name: string;
+  element: HTMLElement;
+}
+const jobs: Job[] = [];
+
+/** Add a new job entry to the running jobs list */
+function addJob(name: string): string {
+  const id = `job-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  const li = document.createElement('li');
+  li.id = id;
+  li.className = 'ms-ListItem';
+  li.textContent = `${name}: Running...`;
+  const list = document.getElementById('jobs-list');
+  if (list) {
+    list.appendChild(li);
+  }
+  jobs.push({ id, name, element: li });
+  return id;
+}
+
+/** Remove a job entry from the running jobs list */
+function removeJob(id: string): void {
+  const index = jobs.findIndex(j => j.id === id);
+  if (index >= 0) {
+    const [job] = jobs.splice(index, 1);
+    job.element.remove();
+  }
+}
+
+/** Initialize the authenticated UI: show menu, bind handlers, and hide login */
+function initializeAuthenticatedUI(email: string): void {
+  const loginEl = document.getElementById('app-body');
+  const authEl = document.getElementById('authenticated-app');
+  if (loginEl && authEl) {
+    loginEl.style.display = 'none';
+    authEl.style.display = 'flex';
+  }
+  const emailDisplay = document.getElementById('user-email-display');
+  if (emailDisplay) {
+    emailDisplay.textContent = email;
+  }
+  // Logout handler
+  const logoutBtn = document.getElementById('logout');
+  if (logoutBtn) {
+    // Show logout in header
+    (logoutBtn as HTMLElement).style.display = 'inline-block';
+    logoutBtn.onclick = async () => {
+      // Hide logout button
+      (logoutBtn as HTMLElement).style.display = 'none';
+      await signOut();
+      // Clear stored email
+      sessionStorage.removeItem('user-email');
+      // Reset UI
+      if (authEl && loginEl) {
+        authEl.style.display = 'none';
+        loginEl.style.display = 'flex';
+      }
+      // Clear jobs
+      jobs.slice().forEach(j => removeJob(j.id));
+      // Clear email input
+      const emailInput = document.getElementById('email-input') as HTMLInputElement;
+      if (emailInput) { emailInput.value = ''; }
+    };
+  }
+  // Analyze Sentiment: confirm range via dialog, then run analysis
+  const analyzeBtn = document.getElementById('menu-analyze-sentiment');
+  if (analyzeBtn) {
+    analyzeBtn.onclick = () => {
+      const jobId = addJob('Analyze Sentiment');
+      Excel.run(async (context) => {
+        const sel = context.workbook.getSelectedRange();
+        sel.load('address');
+        await context.sync();
+        const defaultAddr: string = sel.address;
+        let confirmed: string | null;
+        try {
+          confirmed = await promptRange(defaultAddr);
+        } catch (e) {
+          console.error('Dialog error', e);
+          removeJob(jobId);
+          return;
+        }
+        if (!confirmed) {
+          removeJob(jobId);
+          return;
+        }
+      
+        await analyzeSentiment(context, confirmed);
+        removeJob(jobId);
+      }).catch((err) => {
+        console.error(err);
+        removeJob(jobId);
+      });
+    };
+  }
+}
 /**
  * Handles user sign-in and API client configuration using PKCE.
  */
@@ -50,8 +207,10 @@ export async function connect() {
     // Redirect URI must match your Auth0 app and maps to auth-callback.html
     const redirectUri = `${window.location.origin}/auth-callback.html`;
     const scope = "openid profile email offline_access";
-    const apiBase = "https://dev.core.researchwiseai.com/pulse/v1";
+    const apiBase = "https://dev.core.researchwiseai.com";
     const email = (document.getElementById("email-input") as HTMLInputElement).value;
+    // Persist user email for session
+    sessionStorage.setItem("user-email", email);
 
     // Configure the PKCE AuthProvider
     setupExcelPKCEAuth({ domain, clientId, email, redirectUri, scope });
@@ -62,6 +221,8 @@ export async function connect() {
     configureClient({ baseUrl: apiBase, getAccessToken });
 
     console.log("✅ Connected and authenticated");
+    // Switch to authenticated UI
+    initializeAuthenticatedUI(email);
   } catch (err) {
     console.error("Authentication failed", err);
   }

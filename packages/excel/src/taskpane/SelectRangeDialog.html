@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <title>Select Range</title>
+</head>
+<body style="font-family: 'Segoe UI', sans-serif; margin: 20px;">
+  <div>
+    <label for="rangeInput">Range (Sheet!A1 notation):</label><br/>
+    <input id="rangeInput" type="text" style="width:100%; margin-top:8px; padding:4px;" />
+  </div>
+  <div style="margin-top: 16px; text-align: right;">
+    <button id="cancelBtn" style="margin-right:8px;">Cancel</button>
+    <button id="okBtn">OK</button>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const params = new URLSearchParams(window.location.search);
+      const range = params.get('range') || '';
+      const input = document.getElementById('rangeInput');
+      input.value = range;
+      document.getElementById('okBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(JSON.stringify({ range: input.value }));
+      });
+      document.getElementById('cancelBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(JSON.stringify({ range: null }));
+      });
+      input.focus();
+      input.select();
+    });
+  </script>
+</body>
+</html>

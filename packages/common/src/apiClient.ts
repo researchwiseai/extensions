@@ -76,10 +76,11 @@ async function postWithJob(
         contentType: 'application/json',
         headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
     });
-    if (response.ok) {
+    if (response.status === 200) {
         options.onProgress?.( options.taskName ? `${options.taskName} complete successfully` : 'Request completed successfully');
         return response.json();
     } else if (response.status === 202) {
@@ -110,7 +111,7 @@ async function postWithJob(
                         `Missing resultUrl in job status: ${JSON.stringify(status)}`,
                     );
                 }
-                const resultResp = await fetchFn(status.resultUrl, { contentType: 'application/json', method: 'get' });
+                const resultResp = await fetchFn(status.resultUrl, { contentType: 'application/json', method: 'get', headers: { 'Content-Type': 'application/json'} });
                 if (!resultResp.ok) {
                     const errText = await resultResp.text();
                     throw new Error(`${resultResp.statusText}: ${errText}`);
@@ -267,6 +268,7 @@ export async function pollJobStatus(jobId: string): Promise<JobStatus> {
         method: 'get',
         headers: {
             Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
         },
     });
     if (!response.ok) {

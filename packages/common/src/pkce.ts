@@ -57,11 +57,13 @@ export function buildAuthorizeUrl(
   url.searchParams.set('response_type', 'code');
   url.searchParams.set('client_id', clientId);
   url.searchParams.set('redirect_uri', redirectUri);
+  url.searchParams.set('audience', 'https://dev.core.researchwiseai.com/pulse/v1');
   url.searchParams.set('scope', scope);
   url.searchParams.set('code_challenge', codeChallenge);
   url.searchParams.set('code_challenge_method', 'S256');
   url.searchParams.set('state', state);
   url.searchParams.set('login_hint', email);
+  url.searchParams.set('organization', 'org_VpBsMIGiuBPZZWLF');
   return url.toString();
 }
 

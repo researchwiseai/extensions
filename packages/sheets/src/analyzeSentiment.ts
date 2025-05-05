@@ -7,14 +7,33 @@ import { analyzeSentiment, extractInputs } from 'pulse-common';
  *
  * @param {string} dataRange A1 notation of the data range to analyze.
  */
-export async function analyzeSentimentFlow() {
+/**
+ * Analyze sentiment of specified text range in the active sheet.
+ *
+ * @param dataRange A1 notation of the data range to analyze, including sheet name (e.g., 'Sheet1!A1:B10').
+ */
+export async function analyzeSentimentFlow(dataRange: string) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    // Notify user
     ss.toast('Starting sentiment analysis...', 'Pulse');
 
-    const dataRangeObj = ss.getActiveRange();
-
-    const dataSheet = dataRangeObj.getSheet();
+    // Parse the passed range (sheet!A1Notation)
+    const parts = dataRange.split('!');
+    const sheetName = parts[0];
+    const rangeNotation = parts.slice(1).join('!');
+    const dataSheet = ss.getSheetByName(sheetName);
+    if (!dataSheet) {
+        ui.alert(`Sheet "${sheetName}" not found.`);
+        return;
+    }
+    let dataRangeObj;
+    try {
+        dataRangeObj = dataSheet.getRange(rangeNotation);
+    } catch (e) {
+        ui.alert(`Invalid range notation "${rangeNotation}".`);
+        return;
+    }
     const values = dataRangeObj.getValues();
 
     const { inputs, positions } = extractInputs(values, {
@@ -24,7 +43,7 @@ export async function analyzeSentimentFlow() {
     // Determine sheet and values for data range
 
     if (inputs.length === 0) {
-        ui.alert('No text found in selected data range for theme allocation.');
+        ui.alert('No text found in selected data range for sentiment analysis.');
         return;
     }
 

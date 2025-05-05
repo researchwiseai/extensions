@@ -102,11 +102,18 @@ module.exports = async (env, options) => {
         template: "./src/commands/commands.html",
         chunks: ["polyfill", "commands"],
       }),
+      // Dialog page for range confirmation
+      new HtmlWebpackPlugin({
+        filename: "SelectRangeDialog.html",
+        template: "./src/taskpane/SelectRangeDialog.html",
+        inject: false,
+      }),
     ],
     devServer: {
       static: {
+        // Serve all files from dist at the root path
         directory: path.join(__dirname, "dist"),
-        publicPath: "/public",
+        publicPath: "/",
       },
       headers: {
         "Access-Control-Allow-Origin": "*",

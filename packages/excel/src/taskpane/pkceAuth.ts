@@ -50,7 +50,6 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
       codeChallenge,
       state
     );
-    console.log("PKCE URL:", url);
 
     // Launch Office dialog
     return new Promise<void>((resolve, reject) => {
@@ -104,9 +103,10 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
   /** Retrieve a valid access token, refreshing if needed. */
   async getAccessToken(): Promise<string> {
     const raw = sessionStorage.getItem("pkce_token");
+
     if (!raw) {
       await this.signIn();
-      return this.getAccessToken();
+      return await this.getAccessToken();
     }
     const data = JSON.parse(raw) as {
       access_token: string;
@@ -117,7 +117,7 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
     if (Date.now() > data.expires_at - 60000) {
       if (!data.refresh_token) {
         sessionStorage.removeItem("pkce_token");
-        return this.getAccessToken();
+        return await this.getAccessToken();
       }
       const refreshed = await refreshAccessToken(this.domain, this.clientId, data.refresh_token);
       const newExpiry = Date.now() + refreshed.expires_in * 1000;

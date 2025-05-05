@@ -11,7 +11,8 @@
     ".": "./src/index.ts",
     "./pkce": "./src/pkce.ts",
     "./auth": "./src/auth.ts",
-    "./api": "./src/apiClient.ts"
+    "./api": "./src/apiClient.ts",
+    "./input": "./src/input.ts"
   },
   "scripts": {
     "build": "tsc -b",

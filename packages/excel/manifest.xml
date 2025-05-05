@@ -12,6 +12,8 @@
   <AppDomains>
     <AppDomain>https://researchwiseai.com</AppDomain>
     <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
+    <!-- Dialog host for range confirmation -->
+    <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook"/>
@@ -120,12 +122,14 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://researchwiseai.com/docs"/>
         <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
         <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
+        <!-- URL for the range selection dialog -->
+        <bt:Url id="SelectRangeDialog.Url" DefaultValue="https://localhost:3000/SelectRangeDialog.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="Functions.Namespace" DefaultValue="Pulse"/>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with Pulse"/>
-        <bt:String id="CommandsGroup.Label" DefaultValue="Pulse"/>
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Open Pulse Pane"/>
+        <bt:String id="CommandsGroup.Label" DefaultValue="RWAI"/>
+        <bt:String id="TaskpaneButton.Label" DefaultValue="Pulse"/>
         <!-- Pulse tab and controls labels -->
         <bt:String id="PulseTab.Label" DefaultValue="Pulse"/>
         <bt:String id="PulseGroup.Label" DefaultValue="Pulse"/>

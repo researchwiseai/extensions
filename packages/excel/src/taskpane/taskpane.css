@@ -78,3 +78,27 @@
 b {
     font-weight: bold;
 }
+/* Make buttons show pointer on hover */
+.ms-Button {
+    cursor: pointer;
+}
+/* Style feature/menu buttons to be uniform width, padded, spaced, and custom color */
+#task-menu .ms-Button--command {
+    width: 250px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    background-color: #106f7a;
+    color: #ffffff;
+    border: none;
+    border-radius: 2px;
+    /* Ensure text and icon are aligned */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+#task-menu .ms-Button--command:hover {
+    background-color: #0e5f68;
+}
+#task-menu .ms-Button--command:focus {
+    outline: 2px solid #ffffff;
+}
