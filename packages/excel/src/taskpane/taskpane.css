@@ -18,7 +18,7 @@
  
  .ms-welcome__header {
     padding: 20px;
-    padding-bottom: 30px;
+    padding-bottom: 0px;
     padding-top: 30px;
     display: -webkit-flex;
     display: flex;
@@ -100,5 +100,32 @@ b {
     background-color: #0e5f68;
 }
 #task-menu .ms-Button--command:focus {
+    outline: 2px solid #ffffff;
+}
+
+.ms-TextField-field {
+    height: 1.75rem;
+    padding: 0.25rem;
+}
+
+#connect {
+    background: #088d96;
+    border: #0e5f68
+}
+
+#connect span {
+    color: #ffffff;
+}
+
+#connect:hover {
+    background: #0e5f68;
+    color: #dddddd;
+}
+
+#connect:hover span {
+    color: #dddddd;
+}
+
+#connect:focus {
     outline: 2px solid #ffffff;
 }

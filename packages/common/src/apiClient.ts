@@ -1,26 +1,25 @@
 import fetchOriginal from 'cross-fetch';
 // Abstracted fetch for cross-platform support (injectable for Apps Script)
 export interface FetchOptions {
-    method?:
-        | 'post'
-        | 'get'
-        | 'put'
-        | 'delete'
-        | 'patch';
+    method?: 'post' | 'get' | 'put' | 'delete' | 'patch';
     contentType?: string;
     headers?: Record<string, string>;
     body?: string;
     [key: string]: any;
 }
-type FetchFunction = (url: string, options?: FetchOptions) => Promise<{
-  ok: boolean;
-  status: number;
-  statusText: string;
-  json: () => Promise<any>;
-  text: () => Promise<string>;
+type FetchFunction = (
+    url: string,
+    options?: FetchOptions,
+) => Promise<{
+    ok: boolean;
+    status: number;
+    statusText: string;
+    json: () => Promise<any>;
+    text: () => Promise<string>;
 }>;
 export let fetchFn: FetchFunction = fetchOriginal;
-let sleepFn = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+let sleepFn = (ms: number) =>
+    new Promise<void>((resolve) => setTimeout(resolve, ms));
 /**
  * Override the fetch implementation used by the API client.
  * Useful for environments like Google Apps Script.
@@ -79,9 +78,15 @@ async function postWithJob(
             'Content-Type': 'application/json',
         },
         body: JSON.stringify(body),
+        mode: 'cors',
     });
+
     if (response.status === 200) {
-        options.onProgress?.( options.taskName ? `${options.taskName} complete successfully` : 'Request completed successfully');
+        options.onProgress?.(
+            options.taskName
+                ? `${options.taskName} complete successfully`
+                : 'Request completed successfully',
+        );
         return response.json();
     } else if (response.status === 202) {
         // Job accepted; poll for completion
@@ -91,7 +96,11 @@ async function postWithJob(
             throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
         }
 
-        options.onProgress?.( options.taskName ? `${options.taskName} job submitted, polling for completion...` : 'Job submitted, polling for completion...');
+        options.onProgress?.(
+            options.taskName
+                ? `${options.taskName} job submitted, polling for completion...`
+                : 'Job submitted, polling for completion...',
+        );
 
         let loopCount = 0;
         // Poll until done
@@ -99,7 +108,11 @@ async function postWithJob(
             loopCount++;
             console.log(`Polling job status: ${jobId} (attempt ${loopCount})`);
             if (loopCount % 2 === 0) {
-                options.onProgress?.( options.taskName ? `Waiting for ${options.taskName.toLowerCase()} job to complete...` : 'Waiting for job to complete...');
+                options.onProgress?.(
+                    options.taskName
+                        ? `Waiting for ${options.taskName.toLowerCase()} job to complete...`
+                        : 'Waiting for job to complete...',
+                );
             }
             await sleep(intervalMs);
             const status = await pollJobStatus(jobId);
@@ -111,13 +124,21 @@ async function postWithJob(
                         `Missing resultUrl in job status: ${JSON.stringify(status)}`,
                     );
                 }
-                const resultResp = await fetchFn(status.resultUrl, { contentType: 'application/json', method: 'get', headers: { 'Content-Type': 'application/json'} });
+                const resultResp = await fetchFn(status.resultUrl, {
+                    contentType: 'application/json',
+                    method: 'get',
+                    headers: { 'Content-Type': 'application/json' },
+                });
                 if (!resultResp.ok) {
                     const errText = await resultResp.text();
                     throw new Error(`${resultResp.statusText}: ${errText}`);
                 }
 
-                options.onProgress?.( options.taskName ? `${options.taskName} job completed successfully` : 'Job completed successfully');
+                options.onProgress?.(
+                    options.taskName
+                        ? `${options.taskName} job completed successfully`
+                        : 'Job completed successfully',
+                );
                 return await resultResp.json();
             } else {
                 throw new Error(`Job failed with status: ${status.status}`);
@@ -177,7 +198,11 @@ export async function analyzeSentiment(
     options?: AnalyzeSentimentOptions,
 ): Promise<{ results: SentimentResult[] }> {
     const url = `${baseUrl}/pulse/v1/sentiment`;
-    const data = await postWithJob(url, { fast: options?.fast, inputs }, { taskName: 'Sentiment analysis', onProgress: options?.onProgress });
+    const data = await postWithJob(
+        url,
+        { fast: options?.fast, inputs },
+        { taskName: 'Sentiment analysis', onProgress: options?.onProgress },
+    );
     if (Array.isArray(data.results)) {
         return { results: data.results };
     }
@@ -200,13 +225,17 @@ export async function generateThemes(
     console.log('Generating themes for inputs:', inputs);
 
     const url = `${baseUrl}/pulse/v1/themes`;
-    const data = await postWithJob(url, {
-        inputs,
-        fast: options?.fast ?? false,
-    }, {
-        onProgress: options?.onProgress,
-        taskName: 'Theme generation',
-    });
+    const data = await postWithJob(
+        url,
+        {
+            inputs,
+            fast: options?.fast ?? false,
+        },
+        {
+            onProgress: options?.onProgress,
+            taskName: 'Theme generation',
+        },
+    );
     console.log('Generated themes:', data);
     if (Array.isArray(data.themes)) {
         return { themes: data.themes };
@@ -229,14 +258,18 @@ export async function compareSimilarity(
     options?: CompareSimilarityOptions,
 ): Promise<SimilarityResponse> {
     const url = `${baseUrl}/pulse/v1/similarity`;
-    const data: any = await postWithJob(url, {
-        set_a: setA,
-        set_b: setB,
-        fast: options?.fast ?? false,
-    }, {
-        onProgress: options?.onProgress,
-        taskName: 'Similarity comparison',
-    });
+    const data: any = await postWithJob(
+        url,
+        {
+            set_a: setA,
+            set_b: setB,
+            fast: options?.fast ?? false,
+        },
+        {
+            onProgress: options?.onProgress,
+            taskName: 'Similarity comparison',
+        },
+    );
     const result: SimilarityResponse = { matrix: [] };
     if (data.matrix) {
         result.matrix = data.matrix;

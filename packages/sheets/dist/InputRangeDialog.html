@@ -41,12 +41,19 @@
       function submitRange() {
         const dataRange = document.getElementById('dataRange').value;
         const mode = document.getElementById('mode').value;
-        google.script.run
-          .withFailureHandler(function (err) {
-            M.toast({ html: 'Error: ' + err.message });
-          })
-          .submitSelectedInputRangeForGeneration(dataRange, mode);
-
+        if (mode === 'sentiment') {
+          google.script.run
+            .withFailureHandler(function (err) {
+              M.toast({ html: 'Error: ' + err.message });
+            })
+            .analyzeSentimentFlow(dataRange);
+        } else {
+          google.script.run
+            .withFailureHandler(function (err) {
+              M.toast({ html: 'Error: ' + err.message });
+            })
+            .submitSelectedInputRangeForGeneration(dataRange, mode);
+        }
         google.script.host.close();
       }
     </script>

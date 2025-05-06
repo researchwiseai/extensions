@@ -588,11 +588,12 @@ async function postWithJob(url, body, options = {}) {
     method: "post",
     contentType: "application/json",
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     },
     body: JSON.stringify(body)
   });
-  if (response.ok) {
+  if (response.status === 200) {
     options.onProgress?.(options.taskName ? `${options.taskName} complete successfully` : "Request completed successfully");
     return response.json();
   } else if (response.status === 202) {
@@ -617,7 +618,7 @@ async function postWithJob(url, body, options = {}) {
         if (!status.resultUrl) {
           throw new Error(`Missing resultUrl in job status: ${JSON.stringify(status)}`);
         }
-        const resultResp = await fetchFn(status.resultUrl, { contentType: "application/json", method: "get" });
+        const resultResp = await fetchFn(status.resultUrl, { contentType: "application/json", method: "get", headers: { "Content-Type": "application/json" } });
         if (!resultResp.ok) {
           const errText = await resultResp.text();
           throw new Error(`${resultResp.statusText}: ${errText}`);
@@ -694,7 +695,8 @@ async function pollJobStatus(jobId) {
   const response = await fetchFn(url, {
     method: "get",
     headers: {
-      Authorization: `Bearer ${token}`
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
     }
   });
   if (!response.ok) {
@@ -804,6 +806,28 @@ async function allocateThemes(inputs, themes, options) {
 }
 // ../common/src/auth.ts
 var import_cross_fetch2 = __toESM(require_browser_ponyfill(), 1);
+// ../common/src/org.ts
+async function findOrganization(url, email) {
+  const options = {
+    method: "post",
+    contentType: "application/json",
+    body: JSON.stringify({ email })
+  };
+  try {
+    const response = await fetchFn(url, options);
+    const data = await response.json();
+    if (data.organizationId) {
+      return { success: true, orgId: data.organizationId };
+    }
+    return { success: false };
+  } catch (e) {
+    const msg = e && e.toString ? e.toString() : "";
+    if (msg.includes("returned code 404")) {
+      return { success: false, notFound: true };
+    }
+    throw new Error("Error finding organization: " + e);
+  }
+}
 // src/config.ts
 var SCRIPT_PROPS = PropertiesService.getScriptProperties();
 var API_BASE = SCRIPT_PROPS.getProperty("API_BASE") + "/pulse/v1";
@@ -852,30 +876,14 @@ function disconnect() {
   props.deleteProperty("ORG_ID");
   return { success: true };
 }
-function findOrganization(email) {
+async function findOrganization2(email) {
   const props = PropertiesService.getUserProperties();
-  const url = ORG_LOOKUP_URL;
-  const options = {
-    method: "post",
-    contentType: "application/json",
-    payload: JSON.stringify({ email })
-  };
-  try {
-    const response = UrlFetchApp.fetch(url, options);
-    const data = JSON.parse(response.getContentText());
-    if (data.organizationId) {
-      props.setProperty("USER_EMAIL", email);
-      props.setProperty("ORG_ID", data.organizationId);
-      return { success: true, orgId: data.organizationId };
-    } else {
-      return { success: false };
-    }
-  } catch (e) {
-    if (e.toString().indexOf("returned code 404") !== -1) {
-      return { success: false, notFound: true };
-    }
-    throw new Error("Error finding organization: " + e);
+  const result = await findOrganization(ORG_LOOKUP_URL, email);
+  if (result.success && result.orgId) {
+    props.setProperty("USER_EMAIL", email);
+    props.setProperty("ORG_ID", result.orgId);
   }
+  return result;
 }
 
 // src/showAllocationModeDialog.ts
@@ -1097,19 +1105,32 @@ async function allocateThemesAutomatic(dataRange) {
   }), dataSheet, positions);
 }
 // src/analyzeSentiment.ts
-async function analyzeSentimentFlow() {
+async function analyzeSentimentFlow(dataRange) {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   ss.toast("Starting sentiment analysis...", "Pulse");
-  const dataRangeObj = ss.getActiveRange();
-  const dataSheet = dataRangeObj.getSheet();
+  const parts = dataRange.split("!");
+  const sheetName = parts[0];
+  const rangeNotation = parts.slice(1).join("!");
+  const dataSheet = ss.getSheetByName(sheetName);
+  if (!dataSheet) {
+    ui.alert(`Sheet "${sheetName}" not found.`);
+    return;
+  }
+  let dataRangeObj;
+  try {
+    dataRangeObj = dataSheet.getRange(rangeNotation);
+  } catch (e) {
+    ui.alert(`Invalid range notation "${rangeNotation}".`);
+    return;
+  }
   const values = dataRangeObj.getValues();
   const { inputs, positions } = extractInputs(values, {
     rowOffset: dataRangeObj.getRow(),
     colOffset: dataRangeObj.getColumn()
   });
   if (inputs.length === 0) {
-    ui.alert("No text found in selected data range for theme allocation.");
+    ui.alert("No text found in selected data range for sentiment analysis.");
     return;
   }
   const data = await analyzeSentiment(inputs, {
@@ -1215,7 +1236,7 @@ function onOpen() {
   const ui = SpreadsheetApp.getUi();
   const pulseMenu = ui.createMenu("Pulse");
   if (getOAuthService().hasAccess()) {
-    pulseMenu.addItem("Analyze Sentiment", "analyzeSentimentFlow");
+    pulseMenu.addItem("Analyze Sentiment", "clickAnalyzeSentiment");
     const themesMenu = ui.createMenu("Themes").addItem("Generate", "clickGenerateThemes").addItem("Allocate", "clickAllocateThemes").addItem("Manage", "showManageThemesDialog");
     pulseMenu.addSubMenu(themesMenu);
     pulseMenu.addSeparator();
@@ -1228,6 +1249,9 @@ function clickGenerateThemes() {
 }
 function clickAllocateThemes() {
   showInputRangeDialog("allocation");
+}
+function clickAnalyzeSentiment() {
+  showInputRangeDialog("sentiment");
 }
 function debounceByArgs(fn, waitMs) {
   const lastCalled = new Map();

@@ -1,102 +1,203 @@
 <!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
 <!-- This file shows how to design a first-run page that provides a welcome screen to the user about the features of the add-in. -->
 
-<!DOCTYPE html>
+<!doctype html>
 <html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Pulse: AI-Powered Text Analysis</title>
 
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pulse: AI-Powered Text Analysis</title>
+        <!-- Office JavaScript API -->
+        <script
+            type="text/javascript"
+            src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"
+        ></script>
 
-    <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
+        <link
+            rel="stylesheet"
+            href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"
+        />
 
-    <!-- For more information on Fluent UI, visit https://developer.microsoft.com/fluentui#/. -->
-    <link rel="stylesheet" href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"/>
+        <!-- Template styles -->
+        <link href="taskpane.css" rel="stylesheet" type="text/css" />
+    </head>
 
-    <!-- Template styles -->
-    <link href="taskpane.css" rel="stylesheet" type="text/css" />
-</head>
-
-<body class="ms-font-m ms-welcome ms-Fabric">
-<header class="ms-welcome__header ms-bgColor-neutralLighter" style="position: relative;">
-        <img width="90" height="90" src="../../assets/logo-filled.png" alt="Pulse" title="Pulse" />
-        <h1 class="ms-font-su">Pulse</h1>
-        <button id="logout" class="ms-Button ms-Button--command" style="display:none; position:absolute; top:20px; right:20px;">
-          <span class="ms-Button-label">Logout</span>
-        </button>
-    </header>
-    <section id="sideload-msg" class="ms-welcome__main">
-        <h2 class="ms-font-xl">Please <a target="_blank" href="https://learn.microsoft.com/office/dev/add-ins/testing/test-debug-office-add-ins#sideload-an-office-add-in-for-testing">sideload</a> the Pulse add-in for testing.</h2>
-    </section>
-    <main id="app-body" class="ms-welcome__main" style="display: none;">
-        <h2 class="ms-font-xl">AI-Powered Text Analysis for Excel</h2>
-        <ul class="ms-List ms-welcome__features">
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Emoji2 ms-font-xl" aria-hidden="true"></i>
-                <span class="ms-font-m">Analyze Sentiment</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--BulletedListText ms-font-xl" aria-hidden="true"></i>
-                <span class="ms-font-m">Generate Themes</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Tag ms-font-xl" aria-hidden="true"></i>
-                <span class="ms-font-m">Allocate Themes</span>
-            </li>
-            <li class="ms-ListItem">
-                <i class="ms-Icon ms-Icon--Settings ms-font-xl" aria-hidden="true"></i>
-                <span class="ms-font-m">Manage Theme Sets &amp; Settings</span>
-            </li>
-        </ul>
-        <p class="ms-font-l">Please enter your email to connect:</p>
-        <div class="ms-TextField" style="width:100%; margin-bottom:12px;">
-            <label class="ms-Label" for="email-input">Email address</label>
-            <input type="email" id="email-input" placeholder="you@email.com" class="ms-TextField-field" />
-        </div>
-        <button id="connect" class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl">
-            <span class="ms-Button-label">Connect</span>
-        </button>
-    </main>
-    <!-- Authenticated UI: menu, running jobs, and logout -->
-    <main id="authenticated-app" class="ms-welcome__main" style="padding: 0; display: none; flex-direction: column; align-items: flex-start; width: 100%;">
-      <div id="user-info" style="display: flex; justify-content: flex-start; align-items: center; width: 100%; padding: 0 10px 10px 10px;">
-        <span>Welcome, <b id="user-email-display"></b></span>
-      </div>
-      <h2 class="ms-font-xl" style="width:100%; text-align:center;">Select a Task</h2>
-      <ul id="task-menu" class="ms-List" style="list-style-type:none; margin:0; padding:0; width:100%; display:flex; flex-direction: column; align-items: center;">
-        <li class="ms-ListItem">
-          <button id="menu-analyze-sentiment" class="ms-Button ms-Button--command ms-font-m">
-            <i class="ms-Icon ms-Icon--Emoji2 ms-font-xl" aria-hidden="true"></i>
-            <span style="margin-left:0.75rem">Analyze Sentiment</span>
-          </button>
-        </li>
-        <!-- <li class="ms-ListItem">
-          <button id="menu-generate-themes" class="ms-Button ms-Button--command ms-font-m">
-            <i class="ms-Icon ms-Icon--BulletedListText ms-font-xl" aria-hidden="true"></i>
-            <span style="margin-left:0.75rem">Generate Themes</span>
-          </button>
-        </li> -->
-        <li class="ms-ListItem">
-          <button id="menu-allocate-themes" class="ms-Button ms-Button--command ms-font-m">
-            <i class="ms-Icon ms-Icon--Tag ms-font-xl" aria-hidden="true"></i>
-            <span style="margin-left:0.75rem">Allocate Themes</span>
-          </button>
-        </li>
-        <!-- <li class="ms-ListItem">
+    <body class="ms-font-m ms-welcome ms-Fabric">
+        <header
+            class="ms-welcome__header ms-bgColor-neutralLighter"
+            style="position: relative"
+        >
+            <img
+                width="90"
+                height="90"
+                src="../../assets/logo-filled.png"
+                alt="Pulse"
+                title="Pulse"
+            />
+            <h1 class="ms-font-su">Pulse</h1>
+            <button
+                id="logout"
+                class="ms-Button ms-Button--command"
+                style="
+                    display: none;
+                    position: absolute;
+                    top: 20px;
+                    right: 20px;
+                "
+            >
+                <span class="ms-Button-label">Logout</span>
+            </button>
+        </header>
+        <main id="app-body" class="ms-welcome__main" style="display: none">
+            <h2 class="ms-font-xl">AI-Powered Analysis for Excel</h2>
+            <ul class="ms-List ms-welcome__features">
+                <li class="ms-ListItem">
+                    <i
+                        class="ms-Icon ms-Icon--Emoji2 ms-font-xl"
+                        aria-hidden="true"
+                    ></i>
+                    <span class="ms-font-m">Analyze Sentiment</span>
+                </li>
+                <li class="ms-ListItem">
+                    <i
+                        class="ms-Icon ms-Icon--BulletedListText ms-font-xl"
+                        aria-hidden="true"
+                    ></i>
+                    <span class="ms-font-m">Generate Themes</span>
+                </li>
+                <li class="ms-ListItem">
+                    <i
+                        class="ms-Icon ms-Icon--Tag ms-font-xl"
+                        aria-hidden="true"
+                    ></i>
+                    <span class="ms-font-m">Allocate Themes</span>
+                </li>
+            </ul>
+            <p class="ms-font-l">Please enter your email to connect:</p>
+            <div class="ms-TextField" style="width: 100%; margin-bottom: 12px">
+                <input
+                    type="email"
+                    id="email-input"
+                    placeholder="you@email.com"
+                    class="ms-TextField-field"
+                    style="width: 84%; margin-left: 8%"
+                />
+            </div>
+            <button
+                id="connect"
+                class="ms-welcome__action ms-Button ms-Button--hero ms-font-xl"
+            >
+                <span class="ms-Button-label">Connect</span>
+            </button>
+        </main>
+        <!-- Authenticated UI: menu, running jobs, and logout -->
+        <main
+            id="authenticated-app"
+            class="ms-welcome__main"
+            style="
+                padding: 0;
+                display: none;
+                flex-direction: column;
+                align-items: flex-start;
+                width: 100%;
+            "
+        >
+            <div
+                id="user-info"
+                style="
+                    display: flex;
+                    justify-content: flex-start;
+                    align-items: center;
+                    width: 100%;
+                    padding: 0 10px 10px 10px;
+                "
+            >
+                <span>Welcome, <b id="user-email-display"></b></span>
+            </div>
+            <h2 class="ms-font-xl" style="width: 100%; text-align: center">
+                Select a Task
+            </h2>
+            <ul
+                id="task-menu"
+                class="ms-List"
+                style="
+                    list-style-type: none;
+                    margin: 0;
+                    padding: 0;
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                "
+            >
+                <li class="ms-ListItem">
+                    <button
+                        id="menu-analyze-sentiment"
+                        class="ms-Button ms-Button--command ms-font-m"
+                    >
+                        <i
+                            class="ms-Icon ms-Icon--Emoji2 ms-font-xl"
+                            aria-hidden="true"
+                        ></i>
+                        <span style="margin-left: 0.75rem"
+                            >Analyze Sentiment</span
+                        >
+                    </button>
+                </li>
+                <li class="ms-ListItem">
+                    <button
+                        id="menu-generate-themes"
+                        class="ms-Button ms-Button--command ms-font-m"
+                    >
+                        <i
+                            class="ms-Icon ms-Icon--BulletedListText ms-font-xl"
+                            aria-hidden="true"
+                        ></i>
+                        <span style="margin-left: 0.75rem"
+                            >Generate Themes</span
+                        >
+                    </button>
+                </li>
+                <li class="ms-ListItem">
+                    <button
+                        id="menu-allocate-themes"
+                        class="ms-Button ms-Button--command ms-font-m"
+                    >
+                        <i
+                            class="ms-Icon ms-Icon--Tag ms-font-xl"
+                            aria-hidden="true"
+                        ></i>
+                        <span style="margin-left: 0.75rem"
+                            >Allocate Themes</span
+                        >
+                    </button>
+                </li>
+                <!-- <li class="ms-ListItem">
           <button id="menu-settings" class="ms-Button ms-Button--command ms-font-m">
             <i class="ms-Icon ms-Icon--Settings ms-font-xl" aria-hidden="true"></i>
             <span style="margin-left:0.75rem">Settings</span>
           </button>
         </li> -->
-      </ul>
-      <div id="jobs-container" style="width:100%; padding: 0 10px 10px 10px;">
-        <h3 class="ms-font-l">Running Jobs</h3>
-        <ul id="jobs-list" class="ms-List" style="list-style-type:none; padding-left:0; max-height:200px; overflow-y:auto;"></ul>
-      </div>
-    </main>
-</body>
-
+            </ul>
+            <div
+                id="jobs-container"
+                style="width: 100%; padding: 0 10px 10px 10px"
+            >
+                <h3 class="ms-font-l">Running Jobs</h3>
+                <ul
+                    id="jobs-list"
+                    class="ms-List"
+                    style="
+                        list-style-type: none;
+                        padding-left: 0;
+                        max-height: 200px;
+                        overflow-y: auto;
+                    "
+                ></ul>
+            </div>
+        </main>
+    </body>
 </html>

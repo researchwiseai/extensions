@@ -1,22 +1,32 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Authentication Callback</title>
-  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <script>
-    // Once Office.js is ready, post the code and state back to the parent window.
-    Office.onReady(() => {
-      const params = new URLSearchParams(window.location.search);
-      const code = params.get('code');
-      const state = params.get('state');
-      Office.context.ui.messageParent(
-        JSON.stringify({ code: code, state: state })
-      );
-    });
-  </script>
-</head>
-<body>
-  <p>Signing you in... you may close this window.</p>
-</body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Authentication Callback</title>
+        <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <script>
+            // Once Office.js is ready, post the code and state back to the parent window.
+            Office.onReady(() => {
+                const params = new URLSearchParams(window.location.search);
+                const code = params.get('code');
+                const state = params.get('state');
+                const error = params.get('error');
+                const error_description = params.get('error_description');
+
+                if (error) {
+                    Office.context.ui.messageParent(
+                        JSON.stringify({ error, error_description }),
+                    );
+                    return;
+                }
+
+                Office.context.ui.messageParent(
+                    JSON.stringify({ code: code, state: state }),
+                );
+            });
+        </script>
+    </head>
+    <body>
+        <p>Signing you in... you may close this window.</p>
+    </body>
 </html>
