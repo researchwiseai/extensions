@@ -9,43 +9,10 @@ import { signIn, getAccessToken, signOut } from 'pulse-common/auth';
 import { findOrganization } from 'pulse-common/org';
 import { configureClient } from 'pulse-common/api';
 import { analyzeSentiment } from '../analyzeSentiment';
-import { allocateThemesAutomaticFlow } from '../flows/allocateThemesAutomatic';
 import { themeGenerationFlow } from '../flows/themeGenerationFlow';
-
-/**
- * Prompts the user to confirm or change the range via a dialog.
- * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
- * @returns The confirmed range string, or null if cancelled.
- */
-function promptRange(defaultRange: string): Promise<string | null> {
-    return new Promise((resolve, reject) => {
-        const url = `${window.location.origin}/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`;
-        Office.context.ui.displayDialogAsync(
-            url,
-            { height: 30, width: 20, displayInIframe: true },
-            (result) => {
-                if (result.status === Office.AsyncResultStatus.Failed) {
-                    reject(result.error);
-                } else {
-                    const dialog = result.value;
-                    dialog.addEventHandler(
-                        Office.EventType.DialogMessageReceived,
-                        (arg) => {
-                            try {
-                                const msg = JSON.parse(arg.message);
-                                dialog.close();
-                                resolve(msg.range);
-                            } catch (e) {
-                                dialog.close();
-                                reject(e);
-                            }
-                        },
-                    );
-                }
-            },
-        );
-    });
-}
+import { promptRange } from '../services/promptRange';
+import { allocateThemesRoot } from '../flows/allocateThemesRoot';
+import { configureStorage } from 'pulse-common/themes';
 
 // The initialize function must be run each time a new page is loaded
 Office.onReady(() => {
@@ -73,6 +40,21 @@ Office.onReady(() => {
         configureClient({
             baseUrl: 'https://core.researchwiseai.com',
             getAccessToken,
+        });
+        configureStorage({
+            async get(key) {
+                const data = sessionStorage.getItem(key);
+                if (data) {
+                    return JSON.parse(data);
+                }
+                return null;
+            },
+            async set(key, value) {
+                sessionStorage.setItem(key, JSON.stringify(value));
+            },
+            async delete(key) {
+                sessionStorage.removeItem(key);
+            },
         });
         initializeAuthenticatedUI(storedEmail);
     } else if (loginEl && authEl) {
@@ -238,7 +220,7 @@ function initializeAuthenticatedUI(email: string): void {
                     return;
                 }
 
-                await allocateThemesAutomaticFlow(context, confirmed);
+                await allocateThemesRoot(context, confirmed);
                 removeJob(jobId);
             }).catch((err) => {
                 console.error(err);
@@ -247,7 +229,6 @@ function initializeAuthenticatedUI(email: string): void {
         };
     }
 
-    // Allocate Themes: confirm range via dialog, then run analysis
     const generateThemesBtn = document.getElementById('menu-generate-themes');
     if (generateThemesBtn) {
         generateThemesBtn.onclick = () => {
