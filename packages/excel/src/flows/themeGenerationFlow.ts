@@ -1,5 +1,8 @@
 import { generateThemes } from 'pulse-common/api';
+import { saveThemeSet } from 'pulse-common/themes';
+
 import { extractInputs } from 'pulse-common/input';
+import { getAccessToken } from 'pulse-common/auth';
 
 export async function themeGenerationFlow(
     context: Excel.RequestContext,
@@ -26,6 +29,9 @@ export async function themeGenerationFlow(
         );
         return;
     }
+
+    const accessToken = await getAccessToken();
+    debugger;
 
     const result = await generateThemes(inputs, {
         fast: false,
@@ -83,6 +89,11 @@ export async function themeGenerationFlow(
     themesSheet.getRange(`A2:E${themes.length + 1}`).format.autofitColumns();
 
     await context.sync();
+
+    await saveThemeSet(
+        new Date(Date.now()).toISOString().slice(0, 19),
+        result.themes,
+    );
 
     return { inputs, positions, sheet, themes: result.themes }; // Return the inputs and positions for further processing
     // by other flows

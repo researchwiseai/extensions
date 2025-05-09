@@ -3,46 +3,43 @@
  * See LICENSE in the project root for license information.
  */
 
-/* global Office */
-
-Office.onReady(() => {
-  // If needed, Office.js is ready to be called.
-});
+/* global Office, Excel */
+import { promptRange } from '../services/promptRange';
+import { analyzeSentiment as analyzeSentimentLogic } from '../analyzeSentiment';
 
 /**
- * Shows a notification when the add-in command is executed.
- * @param event
- */
-function action(event: Office.AddinCommands.Event) {
-  const message: Office.NotificationMessageDetails = {
-    type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
-    message: "Performed action.",
-    icon: "Icon.80x80",
-    persistent: true,
-  };
-
-  // Show a notification message.
-  Office.context.mailbox.item.notificationMessages.replaceAsync(
-    "ActionPerformanceNotification",
-    message
-  );
-
-  // Be sure to indicate when the add-in command function is complete.
-  event.completed();
-}
-
-// Register the existing command with Office.
-Office.actions.associate("action", action);
-
-/**
- * Stub for Analyze Sentiment command.
+ * Handler for Analyze Sentiment ribbon button.
  * @param event - The event object from the button click.
  */
-function analyzeSentiment(event: Office.AddinCommands.Event) {
-  console.log("Analyze Sentiment button clicked");
-  // TODO: Implement sentiment analysis functionality
-  event.completed();
+async function analyzeSentiment(event: Office.AddinCommands.Event) {
+  try {
+    await Excel.run(async (context) => {
+      // Get selected range and confirm with user
+      const selected = context.workbook.getSelectedRange();
+      selected.load('address');
+      await context.sync();
+      const defaultRange = selected.address;
+      // Prompt user to confirm or change range
+      let confirmedRange: string | null;
+      try {
+        confirmedRange = await promptRange(defaultRange);
+      } catch (err) {
+        console.error('Range selection dialog error:', err);
+        return;
+      }
+      if (!confirmedRange) {
+        // User cancelled
+        return;
+      }
+      // Perform sentiment analysis
+      await analyzeSentimentLogic(context, confirmedRange);
+    });
+  } catch (err) {
+    console.error('Analyze Sentiment error:', err);
+  } finally {
+    event.completed();
+  }
 }
 
-// Register the analyzeSentiment function with Office.
-Office.actions.associate("analyzeSentiment", analyzeSentiment);
+// Register the Analyze Sentiment command handler
+Office.actions.associate('analyzeSentiment', analyzeSentiment);

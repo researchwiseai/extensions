@@ -2,8 +2,8 @@
 
 const devCerts = require('office-addin-dev-certs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CustomFunctionsMetadataPlugin = require('custom-functions-metadata-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
 
 const urlDev = 'https://localhost:3000';
@@ -26,10 +26,11 @@ module.exports = async (env, options) => {
         devtool: 'source-map',
         entry: {
             polyfill: ['core-js/stable', 'regenerator-runtime/runtime'],
-            taskpane: [
-                './src/taskpane/taskpane.ts',
-                './src/taskpane/taskpane.html',
+            shared: [
+                './src/shared-runtime/shared-runtime.tsx',
+                './src/shared-runtime/shared-runtime.html',
             ],
+            modal: './src/modal/Modal.tsx',
             commands: './src/commands/commands.ts',
             functions: './src/functions/functions.ts',
         },
@@ -37,7 +38,7 @@ module.exports = async (env, options) => {
             clean: true,
         },
         resolve: {
-            extensions: ['.ts', '.html', '.js'],
+            extensions: ['.tsx', '.ts', '.html', '.js'],
             fallback: {
                 crypto: false,
             },
@@ -45,11 +46,29 @@ module.exports = async (env, options) => {
         module: {
             rules: [
                 {
-                    test: /\.ts$/,
+                    test: /\.[jt]sx?$/,
                     exclude: /node_modules/,
                     use: {
                         loader: 'babel-loader',
+                        options: {
+                            presets: [
+                                '@babel/preset-env',
+                                [
+                                    '@babel/preset-react',
+                                    { runtime: 'automatic' },
+                                ],
+                                '@babel/preset-typescript',
+                            ],
+                        },
                     },
+                },
+                {
+                    test: /\.css$/,
+                    use: [
+                        dev ? 'style-loader' : MiniCssExtractPlugin.loader,
+                        'css-loader',
+                        'postcss-loader',
+                    ],
                 },
                 {
                     test: /\.html$/,
@@ -66,22 +85,20 @@ module.exports = async (env, options) => {
             ],
         },
         plugins: [
-            new CustomFunctionsMetadataPlugin({
-                output: 'functions.json',
-                input: './src/functions/functions.ts',
+            new MiniCssExtractPlugin({
+                filename: dev ? '[name].css' : '[name].min.css',
             }),
             new HtmlWebpackPlugin({
-                filename: 'functions.html',
-                template: './src/functions/functions.html',
-                chunks: ['polyfill', 'functions'],
-            }),
-            new HtmlWebpackPlugin({
-                filename: 'taskpane.html',
-                template: './src/taskpane/taskpane.html',
-                chunks: ['polyfill', 'taskpane'],
+                filename: 'shared-runtime.html',
+                template: './src/shared-runtime/shared-runtime.html',
+                chunks: ['polyfill', 'shared'],
             }),
             new CopyWebpackPlugin({
                 patterns: [
+                    {
+                        from: 'assets/icons/*',
+                        to: 'assets/icons/[name][ext][query]',
+                    },
                     {
                         from: 'assets/*',
                         to: 'assets/[name][ext][query]',
@@ -112,11 +129,6 @@ module.exports = async (env, options) => {
                     },
                 ],
             }),
-            new HtmlWebpackPlugin({
-                filename: 'commands.html',
-                template: './src/commands/commands.html',
-                chunks: ['polyfill', 'commands'],
-            }),
             // Dialog page for range confirmation
             new HtmlWebpackPlugin({
                 filename: 'SelectRangeDialog.html',
@@ -128,6 +140,12 @@ module.exports = async (env, options) => {
                 filename: 'AllocationModeDialog.html',
                 template: './src/taskpane/AllocationModeDialog.html',
                 inject: false,
+            }),
+            // Dialog for modals
+            new HtmlWebpackPlugin({
+                filename: 'Modal.html',
+                template: './src/modal/Modal.html',
+                chunks: ['polyfill', 'modal'],
             }),
         ],
         devServer: {

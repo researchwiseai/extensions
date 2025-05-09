@@ -1,4 +1,7 @@
 import fetchOriginal from 'cross-fetch';
+import { PromisePool } from '@supercharge/promise-pool';
+import { createBatches, sampleInputs } from './input';
+import * as Jobs from './jobs';
 // Abstracted fetch for cross-platform support (injectable for Apps Script)
 export interface FetchOptions {
     method?: 'post' | 'get' | 'put' | 'delete' | 'patch';
@@ -69,6 +72,10 @@ async function postWithJob(
 ): Promise<any> {
     const intervalMs = options.intervalMs ?? 2000;
 
+    const jobItem = Jobs.createItem({
+        title: options.taskName ?? 'Unknown task',
+    });
+
     const token = await getAccessToken();
     const response = await fetchFn(url, {
         method: 'post',
@@ -77,7 +84,11 @@ async function postWithJob(
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+            ...body,
+            fast: false,
+            // Add any additional headers or data here
+        }),
         mode: 'cors',
     });
 
@@ -89,12 +100,36 @@ async function postWithJob(
         );
         return response.json();
     } else if (response.status === 202) {
+        const startTime = Date.now();
+        const elapsedTime = () => Date.now() - startTime;
+        const elapsedTimeStr = () => {
+            const elapsed = elapsedTime();
+
+            const seconds = Math.floor((elapsed % (1000 * 60)) / 1000);
+            const minutes = Math.floor(
+                (elapsed % (1000 * 60 * 60)) / (1000 * 60),
+            );
+            const hours = Math.floor(elapsed / (1000 * 60 * 60));
+
+            // Only show hours if more than 1 hour
+            // Only show minutes if more than 1 minute
+            const hoursStr = hours > 0 ? `${hours}h ` : '';
+            const minutesStr = minutes > 0 ? `${minutes}m ` : '';
+            const secondsStr = `${seconds}s`;
+            return `${hoursStr}${minutesStr}${secondsStr}`;
+        };
+
         // Job accepted; poll for completion
         const data = await response.json();
         const jobId = data.jobId;
         if (typeof jobId !== 'string') {
             throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
         }
+
+        Jobs.updateItem({
+            jobId: jobItem.jobId,
+            message: 'Polling job status...',
+        });
 
         options.onProgress?.(
             options.taskName
@@ -114,12 +149,24 @@ async function postWithJob(
                         : 'Waiting for job to complete...',
                 );
             }
+
+            Jobs.updateItem({
+                jobId: jobItem.jobId,
+                message: `Polling job status... (${elapsedTimeStr()})`,
+            });
+
             await sleep(intervalMs);
             const status = await pollJobStatus(jobId);
             if (status.status === 'pending') {
                 continue;
             } else if (status.status === 'completed') {
                 if (!status.resultUrl) {
+                    Jobs.updateItem({
+                        jobId: jobItem.jobId,
+                        message: 'Results URL missing',
+                        status: 'failed',
+                    });
+
                     throw new Error(
                         `Missing resultUrl in job status: ${JSON.stringify(status)}`,
                     );
@@ -131,8 +178,21 @@ async function postWithJob(
                 });
                 if (!resultResp.ok) {
                     const errText = await resultResp.text();
+
+                    Jobs.updateItem({
+                        jobId: jobItem.jobId,
+                        message: `Error fetching results: ${errText}`,
+                        status: 'failed',
+                    });
+
                     throw new Error(`${resultResp.statusText}: ${errText}`);
                 }
+
+                Jobs.updateItem({
+                    jobId: jobItem.jobId,
+                    message: `Job completed in ${elapsedTimeStr()}`,
+                    status: 'completed',
+                });
 
                 options.onProgress?.(
                     options.taskName
@@ -154,6 +214,7 @@ async function postWithJob(
  * Initialize the API client with base URL and token provider.
  */
 export function configureClient(opts: ConfigureOptions): void {
+    debugger;
     baseUrl = opts.baseUrl;
     getAccessToken = opts.getAccessToken;
 }
@@ -224,11 +285,15 @@ export async function generateThemes(
 ): Promise<{ themes: Theme[] }> {
     console.log('Generating themes for inputs:', inputs);
 
+    const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
+
     const url = `${baseUrl}/pulse/v1/themes`;
+    // const accessToken = await getAccessToken();
+    // debugger;
     const data = await postWithJob(
         url,
         {
-            inputs,
+            inputs: sampledInputs,
             fast: options?.fast ?? false,
         },
         {
@@ -246,6 +311,156 @@ export async function generateThemes(
 interface CompareSimilarityOptions {
     fast?: boolean;
     onProgress?: (message: string) => void;
+    split?:
+        | boolean
+        | {
+              set_a?: 'newline';
+              set_b?: 'newline';
+          }
+        | undefined;
+}
+
+function shouldBatchSimilarityRequest({
+    setA,
+    setB,
+    options,
+}: {
+    setA: string[];
+    setB: string[];
+    options?: CompareSimilarityOptions;
+}): boolean {
+    const { fast } = options ?? {};
+    const oversized = setA.length * setB.length > 10_000;
+
+    return oversized && !fast;
+}
+
+export async function batchSimilarity(
+    setA: string[],
+    setB: string[],
+    options?: CompareSimilarityOptions,
+): Promise<SimilarityResponse> {
+    const url = `${baseUrl}/pulse/v1/similarity`;
+    const result: SimilarityResponse = { matrix: [] };
+
+    const shorter: 'setA' | 'setB' =
+        setA.length < setB.length ? 'setA' : 'setB';
+
+    const batches: {
+        set_a: string[];
+        set_b: string[];
+        options: {
+            fast?: boolean;
+            split?: boolean | { set_a?: 'newline'; set_b?: 'newline' };
+        };
+    }[] = [];
+
+    if (shorter === 'setA') {
+        // Split setB into batches
+        const maxBatchSize = Math.floor(50_000 / setA.length);
+        const batchesNeeded = Math.ceil(setB.length / maxBatchSize);
+        const batchSize = Math.ceil(setB.length / batchesNeeded);
+        const setBBatches = createBatches(setB, batchSize);
+
+        setBBatches.forEach((batch) => {
+            batches.push({
+                set_a: setA,
+                set_b: batch,
+                options: {
+                    fast: false,
+                    split: options?.split ?? false,
+                },
+            });
+        });
+    } else {
+        // Split setA into batches
+        const maxBatchSize = Math.floor(50_000 / setB.length);
+        const batchesNeeded = Math.ceil(setA.length / maxBatchSize);
+        const batchSize = Math.ceil(setA.length / batchesNeeded);
+        const setABatches = createBatches(setA, batchSize);
+
+        setABatches.forEach((batch) => {
+            batches.push({
+                set_a: batch,
+                set_b: setB,
+                options: {
+                    fast: false,
+                    split: options?.split ?? false,
+                },
+            });
+        });
+    }
+
+    const { results, errors } = await PromisePool.for(batches)
+        .withConcurrency(4)
+        .onTaskFinished((_, pool) => {
+            options?.onProgress?.(
+                `Processed ${pool.processedPercentage()}% of similarity batches`,
+            );
+        })
+        .useCorrespondingResults()
+        .process(async (batch, index) => {
+            const response: SimilarityResponse = { matrix: [] };
+            const data: any = await postWithJob(url, batch, {
+                onProgress: (msg) => {
+                    options?.onProgress?.(
+                        `Batch ${index + 1} of ${batches.length}: ${msg}`,
+                    );
+                },
+                taskName: 'Similarity comparison',
+            });
+
+            if (data.matrix) {
+                response.matrix = data.matrix;
+            }
+            if (data.flattened) {
+                // Reconstruct matrix from flattened array
+                const n = setA.length;
+                const m = setB.length;
+                response.matrix = [];
+                for (let i = 0; i < n; i++) {
+                    response.matrix[i] = data.flattened.slice(
+                        i * m,
+                        (i + 1) * m,
+                    );
+                }
+            }
+            return response;
+        });
+
+    let throwError = false;
+    errors.forEach((error) => {
+        console.error(error);
+        throwError = true;
+    });
+
+    if (throwError) {
+        console.error(
+            `Batch similarity request failed with ${errors.length} errors.`,
+        );
+        throw new Error(
+            `Batch similarity request failed with ${errors.length} errors.`,
+        );
+    }
+
+    debugger;
+    for (let i = 0; i < results.length; i++) {
+        const res = results[i];
+        if (typeof res !== 'symbol') {
+            result.matrix.push(...res.matrix);
+        } else {
+            console.error(`Batch ${i} failed with error: ${res.description}`);
+            throwError = true;
+        }
+    }
+
+    if (throwError) {
+        throw new Error(
+            `Batch similarity request failed with ${errors.length} errors.`,
+        );
+    }
+
+    return result;
 }
 
 /**
@@ -257,33 +472,38 @@ export async function compareSimilarity(
     setB: string[],
     options?: CompareSimilarityOptions,
 ): Promise<SimilarityResponse> {
-    const url = `${baseUrl}/pulse/v1/similarity`;
-    const data: any = await postWithJob(
-        url,
-        {
-            set_a: setA,
-            set_b: setB,
-            fast: options?.fast ?? false,
-        },
-        {
-            onProgress: options?.onProgress,
-            taskName: 'Similarity comparison',
-        },
-    );
-    const result: SimilarityResponse = { matrix: [] };
-    if (data.matrix) {
-        result.matrix = data.matrix;
-    }
-    if (data.flattened) {
-        // Reconstruct matrix from flattened array
-        const n = setA.length;
-        const m = setB.length;
-        result.matrix = [];
-        for (let i = 0; i < n; i++) {
-            result.matrix[i] = data.flattened.slice(i * m, (i + 1) * m);
+    if (shouldBatchSimilarityRequest({ setA, setB, options })) {
+        return batchSimilarity(setA, setB, options);
+    } else {
+        const url = `${baseUrl}/pulse/v1/similarity`;
+        const result: SimilarityResponse = { matrix: [] };
+        const data: any = await postWithJob(
+            url,
+            {
+                set_a: setA,
+                set_b: setB,
+                fast: options?.fast ?? false,
+                split: options?.split ?? false,
+            },
+            {
+                onProgress: options?.onProgress,
+                taskName: 'Similarity comparison',
+            },
+        );
+
+        if (data.matrix) {
+            result.matrix = data.matrix;
+        } else if (data.flattened) {
+            // Reconstruct matrix from flattened array
+            const n = setA.length;
+            const m = setB.length;
+            result.matrix = [];
+            for (let i = 0; i < n; i++) {
+                result.matrix[i] = data.flattened.slice(i * m, (i + 1) * m);
+            }
         }
+        return result;
     }
-    return result;
 }
 
 /**

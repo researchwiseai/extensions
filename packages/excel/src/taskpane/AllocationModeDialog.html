@@ -5,28 +5,52 @@
         <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <!-- Fabric Core CSS for Office Add-in styling -->
+        <link rel="stylesheet"
+              href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css" />
+        <style>
+          /* Layout and sizing */
+          html, body { margin: 0; padding: 0; height: 100%; }
+          body { display: flex; flex-direction: column; }
+          .content { flex: 1; padding: 20px; box-sizing: border-box; }
+          .footer { padding: 0 20px 20px; text-align: right; }
+          /* Dropdown sizing */
+          .ms-Dropdown { width: 100%; min-height: 40px; }
+          .ms-Dropdown-select { height: 38px; line-height: 38px; }
+        </style>
         <title>Select Theme Allocation Mode</title>
     </head>
-    <body style="font-family: 'Segoe UI', sans-serif; margin: 20px">
-        <h2>Select Theme Allocation Mode</h2>
-        <div>
-            <input
-                type="radio"
-                id="mode-auto"
-                name="mode"
-                value="automatic"
-                checked
-            />
-            <label for="mode-auto">Generate new themes automatically</label>
+    <body class="ms-Fabric ms-font-m">
+        <div class="content">
+            <h2 class="ms-font-l ms-fontWeight-semibold" style="margin-bottom: 16px">Select Theme Allocation Mode</h2>
+        <div class="ms-ChoiceField">
+            <input type="radio" id="mode-auto" name="mode" value="automatic" checked
+                   class="ms-ChoiceField-input" />
+            <label for="mode-auto" class="ms-ChoiceField-field">
+                <span class="ms-Label">Generate new themes automatically</span>
+            </label>
         </div>
-        <div style="margin-top: 10px">
-            <input type="radio" id="mode-set" name="mode" value="set" />
-            <label for="mode-set">Use existing theme set:</label><br />
-            <select id="setSelect" style="width: 100%" disabled></select>
+        <div class="ms-ChoiceField" style="margin-top: 10px">
+            <input type="radio" id="mode-set" name="mode" value="set"
+                   class="ms-ChoiceField-input" />
+            <label for="mode-set" class="ms-ChoiceField-field">
+                <span class="ms-Label">Use existing theme set:</span>
+            </label>
+            <div style="margin-top: 6px">
+                <div class="ms-Dropdown" style="width: 100%;">
+                    <select id="setSelect" class="ms-Dropdown-select" disabled></select>
+                    <i class="ms-Icon ms-Icon--ChevronDown ms-Dropdown-caretDown"></i>
+                </div>
+            </div>
         </div>
-        <div style="margin-top: 20px; text-align: right">
-            <button id="cancelBtn" style="margin-right: 8px">Cancel</button>
-            <button id="okBtn">OK</button>
+            </div>
+        <div class="footer">
+            <button id="cancelBtn" class="ms-Button" style="margin-right: 8px">
+                <span class="ms-Button-label">Cancel</span>
+            </button>
+            <button id="okBtn" class="ms-Button ms-Button--primary">
+                <span class="ms-Button-label">OK</span>
+            </button>
         </div>
         <script>
             Office.onReady(() => {
@@ -53,7 +77,8 @@
                 document
                     .getElementById('mode-auto')
                     .addEventListener('change', (e) => {
-                        select.disabled = e.target.checked ? true : true; // always disable when auto
+                        // disable dropdown when automatic mode is selected
+                        select.disabled = e.target.checked;
                     });
                 document
                     .getElementById('okBtn')

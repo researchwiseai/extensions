@@ -1,155 +1,425 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-  xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
-  <Id>e6d579a3-3169-458f-a1f3-c5bf0a868198</Id>
-  <Version>1.0.0.0</Version>
-  <ProviderName>ResearchWiseAI</ProviderName>
-  <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Pulse" />
-  <Description DefaultValue="Use ResearchWiseAI's Pulse Data Analysis API" />
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png" />
-  <SupportUrl DefaultValue="https://researchwiseai.com/docs" />
-  <AppDomains>
-    <AppDomain>https://researchwiseai.com</AppDomain>
-    <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
-    <AppDomain>https://research-wise-ai-eu.eu.auth0.com</AppDomain>
-    <!-- Dialog host for range confirmation -->
-    <AppDomain>https://localhost:3000</AppDomain>
-  </AppDomains>
-  <Hosts>
-    <Host Name="Workbook" />
-  </Hosts>
-  <Requirements>
-    <Sets DefaultMinVersion="1.1">
-      <Set Name="CustomFunctionsRuntime" MinVersion="1.1" />
-    </Sets>
-  </Requirements>
-  <DefaultSettings>
-    <SourceLocation DefaultValue="https://localhost:3000/taskpane.html" />
-  </DefaultSettings>
-  <Permissions>ReadWriteDocument</Permissions>
-  <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
-    xsi:type="VersionOverridesV1_0">
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+           xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+           xsi:type="TaskPaneApp">
+    <Id>e6d579a3-3169-458f-a1f3-c5bf0a868198</Id>
+    <Version>1.0.0.0</Version>
+    <ProviderName>ResearchWiseAI</ProviderName>
+    <DefaultLocale>en-US</DefaultLocale>
+    <DisplayName DefaultValue="Pulse" />
+    <Description DefaultValue="Use ResearchWiseAI's Pulse Data Analysis API" />
+    <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
+    <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png" />
+    <SupportUrl DefaultValue="https://researchwiseai.com/docs" />
+    <AppDomains>
+        <AppDomain>https://researchwiseai.com</AppDomain>
+        <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
+        <AppDomain>https://research-wise-ai-eu.eu.auth0.com</AppDomain>
+        <AppDomain>https://localhost:3000</AppDomain>
+    </AppDomains>
     <Hosts>
-      <Host xsi:type="Workbook">
-        <AllFormFactors>
-          <ExtensionPoint xsi:type="CustomFunctions">
-            <Script>
-              <SourceLocation resid="Functions.Script.Url" />
-            </Script>
-            <Page>
-              <SourceLocation resid="Functions.Page.Url" />
-            </Page>
-            <Metadata>
-              <SourceLocation resid="Functions.Metadata.Url" />
-            </Metadata>
-            <Namespace resid="Functions.Namespace" />
-          </ExtensionPoint>
-        </AllFormFactors>
-        <DesktopFormFactor>
-          <GetStarted>
-            <Title resid="GetStarted.Title" />
-            <Description resid="GetStarted.Description" />
-            <LearnMoreUrl resid="GetStarted.LearnMoreUrl" />
-          </GetStarted>
-          <FunctionFile resid="Commands.Url" />
-          <ExtensionPoint xsi:type="PrimaryCommandSurface">
-            <OfficeTab id="TabHome">
-              <Group id="CommandsGroup">
-                <Label resid="CommandsGroup.Label" />
-                <Icon>
-                  <bt:Image size="16" resid="Icon.16x16" />
-                  <bt:Image size="32" resid="Icon.32x32" />
-                  <bt:Image size="80" resid="Icon.80x80" />
-                </Icon>
-                <Control xsi:type="Button" id="TaskpaneButton">
-                  <Label resid="TaskpaneButton.Label" />
-                  <Supertip>
-                    <Title resid="TaskpaneButton.Label" />
-                    <Description resid="TaskpaneButton.Tooltip" />
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16" />
-                    <bt:Image size="32" resid="Icon.32x32" />
-                    <bt:Image size="80" resid="Icon.80x80" />
-                  </Icon>
-                  <Action xsi:type="ShowTaskpane">
-                    <TaskpaneId>ButtonId1</TaskpaneId>
-                    <SourceLocation resid="Taskpane.Url" />
-                  </Action>
-                </Control>
-              </Group>
-            </OfficeTab>
-            <!-- Custom Pulse tab -->
-            <OfficeTab id="TabPulse">
-              <Label resid="PulseTab.Label" />
-              <Group id="PulseGroup">
-                <Label resid="PulseGroup.Label" />
-                <Icon>
-                  <bt:Image size="16" resid="Icon.16x16" />
-                  <bt:Image size="32" resid="Icon.32x32" />
-                  <bt:Image size="80" resid="Icon.80x80" />
-                </Icon>
-                <Control xsi:type="Button" id="AnalyzeSentimentButton">
-                  <Label resid="AnalyzeSentimentButton.Label" />
-                  <Supertip>
-                    <Title resid="AnalyzeSentimentButton.Label" />
-                    <Description resid="AnalyzeSentimentButton.Tooltip" />
-                  </Supertip>
-                  <Icon>
-                    <bt:Image size="16" resid="Icon.16x16" />
-                    <bt:Image size="32" resid="Icon.32x32" />
-                    <bt:Image size="80" resid="Icon.80x80" />
-                  </Icon>
-                  <Action xsi:type="ExecuteFunction">
-                    <FunctionName>analyzeSentiment</FunctionName>
-                  </Action>
-                </Control>
-              </Group>
-            </OfficeTab>
-          </ExtensionPoint>
-        </DesktopFormFactor>
-      </Host>
+        <Host Name="Workbook" />
     </Hosts>
-    <Resources>
-      <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png" />
-        <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png" />
-        <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png" />
-      </bt:Images>
-      <bt:Urls>
-        <bt:Url id="Functions.Script.Url" DefaultValue="https://localhost:3000/public/functions.js" />
-        <bt:Url id="Functions.Metadata.Url"
-          DefaultValue="https://localhost:3000/public/functions.json" />
-        <bt:Url id="Functions.Page.Url" DefaultValue="https://localhost:3000/public/functions.html" />
-        <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://researchwiseai.com/docs" />
-        <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html" />
-        <!-- URL for the range selection dialog -->
-        <bt:Url id="SelectRangeDialog.Url"
-          DefaultValue="https://localhost:3000/SelectRangeDialog.html" />
-      </bt:Urls>
-      <bt:ShortStrings>
-        <bt:String id="Functions.Namespace" DefaultValue="Pulse" />
-        <bt:String id="GetStarted.Title" DefaultValue="Get started with Pulse" />
-        <bt:String id="CommandsGroup.Label" DefaultValue="RWAI" />
-        <bt:String id="TaskpaneButton.Label" DefaultValue="Pulse" />
-        <!-- Pulse tab and controls labels -->
-        <bt:String id="PulseTab.Label" DefaultValue="Pulse" />
-        <bt:String id="PulseGroup.Label" DefaultValue="Pulse" />
-        <bt:String id="AnalyzeSentimentButton.Label" DefaultValue="Analyze Sentiment" />
-      </bt:ShortStrings>
-      <bt:LongStrings>
-        <bt:String id="GetStarted.Description"
-          DefaultValue="Pulse loaded successfully. Go to the Pulse pane to start analysis." />
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Click to open the Pulse task pane" />
-        <!-- Tooltip for Analyze Sentiment button -->
-        <bt:String id="AnalyzeSentimentButton.Tooltip"
-          DefaultValue="Analyze sentiment of the selected data" />
-      </bt:LongStrings>
-    </Resources>
-  </VersionOverrides>
+    <Requirements>
+        <Sets DefaultMinVersion="1.1">
+            <Set Name="SharedRuntime"
+                 MinVersion="1.1" />
+        </Sets>
+    </Requirements>
+    <DefaultSettings>
+        <SourceLocation DefaultValue="https://localhost:3000/shared-runtime.html" />
+    </DefaultSettings>
+    <Permissions>ReadWriteDocument</Permissions>
+    <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
+                      xsi:type="VersionOverridesV1_0">
+        <!-- Enable runtime updates to ribbon (show/hide tabs and controls) -->
+        <Requirements>
+            <bt:Sets DefaultMinVersion="1.1">
+                <bt:Set Name="RibbonApi"
+                        MinVersion="1.1" />
+            </bt:Sets>
+        </Requirements>
+        <Hosts>
+            <Host xsi:type="Workbook">
+                <Runtimes>
+                    <Runtime resid="SharedRuntime.Url"
+                             lifetime="long" />
+                </Runtimes>
+                <AllFormFactors />
+                <DesktopFormFactor>
+                    <GetStarted>
+                        <Title resid="GetStarted.Title" />
+                        <Description resid="GetStarted.Description" />
+                        <LearnMoreUrl resid="GetStarted.LearnMoreUrl" />
+                    </GetStarted>
+                    <FunctionFile resid="SharedRuntime.Url" />
+                    <ExtensionPoint xsi:type="PrimaryCommandSurface">
+                        <!-- Custom Pulse tab -->
+                        <CustomTab id="TabPulse">
+                            <Group id="SentimentGroup">
+                                <Label resid="SentimentGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button"
+                                         id="AnalyzeSentimentButton">
+                                    <Label resid="AnalyzeSentimentButton.Label" />
+                                    <Supertip>
+                                        <Title resid="AnalyzeSentimentButton.Label" />
+                                        <Description resid="AnalyzeSentimentButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="HeartIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="HeartIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="HeartIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>analyzeSentimentHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                            </Group>
+                            <Group id="ThemesGroup">
+                                <Label resid="ThemesGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button"
+                                         id="GenerateThemesButton">
+                                    <Label resid="GenerateThemesButton.Label" />
+                                    <Supertip>
+                                        <Title resid="GenerateThemesButton.Label" />
+                                        <Description resid="GenerateThemesButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="ChannelAddIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="ChannelAddIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="ChannelAddIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>generateThemesHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                                <Control xsi:type="Button"
+                                         id="AllocateThemesButton">
+                                    <Label resid="AllocateThemesButton.Label" />
+                                    <Supertip>
+                                        <Title resid="AllocateThemesButton.Label" />
+                                        <Description resid="AllocateThemesButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="ChannelLeftIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="ChannelLeftIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="ChannelLeftIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>allocateThemesHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                                <Control xsi:type="Button"
+                                         id="MatrixThemesButton">
+                                    <Label resid="MatrixThemesButton.Label" />
+                                    <Supertip>
+                                        <Title resid="MatrixThemesButton.Label" />
+                                        <Description resid="MatrixThemesButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="GroupListIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="GroupListIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="GroupListIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>matrixThemesHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                                <Control xsi:type="Button"
+                                         id="SimilarityMatrixThemesButton">
+                                    <Label resid="SimMatrixThemesBtn.Label" />
+                                    <Supertip>
+                                        <Title resid="SimMatrixThemesBtn.Label" />
+                                        <Description resid="SimMatrixThemesBtn.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="GridDotsIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="GridDotsIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="GridDotsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>similarityMatrixThemesHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                                <Control xsi:type="Button"
+                                         id="ManageThemesButton">
+                                    <Label resid="ManageThemesButton.Label" />
+                                    <Supertip>
+                                        <Title resid="ManageThemesButton.Label" />
+                                        <Description resid="ManageThemesButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="TextGrammarSettingsIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="TextGrammarSettingsIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="TextGrammarSettingsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>toggleThemeSetManager</FunctionName>
+                                    </Action>
+                                </Control>
+                            </Group>
+                            <Group id="TextGroup">
+                                <Label resid="TextGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button"
+                                         id="SplitIntoSentencesButton">
+                                    <Label resid="SplitIntoSentencesButton.Label" />
+                                    <Supertip>
+                                        <Title resid="SplitIntoSentencesButton.Label" />
+                                        <Description resid="SplitIntoSentencesButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="CircleDownSplitIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="CircleDownSplitIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="CircleDownSplitIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>splitIntoSentencesHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                            </Group>
+                            <Group id="PulseGroup">
+                                <Label resid="PulseGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button"
+                                         id="FeedButton">
+                                    <Label resid="FeedButton.Label" />
+                                    <Supertip>
+                                        <Title resid="FeedButton.Label" />
+                                        <Description resid="FeedButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="TaskListIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="TaskListIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="TaskListIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>openFeedHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                                <Control xsi:type="Button"
+                                         id="HomePulseStartButton">
+                                    <Label resid="HomePulseStartButton.Label" />
+                                    <Supertip>
+                                        <Title resid="HomePulseStartButton.Label" />
+                                        <Description resid="HomePulseStartButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="SettingsIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="SettingsIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="SettingsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>openSettingsHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                            </Group>
+                            <Label resid="PulseTab.Label" />
+                        </CustomTab>
+                    </ExtensionPoint>
+                </DesktopFormFactor>
+            </Host>
+        </Hosts>
+        <Resources>
+            <bt:Images>
+                <bt:Image id="Icon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icon-16.png" />
+                <bt:Image id="Icon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icon-32.png" />
+                <bt:Image id="Icon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icon-80.png" />
+                <bt:Image id="SettingsIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/cog-16.png" />
+                <bt:Image id="SettingsIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/cog-32.png" />
+                <bt:Image id="SettingsIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/cog-80.png" />
+                <bt:Image id="TextGrammarSettingsIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/text-grammar-settings-16.png" />
+                <bt:Image id="TextGrammarSettingsIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/text-grammar-settings-32.png" />
+                <bt:Image id="TextGrammarSettingsIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/text-grammar-settings-80.png" />
+                <bt:Image id="ChannelAddIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-add-16.png" />
+                <bt:Image id="ChannelAddIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-add-32.png" />
+                <bt:Image id="ChannelAddIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-add-80.png" />
+                <bt:Image id="ChannelLeftIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-left-16.png" />
+                <bt:Image id="ChannelLeftIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-left-32.png" />
+                <bt:Image id="ChannelLeftIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/channel-left-80.png" />
+                <bt:Image id="HeartIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/heart-16.png" />
+                <bt:Image id="HeartIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/heart-32.png" />
+                <bt:Image id="HeartIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/heart-80.png" />
+                <bt:Image id="GridDotsIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/grid-dots-16.png" />
+                <bt:Image id="GridDotsIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/grid-dots-32.png" />
+                <bt:Image id="GridDotsIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/grid-dots-80.png" />
+                <bt:Image id="CircleDownSplitIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/circle-down-split-16.png" />
+                <bt:Image id="CircleDownSplitIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/circle-down-split-32.png" />
+                <bt:Image id="CircleDownSplitIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/circle-down-split-80.png" />
+                <bt:Image id="GroupListIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/group-list-16.png" />
+                <bt:Image id="GroupListIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/group-list-32.png" />
+                <bt:Image id="GroupListIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/group-list-80.png" />
+                <bt:Image id="TaskListIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/task-list-16.png" />
+                <bt:Image id="TaskListIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/task-list-32.png" />
+                <bt:Image id="TaskListIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/task-list-80.png" />
+            </bt:Images>
+            <bt:Urls>
+                <bt:Url id="SharedRuntime.Url"
+                        DefaultValue="https://localhost:3000/shared-runtime.html" />
+                <bt:Url id="GetStarted.LearnMoreUrl"
+                        DefaultValue="https://researchwiseai.com/docs" />
+            </bt:Urls>
+            <bt:ShortStrings>
+                <bt:String id="Functions.Namespace"
+                           DefaultValue="Pulse" />
+                <bt:String id="GetStarted.Title"
+                           DefaultValue="Get started with Pulse" />
+                <bt:String id="HomePulseGroup.Label"
+                           DefaultValue="Pulse" />
+                <bt:String id="HomePulseStartButton.Label"
+                           DefaultValue="Settings" />
+                <bt:String id="FeedButton.Label"
+                           DefaultValue="Feed" />
+                <!-- Label for Analyze Sentiment button on Home tab -->
+                <bt:String id="AnalyzeSentimentRibBtn.Label"
+                           DefaultValue="Analyze Sentiment" />
+                <!-- Pulse tab and controls labels -->
+                <bt:String id="PulseTab.Label"
+                           DefaultValue="Pulse" />
+                <bt:String id="PulseGroup.Label"
+                           DefaultValue="Pulse" />
+                <bt:String id="SentimentGroup.Label"
+                           DefaultValue="Sentiment" />
+                <bt:String id="TextGroup.Label"
+                           DefaultValue="Text" />
+                <bt:String id="AnalyzeSentimentButton.Label"
+                           DefaultValue="Analyze" />
+                <bt:String id="SplitIntoSentencesButton.Label"
+                           DefaultValue="Split to sentences" />
+                <bt:String id="ThemesGroup.Label"
+                           DefaultValue="Themes" />
+                <bt:String id="GenerateThemesButton.Label"
+                           DefaultValue="Generate" />
+                <bt:String id="AllocateThemesButton.Label"
+                           DefaultValue="Single Code" />
+                <bt:String id="MatrixThemesButton.Label"
+                           DefaultValue="Multi Code" />
+                <bt:String id="SimMatrixThemesBtn.Label"
+                           DefaultValue="Similarity Matrix" />
+                <bt:String id="ManageThemesButton.Label"
+                           DefaultValue="Manage" />
+            </bt:ShortStrings>
+            <bt:LongStrings>
+                <bt:String id="GetStarted.Description"
+                           DefaultValue="Pulse loaded successfully. Go to the Pulse pane to start analysis." />
+                <bt:String id="HomePulseStartButton.Tooltip"
+                           DefaultValue="Click to open the Pulse settings in the task pane" />
+                <bt:String id="FeedButton.Tooltip"
+                           DefaultValue="Click to open the Pulse feed in the task pane" />
+                <!-- Tooltip for Analyze Sentiment button on Home tab -->
+                <bt:String id="AnalyzeSentimentRibBtn.Tooltip"
+                           DefaultValue="Analyze sentiment of selection" />
+                <bt:String id="SplitIntoSentencesButton.Tooltip"
+                           DefaultValue="Analyze sentiment of selection" />
+                <!-- Tooltip for Analyze Sentiment button -->
+                <bt:String id="AnalyzeSentimentButton.Tooltip"
+                           DefaultValue="Analyze sentiment of the selected data" />
+                <!-- Tooltip for Generate Themes button -->
+                <bt:String id="GenerateThemesButton.Tooltip"
+                           DefaultValue="Generate themes from the selected data" />
+                <bt:String id="AllocateThemesButton.Tooltip"
+                           DefaultValue="Allocate themes to the selected data" />
+                <bt:String id="MatrixThemesButton.Tooltip"
+                           DefaultValue="Create a new sheet with a binary table of inputs and themes" />
+                <bt:String id="SimMatrixThemesBtn.Tooltip"
+                           DefaultValue="Create a new sheet with a similarity table of inputs and themes" />
+                <bt:String id="ManageThemesButton.Tooltip"
+                           DefaultValue="Create, edit and delete theme sets for allocation" />
+            </bt:LongStrings>
+        </Resources>
+    </VersionOverrides>
 </OfficeApp>

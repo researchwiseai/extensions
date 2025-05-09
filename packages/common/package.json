@@ -1,34 +1,37 @@
 {
-  "name": "pulse-common",
-  "version": "0.1.0",
-  "private": true,
-  "main": "dist/index.js",
-  "source": "src/index.ts",
-  "dependencies": {
-    "cross-fetch": "^3.1.5"
-  },
-  "exports": {
-    ".": "./src/index.ts",
-    "./pkce": "./src/pkce.ts",
-    "./auth": "./src/auth.ts",
-    "./api": "./src/apiClient.ts",
-    "./input": "./src/input.ts",
-    "./org": "./src/org.ts",
-    "./themes": "./src/themes.ts"
-  },
-  "scripts": {
-    "build": "tsc -b",
-    "test": "bun test",
-    "lint": "eslint src --ext .ts",
-    "prepublishOnly": "bun run build"
-  },
-  "devDependencies": {
-    "@pollyjs/adapter-node-http": "^6.0.6",
-    "@pollyjs/core": "^6.0.6",
-    "@pollyjs/persister-fs": "^6.0.6",
-    "@types/bun": "^1.2.11",
-    "eslint": "^9.25.1",
-    "prettier": "^3.5.3",
-    "typescript": "^5.8.3"
-  }
+    "name": "pulse-common",
+    "version": "0.1.0",
+    "private": true,
+    "main": "dist/index.js",
+    "source": "src/index.ts",
+    "dependencies": {
+        "cross-fetch": "^3.1.5"
+    },
+    "exports": {
+        ".": "./src/index.ts",
+        "./pkce": "./src/pkce.ts",
+        "./auth": "./src/auth.ts",
+        "./api": "./src/apiClient.ts",
+        "./input": "./src/input.ts",
+        "./org": "./src/org.ts",
+        "./jobs": "./src/jobs.ts",
+        "./storage": "./src/storage.ts",
+        "./themes": "./src/themes.ts"
+    },
+    "scripts": {
+        "build": "tsc -b",
+        "test": "bun test",
+        "lint": "eslint src --ext .ts",
+        "prepublishOnly": "bun run build"
+    },
+    "devDependencies": {
+        "@pollyjs/adapter-node-http": "^6.0.6",
+        "@pollyjs/core": "^6.0.6",
+        "@pollyjs/persister-fs": "^6.0.6",
+        "@supercharge/promise-pool": "^3.2.0",
+        "@types/bun": "^1.2.11",
+        "eslint": "^9.25.1",
+        "prettier": "^3.5.3",
+        "typescript": "^5.8.3"
+    }
 }

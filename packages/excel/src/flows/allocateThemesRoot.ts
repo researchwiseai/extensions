@@ -1,8 +1,20 @@
 import { getThemeSets } from 'pulse-common/themes';
+import { allocateThemesAutomaticFlow } from './allocateThemesAutomatic';
+import { allocateThemesFromSetFlow } from './allocateThemesFromSet';
 
-function openDialog(
+interface AutomaticMode {
+    mode: 'automatic';
+}
+
+interface SetMode {
+    mode: 'set';
+    setName: string;
+}
+type AllocationMode = AutomaticMode | SetMode;
+
+function openAllocationModeDialog(
     themeSetNames: string[],
-    resolve: (value: string | null) => void,
+    resolve: (value: AllocationMode) => void,
     reject: (reason?: any) => void,
 ) {
     console.log('Opening allocation mode dialog');
@@ -16,7 +28,12 @@ function openDialog(
             if (result.status === Office.AsyncResultStatus.Failed) {
                 if (result.error.code === 12007) {
                     setTimeout(
-                        () => openDialog(themeSetNames, resolve, reject),
+                        () =>
+                            openAllocationModeDialog(
+                                themeSetNames,
+                                resolve,
+                                reject,
+                            ),
                         100,
                     );
                 } else {
@@ -34,9 +51,12 @@ function openDialog(
                             return;
                         }
                         try {
-                            const msg = JSON.parse(arg.message);
+                            console.log('Dialog message received', arg);
+                            const msg = JSON.parse(
+                                arg.message,
+                            ) as AllocationMode;
                             dialog.close();
-                            resolve(msg.range);
+                            resolve(msg);
                         } catch (e) {
                             dialog.close();
                             reject(e);
@@ -51,11 +71,21 @@ function openDialog(
 export async function allocateThemesRoot(
     context: Excel.RequestContext,
     range: string,
-): Promise<string | null> {
+) {
     const themeSets = await getThemeSets();
     const themeSetNames = themeSets.map((set) => set.name);
 
-    return await new Promise((resolve, reject) => {
-        openDialog(themeSetNames, resolve, reject);
-    });
+    const themeSetOrigin = await new Promise<AllocationMode>(
+        (resolve, reject) => {
+            openAllocationModeDialog(themeSetNames, resolve, reject);
+        },
+    );
+
+    console.log('Theme set origin', themeSetOrigin);
+
+    if (themeSetOrigin.mode === 'automatic') {
+        await allocateThemesAutomaticFlow(context, range);
+    } else {
+        await allocateThemesFromSetFlow(context, range, themeSetOrigin.setName);
+    }
 }

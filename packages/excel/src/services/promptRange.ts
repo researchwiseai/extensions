@@ -3,7 +3,7 @@
  * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
  * @returns The confirmed range string, or null if cancelled.
  */
-export function promptRange(defaultRange: string): Promise<string | null> {
+export function promptRange(defaultRange: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const url = `${window.location.origin}/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`;
         Office.context.ui.displayDialogAsync(
@@ -37,4 +37,12 @@ export function promptRange(defaultRange: string): Promise<string | null> {
             },
         );
     });
+}
+
+export async function confirmRange(context: Excel.RequestContext) {
+    const sel = context.workbook.getSelectedRange();
+    sel.load('address');
+    await context.sync();
+    const defaultAddr: string = sel.address;
+    return await promptRange(defaultAddr);
 }
