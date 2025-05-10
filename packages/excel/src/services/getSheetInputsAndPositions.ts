@@ -32,14 +32,30 @@ export async function getSheetInputsAndPositions(
     }
 
     const target = sheet.getRange(rangeNotation);
-    target.load(['values', 'rowIndex', 'columnIndex']);
+    target.load(['rowIndex', 'columnIndex', 'rowCount', 'columnCount']);
 
     await context.sync();
 
-    const values = target.values;
+    const batchSize = 1000;
+    const values: any[][] = [];
+    const { rowIndex, columnIndex, rowCount, columnCount } = target;
+
+    for (let rowStart = 0; rowStart < rowCount; rowStart += batchSize) {
+        const rowEnd = Math.min(rowStart + batchSize, rowCount);
+        const batchRange = sheet.getRangeByIndexes(
+            rowIndex + rowStart,
+            columnIndex,
+            rowEnd - rowStart,
+            columnCount,
+        );
+        batchRange.load('values');
+        await context.sync();
+        values.push(...batchRange.values);
+    }
+
     const { inputs, positions } = extractInputs(values, {
-        rowOffset: target.rowIndex + 1,
-        colOffset: target.columnIndex + 1,
+        rowOffset: rowIndex + 1,
+        colOffset: columnIndex + 1,
     });
 
     if (inputs.length === 0) {

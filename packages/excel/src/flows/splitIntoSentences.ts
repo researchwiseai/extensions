@@ -29,13 +29,29 @@ export async function splitIntoSentencesFlow(
     console.log('sentences', sentences);
     console.log('result', result);
 
+    const batchSize = 1000;
+    let batch: { cell: Excel.Range; value: string }[] = [];
+
     positions.forEach((pos, i) => {
         const sens = sentences[i];
         sens.forEach((s, j) => {
             const cell = sheet.getCell(pos.row - 1, pos.col + j);
-            cell.values = [[s.segment]];
+            batch.push({ cell, value: s.segment });
+
+            if (batch.length >= batchSize) {
+                batch.forEach(({ cell, value }) => {
+                    cell.values = [[value]];
+                });
+                batch = [];
+                context.sync();
+            }
         });
     });
 
-    await context.sync();
+    if (batch.length > 0) {
+        batch.forEach(({ cell, value }) => {
+            cell.values = [[value]];
+        });
+        await context.sync();
+    }
 }

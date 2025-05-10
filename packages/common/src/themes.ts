@@ -38,6 +38,21 @@ export async function saveThemeSet(
     await storage.set(STORAGE_KEY, sets);
 }
 
+export async function saveAllThemeSets(
+    themeSets: ThemeSet<ShortTheme | Theme>[],
+): Promise<void> {
+    if (!storage) throw new Error('Storage not configured');
+    const sets = themeSets.map((set) => ({
+        name: set.name,
+        themes: set.themes.map((theme) => ({
+            description: undefined,
+            shortLabel: undefined,
+            ...theme,
+        })),
+    }));
+    await storage.set(STORAGE_KEY, sets);
+}
+
 /**
  * Delete a theme set by name.
  */
@@ -208,8 +223,8 @@ export async function splitSimilarityMatrix(
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
         sentenceSets.map((s) => s.segment),
-        themes.map((t) => `${t.label}: - ${t.representatives.join(', ')}`),
-        options,
+        themes.map((t) => t.representatives.join('\n')),
+        { ...options, split: { set_b: 'newline' } },
     );
 
     if (options?.normalize !== false) {

@@ -6,13 +6,12 @@ import { Feed } from './Feed';
 import { TaskpaneApi } from './api';
 import { View } from './types';
 import { GoToViewEvent } from './events';
-import { configureStorage } from 'pulse-common/storage';
 import { setupExcelPKCEAuth } from './pkceAuth';
 import { getAccessToken } from 'pulse-common/auth';
 import { configureClient } from 'pulse-common/api';
 import { Unauthenticated } from './Unauthenticated';
 import * as Ribbon from '../services/ribbon';
-import { ModalRoot } from '../modal/components/ModalRoot';
+import { initializeLocalStorage } from '../services/localStorage';
 
 export function Taskpane({ api }: { api: TaskpaneApi }) {
     const [view, setView] = useState<View>();
@@ -26,6 +25,15 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
             console.log('Taskpane event', event);
             if (event instanceof GoToViewEvent) {
                 setView(event.view);
+
+                const token = sessionStorage.getItem('pkce_token');
+                const email = sessionStorage.getItem('user-email');
+                const orgId = sessionStorage.getItem('org-id');
+                if (token && email && orgId) {
+                    Ribbon.enableRibbonButtons();
+                } else {
+                    Ribbon.disableRibbonButtons();
+                }
             }
         };
         const removeViewChangeListener = api.onViewChange(handleViewChange);
@@ -64,21 +72,7 @@ const taskpaneApi = new TaskpaneApi();
 Office.onReady().then(() => {
     Office.addin.setStartupBehavior(Office.StartupBehavior.load);
 
-    configureStorage({
-        async get(key) {
-            const data = sessionStorage.getItem(`pulse-${key}`);
-            if (data) {
-                return JSON.parse(data);
-            }
-            return null;
-        },
-        async set(key, value) {
-            sessionStorage.setItem(`pulse-${key}`, JSON.stringify(value));
-        },
-        async delete(key) {
-            sessionStorage.removeItem(`pulse-${key}`);
-        },
-    });
+    initializeLocalStorage();
 
     // Determine login state from sessionStorage
     const storedToken = sessionStorage.getItem('pkce_token');
@@ -86,7 +80,7 @@ Office.onReady().then(() => {
     const organization = sessionStorage.getItem('org-id');
     const redirectUri = `${window.location.origin}/auth-callback.html`;
 
-    setInterval(() => {
+    setTimeout(() => {
         // Check auth and then disable or enable ribbon buttons
         const token = sessionStorage.getItem('pkce_token');
         const email = sessionStorage.getItem('user-email');
@@ -96,7 +90,7 @@ Office.onReady().then(() => {
         } else {
             Ribbon.disableRibbonButtons();
         }
-    }, 1000);
+    }, 10_000);
 
     if (storedToken && storedEmail && organization) {
         // Already authenticated: configure and show authenticated view

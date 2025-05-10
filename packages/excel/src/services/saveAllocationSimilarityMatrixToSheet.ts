@@ -41,18 +41,19 @@ export async function saveAllocationMatrixToSheet({
     // combine headers and data
     const values = [headerRow, ...dataRows];
 
-    // write the range starting at A1
-    const range = sheet
-        .getRange('A1')
-        .getResizedRange(values.length - 1, values[0].length - 1);
-    range.values = values;
+    // write the range in batches of 1000 rows at a time
+    const batchSize = 1000;
+    for (let i = 0; i < values.length; i += batchSize) {
+        const batch = values.slice(i, i + batchSize);
+        const range = sheet
+            .getRange(`A${i + 1}`)
+            .getResizedRange(batch.length - 1, batch[0].length - 1);
+        range.values = batch;
 
-    // // Make the whole of row A bold, double height and text wrapping
-    // const colA = sheet.getRange('A1:A1000');
-    // colA.format.font.bold = true;
-    // colA.format.columnWidth = 50;
+        await context.sync();
+    }
 
-    // Make the first column bold and double width
+    // Make the first row bold, double height, and text wrapping
     const row1 = sheet.getRange('A1:AZ1');
     row1.format.font.bold = true;
     row1.format.rowHeight = 30;

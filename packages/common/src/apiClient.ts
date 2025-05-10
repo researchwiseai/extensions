@@ -59,6 +59,8 @@ interface PostWithJobOptions {
     intervalMs?: number;
     onProgress?: (message: string) => void;
     taskName?: string;
+    batchNumber?: number;
+    batchCount?: number;
 }
 
 /**
@@ -72,8 +74,11 @@ async function postWithJob(
 ): Promise<any> {
     const intervalMs = options.intervalMs ?? 2000;
 
+    const suffix = options.batchNumber
+        ? ` (# ${options.batchNumber} of ${options.batchCount})`
+        : '';
     const jobItem = Jobs.createItem({
-        title: options.taskName ?? 'Unknown task',
+        title: (options.taskName ?? 'Unknown task') + suffix,
     });
 
     const token = await getAccessToken();
@@ -214,7 +219,6 @@ async function postWithJob(
  * Initialize the API client with base URL and token provider.
  */
 export function configureClient(opts: ConfigureOptions): void {
-    debugger;
     baseUrl = opts.baseUrl;
     getAccessToken = opts.getAccessToken;
 }
@@ -288,8 +292,6 @@ export async function generateThemes(
     const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
 
     const url = `${baseUrl}/pulse/v1/themes`;
-    // const accessToken = await getAccessToken();
-    // debugger;
     const data = await postWithJob(
         url,
         {
@@ -352,6 +354,7 @@ export async function batchSimilarity(
         options: {
             fast?: boolean;
             split?: boolean | { set_a?: 'newline'; set_b?: 'newline' };
+            flattened?: boolean;
         };
     }[] = [];
 
@@ -369,6 +372,7 @@ export async function batchSimilarity(
                 options: {
                     fast: false,
                     split: options?.split ?? false,
+                    flattened: false,
                 },
             });
         });
@@ -386,6 +390,7 @@ export async function batchSimilarity(
                 options: {
                     fast: false,
                     split: options?.split ?? false,
+                    flattened: false,
                 },
             });
         });
@@ -400,7 +405,6 @@ export async function batchSimilarity(
         })
         .useCorrespondingResults()
         .process(async (batch, index) => {
-            const response: SimilarityResponse = { matrix: [] };
             const data: any = await postWithJob(url, batch, {
                 onProgress: (msg) => {
                     options?.onProgress?.(
@@ -408,24 +412,11 @@ export async function batchSimilarity(
                     );
                 },
                 taskName: 'Similarity comparison',
+                batchNumber: index + 1,
+                batchCount: batches.length,
             });
 
-            if (data.matrix) {
-                response.matrix = data.matrix;
-            }
-            if (data.flattened) {
-                // Reconstruct matrix from flattened array
-                const n = setA.length;
-                const m = setB.length;
-                response.matrix = [];
-                for (let i = 0; i < n; i++) {
-                    response.matrix[i] = data.flattened.slice(
-                        i * m,
-                        (i + 1) * m,
-                    );
-                }
-            }
-            return response;
+            return data as SimilarityResponse;
         });
 
     let throwError = false;

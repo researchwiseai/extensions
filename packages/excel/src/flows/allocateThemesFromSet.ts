@@ -1,8 +1,10 @@
-import { extractInputs } from 'pulse-common/input';
 import {
     allocateThemes as allocateThemesApi,
     getThemeSets,
+    ShortTheme,
 } from 'pulse-common/themes';
+import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { Pos } from 'pulse-common';
 
 export async function allocateThemesFromSetFlow(
     context: Excel.RequestContext,
@@ -11,27 +13,10 @@ export async function allocateThemesFromSetFlow(
 ) {
     console.log('Allocating themes from set', themeSetName);
 
-    const parts = range.split('!');
-    const sheetName = parts[0];
-    const rangeNotation = parts.slice(1).join('!');
-    const sheet = context.workbook.worksheets.getItem(sheetName);
-    const target = sheet.getRange(rangeNotation);
-    target.load(['values', 'rowIndex', 'columnIndex']);
-
-    await context.sync();
-
-    const values = target.values;
-    const { inputs, positions } = extractInputs(values, {
-        rowOffset: target.rowIndex + 1,
-        colOffset: target.columnIndex + 1,
-    });
-
-    if (inputs.length === 0) {
-        console.warn(
-            'No text found in selected data range for theme generation.',
-        );
-        return;
-    }
+    const { sheet, inputs, positions } = await getSheetInputsAndPositions(
+        context,
+        range,
+    );
 
     const themeSets = await getThemeSets();
     const themeSet = themeSets.find((set) => set.name === themeSetName);
@@ -47,10 +32,22 @@ export async function allocateThemesFromSetFlow(
         },
     });
 
-    positions.forEach((pos, i) => {
-        const cell = sheet.getCell(pos.row - 1, pos.col);
-        cell.values = [[allocations[i].theme.label]];
-    });
+    await writeAllocationsToSheet(positions, sheet, allocations, context);
+}
 
-    await context.sync();
+export async function writeAllocationsToSheet(
+    positions: Pos[],
+    sheet: Excel.Worksheet,
+    allocations: { theme: ShortTheme; score: number }[],
+    context: Excel.RequestContext,
+) {
+    const batchSize = 1000;
+    for (let i = 0; i < positions.length; i += batchSize) {
+        const batch = positions.slice(i, i + batchSize);
+        batch.forEach((pos, j) => {
+            const cell = sheet.getCell(pos.row - 1, pos.col);
+            cell.values = [[allocations[i + j].theme.label]];
+        });
+        await context.sync();
+    }
 }

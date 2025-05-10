@@ -1,5 +1,6 @@
 import { allocateThemes as allocateThemesApi } from 'pulse-common/themes';
 import { themeGenerationFlow } from './themeGenerationFlow';
+import { writeAllocationsToSheet } from './allocateThemesFromSet';
 
 export async function allocateThemesAutomaticFlow(
     context: Excel.RequestContext,
@@ -17,10 +18,5 @@ export async function allocateThemesAutomaticFlow(
         },
     });
 
-    positions.forEach((pos, i) => {
-        const cell = sheet.getCell(pos.row - 1, pos.col);
-        cell.values = [[allocations[i].theme.label]];
-    });
-
-    await context.sync();
+    await writeAllocationsToSheet(positions, sheet, allocations, context);
 }
