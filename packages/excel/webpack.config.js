@@ -35,7 +35,10 @@ module.exports = async (env, options) => {
             functions: './src/functions/functions.ts',
         },
         output: {
+            // Clean output and set public path for assets
             clean: true,
+            // In development serve from root; in production, prefix with /extensions/
+            publicPath: dev ? '/' : '/extensions/',
         },
         resolve: {
             extensions: ['.tsx', '.ts', '.html', '.js'],
