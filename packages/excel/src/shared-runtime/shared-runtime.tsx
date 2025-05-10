@@ -7,6 +7,7 @@ import { splitIntoSentencesFlow } from '../flows/splitIntoSentences';
 import { similarityMatrixThemesRootFlow } from '../flows/similarityMatrixThemesRoot';
 import { openFeedHandler } from '../taskpane/Taskpane';
 import { modalApi } from '../modal/api';
+import { getRelativeUrl } from '../services/relativeUrl';
 
 function analyzeSentimentHandler(event: any) {
     Excel.run(async (context) => {
@@ -151,7 +152,7 @@ let dialog: Promise<unknown> | null = null;
 
 function _dialog() {
     return new Promise((resolve, reject) => {
-        const url = `${window.location.origin}/Modal.html`;
+        const url = getRelativeUrl('/Modal.html');
         Office.context.ui.displayDialogAsync(
             url,
             { height: 60, width: 50, displayInIframe: true },

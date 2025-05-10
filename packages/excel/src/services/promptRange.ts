@@ -1,3 +1,5 @@
+import { getRelativeUrl } from './relativeUrl';
+
 /**
  * Prompts the user to confirm or change the range via a dialog.
  * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
@@ -5,7 +7,9 @@
  */
 export function promptRange(defaultRange: string): Promise<string> {
     return new Promise((resolve, reject) => {
-        const url = `${window.location.origin}/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`;
+        const url = getRelativeUrl(
+            `/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
+        );
         Office.context.ui.displayDialogAsync(
             url,
             { height: 30, width: 20, displayInIframe: true },

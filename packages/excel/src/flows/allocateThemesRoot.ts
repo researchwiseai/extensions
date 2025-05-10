@@ -1,6 +1,7 @@
 import { getThemeSets } from 'pulse-common/themes';
 import { allocateThemesAutomaticFlow } from './allocateThemesAutomatic';
 import { allocateThemesFromSetFlow } from './allocateThemesFromSet';
+import { getRelativeUrl } from '../services/relativeUrl';
 
 interface AutomaticMode {
     mode: 'automatic';
@@ -18,9 +19,13 @@ function openAllocationModeDialog(
     reject: (reason?: any) => void,
 ) {
     console.log('Opening allocation mode dialog');
-    const url = `${window.location.origin}/AllocationModeDialog.html?sets=${encodeURIComponent(
-        JSON.stringify(themeSetNames),
-    )}`;
+
+    const url = getRelativeUrl(
+        `AllocationModeDialog.html?sets=${encodeURIComponent(
+            JSON.stringify(themeSetNames),
+        )}`,
+    );
+
     Office.context.ui.displayDialogAsync(
         url,
         { height: 60, width: 40, displayInIframe: true },
