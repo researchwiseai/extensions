@@ -1,4 +1,6 @@
 import { TaskpaneApi } from './api';
+// Import company logo via webpack asset module for correct path resolution
+import logo from '../../assets/logo-filled.png';
 import { DefaultButton, Text } from '@fluentui/react';
 import { signOut } from 'pulse-common/auth';
 
@@ -29,7 +31,7 @@ export function Settings({ setEmail }: Props) {
                 <img
                     width="90"
                     height="90"
-                    src="../../assets/logo-filled.png"
+                    src={logo}
                     alt="Pulse"
                     title="Pulse"
                 />

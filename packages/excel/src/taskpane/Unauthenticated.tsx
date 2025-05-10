@@ -1,6 +1,8 @@
 import { PrimaryButton, TextField } from '@fluentui/react';
 import type { TaskpaneApi } from './api';
 import { useCallback, useState } from 'react';
+// Import company logo via webpack asset module for correct path resolution
+import logo from '../../assets/logo-filled.png';
 import { findOrganization } from 'pulse-common/org';
 import { setupExcelPKCEAuth } from './pkceAuth';
 import { getAccessToken, signIn } from 'pulse-common/auth';
@@ -75,7 +77,7 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                 <img
                     width="90"
                     height="90"
-                    src="../../assets/logo-filled.png"
+                    src={logo}
                     alt="Pulse"
                     title="Pulse"
                 />
