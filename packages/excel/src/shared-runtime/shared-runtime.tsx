@@ -152,7 +152,7 @@ let dialog: Promise<unknown> | null = null;
 
 function _dialog() {
     return new Promise((resolve, reject) => {
-        const url = getRelativeUrl('/Modal.html');
+        const url = getRelativeUrl('Modal.html');
         Office.context.ui.displayDialogAsync(
             url,
             { height: 60, width: 50, displayInIframe: true },

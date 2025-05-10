@@ -8,7 +8,7 @@ import { getRelativeUrl } from './relativeUrl';
 export function promptRange(defaultRange: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const url = getRelativeUrl(
-            `/SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
+            `SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
         );
         Office.context.ui.displayDialogAsync(
             url,
