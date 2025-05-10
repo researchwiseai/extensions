@@ -116,6 +116,10 @@ module.exports = async (env, options) => {
                                 return content
                                     .toString()
                                     .replace(
+                                        '<AppDomain>https://localhost:3000</AppDomain>',
+                                        '<AppDomain>https://researchwiseai.github.io</AppDomain>',
+                                    )
+                                    .replace(
                                         new RegExp(
                                             urlDev + '(?:public/)?',
                                             'g',

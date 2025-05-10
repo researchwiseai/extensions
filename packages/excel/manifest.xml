@@ -12,7 +12,7 @@
     <Description DefaultValue="Use ResearchWiseAI's Pulse Data Analysis API" />
     <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
     <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png" />
-    <SupportUrl DefaultValue="https://researchwiseai.com/docs" />
+    <SupportUrl DefaultValue="https://researchwiseai.com/help" />
     <AppDomains>
         <AppDomain>https://researchwiseai.com</AppDomain>
         <AppDomain>https://wise-dev.eu.auth0.com</AppDomain>
@@ -351,7 +351,7 @@
                 <bt:Url id="SharedRuntime.Url"
                         DefaultValue="https://localhost:3000/shared-runtime.html" />
                 <bt:Url id="GetStarted.LearnMoreUrl"
-                        DefaultValue="https://researchwiseai.com/docs" />
+                        DefaultValue="https://researchwiseai.com/help" />
             </bt:Urls>
             <bt:ShortStrings>
                 <bt:String id="Functions.Namespace"
