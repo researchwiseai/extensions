@@ -1,6 +1,7 @@
 import { getThemeSets } from 'pulse-common/themes';
 import { similarityMatrixThemesFromSetFlow } from './similarityMatrixThemesFromSet';
 import { similarityMatrixThemesAutomaticFlow } from './similarityMatrixThemesAutomatic';
+import { getRelativeUrl } from '../services/relativeUrl';
 
 interface AutomaticMode {
     mode: 'automatic';
@@ -18,9 +19,11 @@ function openAllocationModeDialog(
     reject: (reason?: any) => void,
 ) {
     console.log('Opening matrix mode dialog');
-    const url = `${window.location.origin}/AllocationModeDialog.html?sets=${encodeURIComponent(
-        JSON.stringify(themeSetNames.reverse()),
-    )}`;
+    const url = getRelativeUrl(
+        `AllocationModeDialog.html?sets=${encodeURIComponent(
+            JSON.stringify(themeSetNames.reverse()),
+        )}`,
+    );
     Office.context.ui.displayDialogAsync(
         url,
         { height: 60, width: 40, displayInIframe: true },

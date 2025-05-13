@@ -1,4 +1,4 @@
-import { PrimaryButton, TextField } from '@fluentui/react';
+import { PrimaryButton, DefaultButton, TextField } from '@fluentui/react';
 import type { TaskpaneApi } from './api';
 import { useCallback, useState } from 'react';
 // Import company logo via webpack asset module for correct path resolution
@@ -16,6 +16,12 @@ interface Props {
 export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [connecting, setConnecting] = useState(false);
     const [email, setEmail] = useState('');
+    // Registration URL opens in browser for new users
+    const handleRegister = useCallback(() => {
+        const url = 'https://researchwiseai.com';
+        // open in new tab/window
+        window.open(url, '_blank');
+    }, []);
 
     const clickConnect = useCallback(
         async (email: string) => {
@@ -119,14 +125,21 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     value={email}
                     onChange={(e, newValue) => setEmail(newValue || '')}
                 />
-                <PrimaryButton
-                    disabled={connecting}
-                    onClick={() => clickConnect(email)}
-                    id="connect"
-                    className="mt-5"
-                >
-                    {connecting ? 'Connecting...' : 'Connect'}
-                </PrimaryButton>
+                <div className="flex space-x-2 mt-5">
+                    <PrimaryButton
+                        disabled={connecting}
+                        onClick={() => clickConnect(email)}
+                        id="connect"
+                    >
+                        {connecting ? 'Connecting...' : 'Connect'}
+                    </PrimaryButton>
+                    <DefaultButton
+                        id="register"
+                        onClick={handleRegister}
+                    >
+                        Register
+                    </DefaultButton>
+                </div>
             </main>
         </div>
     );
