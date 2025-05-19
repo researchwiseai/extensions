@@ -15,6 +15,7 @@ export async function similarityMatrixThemesAutomaticFlow(
         onProgress: (message) => {
             console.log(message);
         },
+        normalize: false,
     });
 
     await saveAllocationMatrixToSheet({

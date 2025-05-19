@@ -208,7 +208,7 @@ export async function splitSimilarityMatrix(
     options?: SplitSimilarityMatrixOptions,
 ): Promise<number[][]> {
     // @ts-expect-error Missing type definition for Intl.Segmenter
-    const segmenterEn = new Intl.Segmenter('en', { granularity: 'sentence' });
+    const segmenterEn = new ('en', { granularity: 'sentence' })();
     const sentenceSets = inputs
         .map(
             (input) =>
@@ -222,9 +222,15 @@ export async function splitSimilarityMatrix(
 
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
-        sentenceSets.map((s) => s.segment),
+        inputs,
         themes.map((t) => t.representatives.join('\n')),
-        { ...options, split: { set_b: 'newline' } },
+        {
+            ...options,
+            split: {
+                a: { unit: 'sentence', agg: 'max' },
+                b: { unit: 'newline', agg: 'mean' },
+            },
+        },
     );
 
     if (options?.normalize !== false) {

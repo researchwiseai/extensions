@@ -15,6 +15,7 @@ export async function analyzeSentiment(
         onProgress: (message) => {
             console.log(message);
         },
+        ignoreCache: true,
     });
     positions.forEach((pos, i) => {
         const sentiment = result.results[i].sentiment;

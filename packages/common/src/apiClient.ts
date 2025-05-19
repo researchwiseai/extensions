@@ -251,6 +251,7 @@ export interface JobStatus {
 
 interface AnalyzeSentimentOptions {
     fast?: boolean;
+    ignoreCache?: boolean;
     onProgress?: (message: string) => void;
 }
 
@@ -265,7 +266,7 @@ export async function analyzeSentiment(
     const url = `${baseUrl}/pulse/v1/sentiment`;
     const data = await postWithJob(
         url,
-        { fast: options?.fast, inputs },
+        { fast: options?.fast, ignoreCache: options?.ignoreCache, inputs },
         { taskName: 'Sentiment analysis', onProgress: options?.onProgress },
     );
     if (Array.isArray(data.results)) {
@@ -310,16 +311,21 @@ export async function generateThemes(
     throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
+type Split = {
+    a?: {
+        unit: 'sentence' | 'newline';
+        agg: 'mean' | 'max';
+    };
+    b?: {
+        unit: 'sentence' | 'newline';
+        agg: 'mean' | 'max';
+    };
+};
+
 interface CompareSimilarityOptions {
     fast?: boolean;
     onProgress?: (message: string) => void;
-    split?:
-        | boolean
-        | {
-              set_a?: 'newline';
-              set_b?: 'newline';
-          }
-        | undefined;
+    split?: Split;
 }
 
 function shouldBatchSimilarityRequest({
@@ -353,7 +359,7 @@ export async function batchSimilarity(
         set_b: string[];
         options: {
             fast?: boolean;
-            split?: boolean | { set_a?: 'newline'; set_b?: 'newline' };
+            split?: Split;
             flattened?: boolean;
         };
     }[] = [];
@@ -371,7 +377,7 @@ export async function batchSimilarity(
                 set_b: batch,
                 options: {
                     fast: false,
-                    split: options?.split ?? false,
+                    split: options?.split,
                     flattened: false,
                 },
             });
@@ -389,7 +395,7 @@ export async function batchSimilarity(
                 set_b: setB,
                 options: {
                     fast: false,
-                    split: options?.split ?? false,
+                    split: options?.split,
                     flattened: false,
                 },
             });

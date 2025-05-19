@@ -21,6 +21,7 @@ export async function similarityMatrixThemesFromSetFlow(
 
     const matrix = await splitSimilarityMatrix(inputs, themeSet.themes, {
         fast: false,
+        normalize: false,
         onProgress: (message) => {
             console.log(message);
         },
