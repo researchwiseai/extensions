@@ -106,7 +106,14 @@ export async function allocateThemes<T extends ShortTheme>(
         {
             ...options,
             split: {
-                set_b: 'newline',
+                a: {
+                    unit: 'sentence',
+                    agg: 'max',
+                },
+                b: {
+                    unit: 'newline',
+                    agg: 'mean',
+                },
             },
         },
     );
@@ -207,19 +214,6 @@ export async function splitSimilarityMatrix(
     themes: ShortTheme[],
     options?: SplitSimilarityMatrixOptions,
 ): Promise<number[][]> {
-    // @ts-expect-error Missing type definition for Intl.Segmenter
-    const segmenterEn = new ('en', { granularity: 'sentence' })();
-    const sentenceSets = inputs
-        .map(
-            (input) =>
-                Array.from(segmenterEn.segment(input)) as {
-                    index: number;
-                    input: string;
-                    segment: string;
-                }[],
-        )
-        .flat();
-
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
         inputs,
@@ -264,17 +258,15 @@ export async function splitSimilarityMatrix(
     });
 
     themes.forEach((_, t) => {
-        inputs.forEach((input, i) => {
+        inputs.forEach((_, i) => {
             let max = 0;
-            sentenceSets.forEach((sentence, s) => {
-                if (sentence.input !== input) return;
-                const row = similarityResponse.matrix[s];
-                row.forEach((value, j) => {
-                    if (j !== t) return;
-                    if (value > max) {
-                        max = value;
-                    }
-                });
+
+            const row = similarityResponse.matrix[i];
+            row.forEach((value, j) => {
+                if (j !== t) return;
+                if (value > max) {
+                    max = value;
+                }
             });
 
             results[i][t] = max;
