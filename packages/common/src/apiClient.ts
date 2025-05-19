@@ -312,11 +312,11 @@ export async function generateThemes(
 }
 
 type Split = {
-    a?: {
+    set_a?: {
         unit: 'sentence' | 'newline';
         agg: 'mean' | 'max';
     };
-    b?: {
+    set_b?: {
         unit: 'sentence' | 'newline';
         agg: 'mean' | 'max';
     };

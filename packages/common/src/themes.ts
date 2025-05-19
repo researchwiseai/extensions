@@ -106,11 +106,11 @@ export async function allocateThemes<T extends ShortTheme>(
         {
             ...options,
             split: {
-                a: {
+                set_a: {
                     unit: 'sentence',
                     agg: 'max',
                 },
-                b: {
+                set_b: {
                     unit: 'newline',
                     agg: 'mean',
                 },
@@ -221,8 +221,8 @@ export async function splitSimilarityMatrix(
         {
             ...options,
             split: {
-                a: { unit: 'sentence', agg: 'max' },
-                b: { unit: 'newline', agg: 'mean' },
+                set_a: { unit: 'sentence', agg: 'max' },
+                set_b: { unit: 'newline', agg: 'mean' },
             },
         },
     );
