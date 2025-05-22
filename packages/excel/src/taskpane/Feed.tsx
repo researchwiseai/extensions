@@ -28,8 +28,8 @@ export function Feed({ api }: Props) {
             const newVisibleFeed = feed.filter((item) => {
                 const now = Date.now();
                 return (
-                    item.status !== 'completed' &&
-                    item.status !== 'failed' &&
+                    item.status === 'waiting' ||
+                    item.status === 'in-progress' ||
                     now - item.updatedAt <= 3 * 60 * 1000
                 );
             });
