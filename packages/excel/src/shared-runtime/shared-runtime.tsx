@@ -14,6 +14,12 @@ function analyzeSentimentHandler(event: any) {
         try {
             const confirmed = await confirmRange(context);
             event.completed();
+
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
             openFeedHandler();
             await analyzeSentiment(context, confirmed);
         } catch (e) {
@@ -33,6 +39,12 @@ async function generateThemesHandler(event: any) {
         try {
             const confirmed = await confirmRange(context);
             event.completed();
+
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
             openFeedHandler();
             await themeGenerationFlow(context, confirmed);
         } catch (e) {
@@ -52,6 +64,12 @@ function allocateThemesHandler(event: any) {
         try {
             const confirmed = await confirmRange(context);
             event.completed();
+
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
             openFeedHandler();
             await allocateThemesRoot(context, confirmed);
         } catch (e) {
@@ -72,6 +90,12 @@ function matrixThemesHandler(event: any) {
         try {
             const confirmed = await confirmRange(context);
             event.completed();
+
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
             openFeedHandler();
             await matrixThemesRootFlow(context, confirmed);
         } catch (e) {
@@ -91,6 +115,12 @@ function similarityMatrixThemesHandler(event: any) {
         try {
             const confirmed = await confirmRange(context);
             event.completed();
+
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
             openFeedHandler();
             await similarityMatrixThemesRootFlow(context, confirmed);
         } catch (e) {

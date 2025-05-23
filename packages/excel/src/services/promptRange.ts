@@ -5,7 +5,7 @@ import { getRelativeUrl } from './relativeUrl';
  * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
  * @returns The confirmed range string, or null if cancelled.
  */
-export function promptRange(defaultRange: string): Promise<string> {
+export function promptRange(defaultRange: string): Promise<string | null> {
     return new Promise((resolve, reject) => {
         const url = getRelativeUrl(
             `SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
@@ -43,7 +43,9 @@ export function promptRange(defaultRange: string): Promise<string> {
     });
 }
 
-export async function confirmRange(context: Excel.RequestContext) {
+export async function confirmRange(
+    context: Excel.RequestContext,
+): Promise<string | null> {
     const sel = context.workbook.getSelectedRange();
     sel.load('address');
     await context.sync();

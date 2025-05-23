@@ -59,7 +59,7 @@ export function Feed({ api }: Props) {
             <div className="p-5 w-full">
                 <h2 className="ms-font-su">Feed</h2>
                 <div className="space-y-4">
-                    {visibleFeed.map((item) => (
+                    {feed.map((item) => (
                         <div
                             key={item.jobId}
                             className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm`}

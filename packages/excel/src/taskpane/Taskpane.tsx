@@ -13,6 +13,19 @@ import { Unauthenticated } from './Unauthenticated';
 import * as Ribbon from '../services/ribbon';
 import { initializeLocalStorage } from '../services/localStorage';
 
+function checkForLogin(success?: () => void, failure?: () => void) {
+    const token = sessionStorage.getItem('pkce_token');
+    const email = sessionStorage.getItem('user-email');
+    const orgId = sessionStorage.getItem('org-id');
+    if (token && email && orgId) {
+        Ribbon.enableRibbonButtons();
+        success?.();
+    } else {
+        Ribbon.disableRibbonButtons();
+        failure?.();
+    }
+}
+
 export function Taskpane({ api }: { api: TaskpaneApi }) {
     const [view, setView] = useState<View>();
     const [email, setEmail] = useState<string | null>(
@@ -25,15 +38,7 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
             console.log('Taskpane event', event);
             if (event instanceof GoToViewEvent) {
                 setView(event.view);
-
-                const token = sessionStorage.getItem('pkce_token');
-                const email = sessionStorage.getItem('user-email');
-                const orgId = sessionStorage.getItem('org-id');
-                if (token && email && orgId) {
-                    Ribbon.enableRibbonButtons();
-                } else {
-                    Ribbon.disableRibbonButtons();
-                }
+                checkForLogin();
             }
         };
         const removeViewChangeListener = api.onViewChange(handleViewChange);
@@ -51,6 +56,8 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
         console.log('Taskpane view changed', view);
         Office.addin.showAsTaskpane();
     }, [view]);
+
+    checkForLogin();
 
     if (!email) {
         return <Unauthenticated api={api} setEmail={setEmail} />;
@@ -80,17 +87,21 @@ Office.onReady().then(() => {
     const organization = sessionStorage.getItem('org-id');
     const redirectUri = `${window.location.origin}/auth-callback.html`;
 
-    setTimeout(() => {
-        // Check auth and then disable or enable ribbon buttons
-        const token = sessionStorage.getItem('pkce_token');
-        const email = sessionStorage.getItem('user-email');
-        const orgId = sessionStorage.getItem('org-id');
-        if (token && email && orgId) {
-            Ribbon.enableRibbonButtons();
-        } else {
-            Ribbon.disableRibbonButtons();
-        }
-    }, 10_000);
+    let attempts = 0;
+    const checkForLoginInterval = setInterval(() => {
+        attempts++;
+        console.log('Checking for login state...');
+        checkForLogin(
+            () => {
+                clearInterval(checkForLoginInterval);
+            },
+            () => {
+                if (attempts >= 3) {
+                    clearInterval(checkForLoginInterval);
+                }
+            },
+        );
+    }, 5_000);
 
     if (storedToken && storedEmail && organization) {
         // Already authenticated: configure and show authenticated view

@@ -206,6 +206,11 @@ async function postWithJob(
                 );
                 return await resultResp.json();
             } else {
+                Jobs.updateItem({
+                    jobId: jobItem.jobId,
+                    message: `Job failed (${status.status})`,
+                    status: 'failed',
+                });
                 throw new Error(`Job failed with status: ${status.status}`);
             }
         }
