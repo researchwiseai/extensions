@@ -20,6 +20,7 @@ export async function matrixThemesFromSetFlow(
 
     const matrix = await multiCode(inputs, themeSet.themes, {
         fast: false,
+        normalize: false,
         onProgress: (message) => {
             console.log(message);
         },
