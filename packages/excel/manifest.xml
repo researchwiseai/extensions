@@ -47,7 +47,20 @@
                     <Runtime resid="SharedRuntime.Url"
                              lifetime="long" />
                 </Runtimes>
-                <AllFormFactors />
+                <AllFormFactors>
+                    <ExtensionPoint xsi:type="CustomFunctions">
+                        <Script>
+                            <SourceLocation resid="Functions.Script.Url" />
+                        </Script>
+                        <Page>
+                            <SourceLocation resid="SharedRuntime.Url" />
+                        </Page>
+                        <Metadata>
+                            <SourceLocation resid="Functions.Metadata.Url" />
+                        </Metadata>
+                        <Namespace resid="Functions.Namespace" />
+                    </ExtensionPoint>
+                </AllFormFactors>
                 <DesktopFormFactor>
                     <GetStarted>
                         <Title resid="GetStarted.Title" />
@@ -228,6 +241,46 @@
                                         <FunctionName>splitIntoSentencesHandler</FunctionName>
                                     </Action>
                                 </Control>
+                                <!-- Button to split into tokens -->
+                                <Control xsi:type="Button"
+                                         id="SplitIntoTokensButton">
+                                    <Label resid="SplitIntoTokensButton.Label" />
+                                    <Supertip>
+                                        <Title resid="SplitIntoTokensButton.Label" />
+                                        <Description resid="SplitIntoTokensButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="BookCoinsIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="BookCoinsIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="BookCoinsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>splitIntoTokensHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                                <!-- Button to count words -->
+                                <Control xsi:type="Button"
+                                         id="CountWordsButton">
+                                    <Label resid="CountWordsButton.Label" />
+                                    <Supertip>
+                                        <Title resid="CountWordsButton.Label" />
+                                        <Description resid="CountWordsButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="WordCountIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="WordCountIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="WordCountIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>countWordsHandler</FunctionName>
+                                    </Action>
+                                </Control>
                             </Group>
                             <Group id="PulseGroup">
                                 <Label resid="PulseGroup.Label" />
@@ -346,16 +399,32 @@
                           DefaultValue="https://localhost:3000/assets/icons/task-list-32.png" />
                 <bt:Image id="TaskListIcon.80x80"
                           DefaultValue="https://localhost:3000/assets/icons/task-list-80.png" />
+                <bt:Image id="WordCountIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/word-count-16.png" />
+                <bt:Image id="WordCountIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/word-count-32.png" />
+                <bt:Image id="WordCountIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/word-count-80.png" />
+                <bt:Image id="BookCoinsIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/book-coins-16.png" />
+                <bt:Image id="BookCoinsIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/book-coins-32.png" />
+                <bt:Image id="BookCoinsIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/book-coins-80.png" />
             </bt:Images>
             <bt:Urls>
                 <bt:Url id="SharedRuntime.Url"
                         DefaultValue="https://localhost:3000/shared-runtime.html" />
                 <bt:Url id="GetStarted.LearnMoreUrl"
                         DefaultValue="https://researchwiseai.com/help" />
+                <bt:Url id="Functions.Script.Url"
+                        DefaultValue="https://localhost:3000/functions.js" />
+                <bt:Url id="Functions.Metadata.Url"
+                        DefaultValue="https://localhost:3000/functions.json" />
             </bt:Urls>
             <bt:ShortStrings>
                 <bt:String id="Functions.Namespace"
-                           DefaultValue="Pulse" />
+                           DefaultValue="PULSE" />
                 <bt:String id="GetStarted.Title"
                            DefaultValue="Get started with Pulse" />
                 <bt:String id="HomePulseGroup.Label"
@@ -380,6 +449,11 @@
                            DefaultValue="Analyze" />
                 <bt:String id="SplitIntoSentencesButton.Label"
                            DefaultValue="Split to sentences" />
+                <!-- Labels for new free text features -->
+                <bt:String id="SplitIntoTokensButton.Label"
+                           DefaultValue="Split to tokens" />
+                <bt:String id="CountWordsButton.Label"
+                           DefaultValue="Word Count" />
                 <bt:String id="ThemesGroup.Label"
                            DefaultValue="Themes" />
                 <bt:String id="GenerateThemesButton.Label"
@@ -405,6 +479,11 @@
                            DefaultValue="Analyze sentiment of selection" />
                 <bt:String id="SplitIntoSentencesButton.Tooltip"
                            DefaultValue="Analyze sentiment of selection" />
+                <!-- Tooltips for new free text features -->
+                <bt:String id="SplitIntoTokensButton.Tooltip"
+                           DefaultValue="Split the selected text into tokens" />
+                <bt:String id="CountWordsButton.Tooltip"
+                           DefaultValue="Count the number of words in the selected text" />
                 <!-- Tooltip for Analyze Sentiment button -->
                 <bt:String id="AnalyzeSentimentButton.Tooltip"
                            DefaultValue="Analyze sentiment of the selected data" />

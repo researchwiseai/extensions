@@ -5,6 +5,8 @@ import { allocateThemesRoot } from '../flows/allocateThemesRoot';
 import { matrixThemesRootFlow } from '../flows/matrixThemesRoot';
 import { splitIntoSentencesFlow } from '../flows/splitIntoSentences';
 import { similarityMatrixThemesRootFlow } from '../flows/similarityMatrixThemesRoot';
+import { splitIntoTokensFlow } from '../flows/splitIntoTokens';
+import { countWordsFlow } from '../flows/countWords';
 import { openFeedHandler } from '../taskpane/Taskpane';
 import { modalApi } from '../modal/api';
 import { getRelativeUrl } from '../services/relativeUrl';
@@ -162,6 +164,52 @@ Office.actions.associate(
     'splitIntoSentencesHandler',
     splitIntoSentencesHandler,
 );
+// Handler for splitting text into tokens using wink-nlp
+function splitIntoTokensHandler(event: any) {
+    console.log('Split into tokens handler');
+    Excel.run(async (context) => {
+        try {
+            const selectedRange = context.workbook.getSelectedRange();
+            selectedRange.load('address');
+            await context.sync();
+            console.log('Selected range', selectedRange.address);
+            event.completed();
+
+            await splitIntoTokensFlow(context, selectedRange.address);
+        } catch (e) {
+            console.error('Token split error', e);
+            console.error((e as Error).stack);
+        } finally {
+            event.completed();
+        }
+    }).catch((err) => {
+        console.error(err);
+    });
+}
+Office.actions.associate('splitIntoTokensHandler', splitIntoTokensHandler);
+// Handler for counting words using wink-nlp
+function countWordsHandler(event: any) {
+    console.log('Count words handler');
+    Excel.run(async (context) => {
+        try {
+            const selectedRange = context.workbook.getSelectedRange();
+            selectedRange.load('address');
+            await context.sync();
+            console.log('Selected range', selectedRange.address);
+            event.completed();
+
+            await countWordsFlow(context, selectedRange.address);
+        } catch (e) {
+            console.error('Word count error', e);
+            console.error((e as Error).stack);
+        } finally {
+            event.completed();
+        }
+    }).catch((err) => {
+        console.error(err);
+    });
+}
+Office.actions.associate('countWordsHandler', countWordsHandler);
 
 function manageThemesHandler() {}
 Office.actions.associate('manageThemesHandler', manageThemesHandler);

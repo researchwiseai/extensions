@@ -4,6 +4,7 @@ const devCerts = require('office-addin-dev-certs');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const CustomFunctionsMetadataPlugin = require('custom-functions-metadata-plugin');
 const path = require('path');
 
 const urlDev = 'https://localhost:3000';
@@ -94,7 +95,7 @@ module.exports = async (env, options) => {
             new HtmlWebpackPlugin({
                 filename: 'shared-runtime.html',
                 template: './src/shared-runtime/shared-runtime.html',
-                chunks: ['polyfill', 'shared'],
+                chunks: ['polyfill', 'shared', 'functions'],
             }),
             new CopyWebpackPlugin({
                 patterns: [
@@ -135,6 +136,10 @@ module.exports = async (env, options) => {
                         to: 'auth-callback.html',
                     },
                 ],
+            }),
+            new CustomFunctionsMetadataPlugin({
+                input: './src/functions/functions.ts',
+                output: 'functions.json',
             }),
             // Dialog page for range confirmation
             new HtmlWebpackPlugin({
