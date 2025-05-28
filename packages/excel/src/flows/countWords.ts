@@ -29,7 +29,7 @@ export async function countWordsFlow(
     const cols = positions.map((p) => p.col);
     const minCol = Math.min(...cols);
     const maxCol = Math.max(...cols);
-    const offset = maxCol - minCol + 1;
+    const offset = maxCol - minCol;
 
     const batchSize = 1000;
     let batch: { cell: Excel.Range; value: number }[] = [];
