@@ -1,11 +1,4 @@
-import {
-    add,
-    logMessage,
-    currentTime,
-    wordCount,
-    clock,
-    increment,
-} from './functions';
+import { wordCount } from './functions';
 
 describe('functions.ts', () => {
     describe('wordCount()', () => {

@@ -18,7 +18,7 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [email, setEmail] = useState('');
     // Registration URL opens in browser for new users
     const handleRegister = useCallback(() => {
-        const url = 'https://researchwiseai.com';
+        const url = 'https://researchwiseai.com/register';
         // open in new tab/window
         window.open(url, '_blank');
     }, []);
@@ -133,10 +133,7 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     >
                         {connecting ? 'Connecting...' : 'Connect'}
                     </PrimaryButton>
-                    <DefaultButton
-                        id="register"
-                        onClick={handleRegister}
-                    >
+                    <DefaultButton id="register" onClick={handleRegister}>
                         Register
                     </DefaultButton>
                 </div>
