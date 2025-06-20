@@ -58,6 +58,7 @@ export interface JobStatus {
 }
 interface AnalyzeSentimentOptions {
     fast?: boolean;
+    ignoreCache?: boolean;
     onProgress?: (message: string) => void;
 }
 /**
@@ -78,10 +79,22 @@ interface GenerateThemesOptions {
 export declare function generateThemes(inputs: string[], options?: GenerateThemesOptions): Promise<{
     themes: Theme[];
 }>;
+type Split = {
+    set_a?: {
+        unit: 'sentence' | 'newline';
+        agg: 'mean' | 'max';
+    };
+    set_b?: {
+        unit: 'sentence' | 'newline';
+        agg: 'mean' | 'max';
+    };
+};
 interface CompareSimilarityOptions {
     fast?: boolean;
     onProgress?: (message: string) => void;
+    split?: Split;
 }
+export declare function batchSimilarity(setA: string[], setB: string[], options?: CompareSimilarityOptions): Promise<SimilarityResponse>;
 /**
  * Call the similarity/allocation endpoint.
  * Returns final similarity results, polling a job if necessary.

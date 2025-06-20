@@ -11,10 +11,17 @@ interface SetMode {
     mode: 'set';
     setName: string;
 }
-type AllocationMode = AutomaticMode | SetMode;
+
+interface SheetMode {
+    mode: 'sheet';
+    sheetName: string;
+}
+
+type AllocationMode = AutomaticMode | SetMode | SheetMode;
 
 function openAllocationModeDialog(
     themeSetNames: string[],
+    sheetNames: string[],
     resolve: (value: AllocationMode) => void,
     reject: (reason?: any) => void,
 ) {
@@ -22,7 +29,7 @@ function openAllocationModeDialog(
     const url = getRelativeUrl(
         `AllocationModeDialog.html?sets=${encodeURIComponent(
             JSON.stringify(themeSetNames.reverse()),
-        )}`,
+        )}&sheets=${encodeURIComponent(JSON.stringify(sheetNames))}`,
     );
     Office.context.ui.displayDialogAsync(
         url,
@@ -34,6 +41,7 @@ function openAllocationModeDialog(
                         () =>
                             openAllocationModeDialog(
                                 themeSetNames,
+                                sheetNames,
                                 resolve,
                                 reject,
                             ),
@@ -78,19 +86,35 @@ export async function similarityMatrixThemesRootFlow(
     const themeSets = await getThemeSets();
     const themeSetNames = themeSets.map((set) => set.name);
 
-    const themeSetOrigin = await new Promise<AllocationMode>(
+    const worksheets = context.workbook.worksheets;
+    worksheets.load('items/name');
+    await context.sync();
+    const sheetNames = worksheets.items.map((ws) => ws.name);
+
+    const allocationMode = await new Promise<AllocationMode>(
         (resolve, reject) => {
-            openAllocationModeDialog(themeSetNames, resolve, reject);
+            openAllocationModeDialog(
+                themeSetNames,
+                sheetNames,
+                resolve,
+                reject,
+            );
         },
     );
 
-    if (themeSetOrigin.mode === 'automatic') {
+    if (allocationMode.mode === 'automatic') {
         await similarityMatrixThemesAutomaticFlow(context, range);
+    } else if (allocationMode.mode === 'set') {
+        await similarityMatrixThemesFromSetFlow(
+            context,
+            range,
+            allocationMode.setName,
+        );
     } else {
         await similarityMatrixThemesFromSetFlow(
             context,
             range,
-            themeSetOrigin.setName,
+            allocationMode.sheetName,
         );
     }
 }

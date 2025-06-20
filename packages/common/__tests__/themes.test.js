@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const themes_1 = require("../src/themes");
+const storage_1 = require("../src/storage");
 /**
  * In-memory Storage implementation for testing.
  */
@@ -21,7 +22,7 @@ class MemoryStorage {
 describe('ThemeSet management', () => {
     const storage = new MemoryStorage();
     beforeAll(() => {
-        (0, themes_1.configureStorage)(storage);
+        (0, storage_1.configureStorage)(storage);
     });
     beforeEach(async () => {
         // Clear storage before each test

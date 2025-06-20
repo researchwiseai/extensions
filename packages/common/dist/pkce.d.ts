@@ -18,7 +18,7 @@ export declare function generatePKCECodes(): Promise<{
  * @param organization Auth0 organization ID
  * @returns Authorization URL
  */
-export declare function buildAuthorizeUrl(domain: string, clientId: string, redirectUri: string, email: string, scope: string, codeChallenge: string, state: string, organization: string): string;
+export declare function buildAuthorizeUrl(domain: string, clientId: string, redirectUri: string, email: string, scope: string, codeChallenge: string, state: string, organization: string, audience?: string): string;
 /** Exchange an authorization code for tokens via the token endpoint. */
 export declare function exchangeCodeForToken(domain: string, clientId: string, code: string, codeVerifier: string, redirectUri: string): Promise<any>;
 /** Refresh an access token using a refresh token. */

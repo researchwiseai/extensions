@@ -25,3 +25,11 @@ export declare function extractInputs(data: any[][], options?: {
  * @returns New array of sampled elements
  */
 export declare function sampleInputs<T>(arr: T[], max: number): T[];
+/**
+ * Create batches from an array of inputs.
+ * @param inputs Array of inputs
+ * @param batchSize Size of each batch
+ * @param shuffle Whether to shuffle the inputs before batching
+ * @returns Array of batches, each containing a subset of the inputs
+ */
+export declare function createBatches<T>(inputs: T[], batchSize: number, shuffle?: boolean): T[][];

@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.extractInputs = extractInputs;
 exports.sampleInputs = sampleInputs;
+exports.createBatches = createBatches;
 /**
  * Extract non-empty string inputs and their positions from a 2D array of values.
  * @param data 2D array of cell values
@@ -16,7 +17,7 @@ function extractInputs(data, options) {
         const row = data[i];
         for (let j = 0; j < row.length; j++) {
             const cell = row[j];
-            if (cell != null && cell !== "") {
+            if (cell != null && cell !== '') {
                 inputs.push(cell.toString());
                 positions.push({
                     row: i + rowOffset,
@@ -44,4 +45,21 @@ function sampleInputs(arr, max) {
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
     return copy.slice(0, max);
+}
+/**
+ * Create batches from an array of inputs.
+ * @param inputs Array of inputs
+ * @param batchSize Size of each batch
+ * @param shuffle Whether to shuffle the inputs before batching
+ * @returns Array of batches, each containing a subset of the inputs
+ */
+function createBatches(inputs, batchSize, shuffle = false) {
+    if (shuffle) {
+        inputs = sampleInputs(inputs, inputs.length);
+    }
+    const batches = [];
+    for (let i = 0; i < inputs.length; i += batchSize) {
+        batches.push(inputs.slice(i, i + batchSize));
+    }
+    return batches;
 }
