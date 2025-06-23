@@ -1,4 +1,3 @@
-import { extractInputs } from 'pulse-common/input';
 import { getThemeSets, splitSimilarityMatrix } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';

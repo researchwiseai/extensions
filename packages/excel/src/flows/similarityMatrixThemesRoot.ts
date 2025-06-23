@@ -2,6 +2,7 @@ import { getThemeSets } from 'pulse-common/themes';
 import { similarityMatrixThemesFromSetFlow } from './similarityMatrixThemesFromSet';
 import { similarityMatrixThemesAutomaticFlow } from './similarityMatrixThemesAutomatic';
 import { getRelativeUrl } from '../services/relativeUrl';
+import { similarityMatrixThemesFromSheetFlow } from './similarityMatrixThemesFromSheet';
 
 interface AutomaticMode {
     mode: 'automatic';
@@ -111,7 +112,7 @@ export async function similarityMatrixThemesRootFlow(
             allocationMode.setName,
         );
     } else {
-        await similarityMatrixThemesFromSetFlow(
+        await similarityMatrixThemesFromSheetFlow(
             context,
             range,
             allocationMode.sheetName,

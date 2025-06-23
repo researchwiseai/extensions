@@ -2,6 +2,7 @@ import { getThemeSets } from 'pulse-common/themes';
 import { allocateThemesAutomaticFlow } from './allocateThemesAutomatic';
 import { allocateThemesFromSetFlow } from './allocateThemesFromSet';
 import { getRelativeUrl } from '../services/relativeUrl';
+import { allocateThemesFromSheetFlow } from './allocateThemesFromSheet';
 
 interface AutomaticMode {
     mode: 'automatic';
@@ -111,7 +112,7 @@ export async function allocateThemesRoot(
     } else if (allocationMode.mode === 'set') {
         await allocateThemesFromSetFlow(context, range, allocationMode.setName);
     } else {
-        await allocateThemesFromSetFlow(
+        await allocateThemesFromSheetFlow(
             context,
             range,
             allocationMode.sheetName,

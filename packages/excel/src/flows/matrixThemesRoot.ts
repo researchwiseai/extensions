@@ -2,6 +2,7 @@ import { getThemeSets } from 'pulse-common/themes';
 import { matrixThemesAutomaticFlow } from './matrixThemesAutomatic';
 import { matrixThemesFromSetFlow } from './matrixThemesFromSet';
 import { getRelativeUrl } from '../services/relativeUrl';
+import { matrixThemesFromSheetFlow } from './matrixThemesFromSheet';
 
 interface AutomaticMode {
     mode: 'automatic';
@@ -109,6 +110,10 @@ export async function matrixThemesRootFlow(
     } else if (allocationMode.mode === 'set') {
         await matrixThemesFromSetFlow(context, range, allocationMode.setName);
     } else {
-        await matrixThemesFromSetFlow(context, range, allocationMode.sheetName);
+        await matrixThemesFromSheetFlow(
+            context,
+            range,
+            allocationMode.sheetName,
+        );
     }
 }

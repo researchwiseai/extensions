@@ -79,8 +79,11 @@
                 </label>
                 <div style="margin-top: 6px">
                     <div class="ms-Dropdown" style="width: 100%">
-                        <select id="setSelect" class="ms-Dropdown-select" disabled></select>
-                        <i class="ms-Icon ms-Icon--ChevronDown ms-Dropdown-caretDown"></i>
+                        <select
+                            id="setSelect"
+                            class="ms-Dropdown-select"
+                            disabled
+                        ></select>
                     </div>
                 </div>
             </div>
@@ -97,8 +100,11 @@
                 </label>
                 <div style="margin-top: 6px">
                     <div class="ms-Dropdown" style="width: 100%">
-                        <select id="sheetSelect" class="ms-Dropdown-select" disabled></select>
-                        <i class="ms-Icon ms-Icon--ChevronDown ms-Dropdown-caretDown"></i>
+                        <select
+                            id="sheetSelect"
+                            class="ms-Dropdown-select"
+                            disabled
+                        ></select>
                     </div>
                 </div>
             </div>
@@ -142,30 +148,38 @@
                     opt.text = sheet;
                     sheetSelect.appendChild(opt);
                 });
-                document.getElementById('mode-set').addEventListener('change', (e) => {
-                    select.disabled = !e.target.checked;
-                    sheetSelect.disabled = true;
-                });
-                document.getElementById('mode-auto').addEventListener('change', (e) => {
-                    select.disabled = e.target.checked;
-                    sheetSelect.disabled = true;
-                });
-                document.getElementById('mode-sheet').addEventListener('change', (e) => {
-                    sheetSelect.disabled = !e.target.checked;
-                    select.disabled = true;
-                });
-                document.getElementById('okBtn').addEventListener('click', () => {
-                    const mode = document.querySelector(
-                        'input[name="mode"]:checked',
-                    ).value;
-                    const msg = { mode };
-                    if (mode === 'set') {
-                        msg.setName = select.value;
-                    } else if (mode === 'sheet') {
-                        msg.sheetName = sheetSelect.value;
-                    }
-                    Office.context.ui.messageParent(JSON.stringify(msg));
-                });
+                document
+                    .getElementById('mode-set')
+                    .addEventListener('change', (e) => {
+                        select.disabled = !e.target.checked;
+                        sheetSelect.disabled = true;
+                    });
+                document
+                    .getElementById('mode-auto')
+                    .addEventListener('change', (e) => {
+                        select.disabled = e.target.checked;
+                        sheetSelect.disabled = true;
+                    });
+                document
+                    .getElementById('mode-sheet')
+                    .addEventListener('change', (e) => {
+                        sheetSelect.disabled = !e.target.checked;
+                        select.disabled = true;
+                    });
+                document
+                    .getElementById('okBtn')
+                    .addEventListener('click', () => {
+                        const mode = document.querySelector(
+                            'input[name="mode"]:checked',
+                        ).value;
+                        const msg = { mode };
+                        if (mode === 'set') {
+                            msg.setName = select.value;
+                        } else if (mode === 'sheet') {
+                            msg.sheetName = sheetSelect.value;
+                        }
+                        Office.context.ui.messageParent(JSON.stringify(msg));
+                    });
                 document
                     .getElementById('cancelBtn')
                     .addEventListener('click', () => {
