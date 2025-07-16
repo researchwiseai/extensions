@@ -446,7 +446,7 @@
                 <bt:String id="TextGroup.Label"
                            DefaultValue="Text" />
                 <bt:String id="AnalyzeSentimentButton.Label"
-                           DefaultValue="Analyze" />
+                           DefaultValue="Analyze Sentiment" />
                 <bt:String id="SplitIntoSentencesButton.Label"
                            DefaultValue="Split to sentences" />
                 <!-- Labels for new free text features -->
@@ -457,7 +457,7 @@
                 <bt:String id="ThemesGroup.Label"
                            DefaultValue="Themes" />
                 <bt:String id="GenerateThemesButton.Label"
-                           DefaultValue="Generate" />
+                           DefaultValue="Generate Themes" />
                 <bt:String id="AllocateThemesButton.Label"
                            DefaultValue="Single Code" />
                 <bt:String id="MatrixThemesButton.Label"
@@ -465,7 +465,7 @@
                 <bt:String id="SimMatrixThemesBtn.Label"
                            DefaultValue="Similarity Matrix" />
                 <bt:String id="ManageThemesButton.Label"
-                           DefaultValue="Manage" />
+                           DefaultValue="Manage Themes" />
             </bt:ShortStrings>
             <bt:LongStrings>
                 <bt:String id="GetStarted.Description"
