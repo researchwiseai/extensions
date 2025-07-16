@@ -1,0 +1,1 @@
+export const ALLOCATION_THRESHOLD = 0.4;

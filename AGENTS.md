@@ -12,15 +12,15 @@ This repository contains multiple packages managed with **Bun workspaces**. Foll
 ## Common tasks
 - **Lint all packages**:
   ```bash
-  bun workspace run lint
+  bun run lint
   ```
 - **Run tests**:
   ```bash
-  bun workspace run test
+  bun run test
   ```
 - **Build packages**:
   ```bash
-  bun workspace run build
+  bun run build
   ```
 - **Excel add-in dev server** (optional):
   ```bash
