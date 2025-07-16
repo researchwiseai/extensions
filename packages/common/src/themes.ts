@@ -83,9 +83,24 @@ export async function renameThemeSet(
     await storage.set(STORAGE_KEY, sets);
 }
 
+/**
+ * Save a manual theme set (alias for saveThemeSet with full Theme objects).
+ */
+export async function saveManualThemeSet(
+    name: string,
+    themes: Theme[],
+): Promise<void> {
+    const shortThemes = themes.map((t) => ({
+        label: t.label,
+        representatives: t.representatives,
+    }));
+    await saveThemeSet(name, shortThemes);
+}
+
 interface AllocateThemeOptions {
     fast?: boolean;
     onProgress?: (message: string) => void;
+    threshold?: number;
 }
 
 /**
@@ -99,7 +114,7 @@ export async function allocateThemes<T extends ShortTheme>(
     inputs: string[],
     themes: T[],
     options?: AllocateThemeOptions,
-): Promise<Array<{ theme: T; score: number }>> {
+): Promise<Array<{ theme: T; score: number; belowThreshold: boolean }>> {
     const similarityResponse = await compareSimilarity(
         inputs,
         themes.map((theme) => theme.representatives.join('\n')),
@@ -118,6 +133,8 @@ export async function allocateThemes<T extends ShortTheme>(
         },
     );
 
+    const threshold = options?.threshold ?? 0.4;
+
     const best = topN(similarityResponse.matrix, 1, true).flat();
 
     return inputs.map((_, i) => {
@@ -127,6 +144,7 @@ export async function allocateThemes<T extends ShortTheme>(
         return {
             theme,
             score,
+            belowThreshold: score < threshold,
         };
     });
 }

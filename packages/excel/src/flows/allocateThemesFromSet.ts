@@ -5,6 +5,7 @@ import {
 } from 'pulse-common/themes';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { Pos } from 'pulse-common';
+import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function allocateThemesFromSetFlow(
     context: Excel.RequestContext,
@@ -27,6 +28,7 @@ export async function allocateThemesFromSetFlow(
 
     const allocations = await allocateThemesApi(inputs, themeSet.themes, {
         fast: false,
+        threshold: ALLOCATION_THRESHOLD,
         onProgress: (message) => {
             console.log(message);
         },
@@ -38,15 +40,19 @@ export async function allocateThemesFromSetFlow(
 export async function writeAllocationsToSheet(
     positions: Pos[],
     sheet: Excel.Worksheet,
-    allocations: { theme: ShortTheme; score: number }[],
+    allocations: { theme: ShortTheme; score: number; belowThreshold: boolean }[],
     context: Excel.RequestContext,
 ) {
     const batchSize = 1000;
     for (let i = 0; i < positions.length; i += batchSize) {
         const batch = positions.slice(i, i + batchSize);
         batch.forEach((pos, j) => {
+            const alloc = allocations[i + j];
             const cell = sheet.getCell(pos.row - 1, pos.col);
-            cell.values = [[allocations[i + j].theme.label]];
+            cell.values = [[alloc.theme.label]];
+            if (alloc.belowThreshold) {
+                cell.format.fill.color = '#FFF2CC';
+            }
         });
         await context.sync();
     }
