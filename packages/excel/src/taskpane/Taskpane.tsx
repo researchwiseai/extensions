@@ -131,8 +131,9 @@ Office.onReady().then(() => {
 
 export function openSettingsHandler(event?: unknown) {
     taskpaneApi.goToView('settings');
+    Office.addin.showAsTaskpane();
     if (canComplete(event)) {
-        event.completed();
+        setTimeout(() => event.completed(), 50);
     }
 }
 Office.actions.associate('openSettingsHandler', openSettingsHandler);
@@ -151,8 +152,9 @@ function canComplete(event: unknown): event is CanComplete {
 
 export function openFeedHandler(event?: unknown) {
     taskpaneApi.goToView('feed');
+    Office.addin.showAsTaskpane();
     if (canComplete(event)) {
-        event.completed();
+        setTimeout(() => event.completed(), 50);
     }
 }
 Office.actions.associate('openFeedHandler', openFeedHandler);
