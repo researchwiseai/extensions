@@ -81,3 +81,24 @@ export function disableRibbonButtons() {
         ],
     });
 }
+
+export function updateHomeStartButtonLabel(label: string) {
+    Office.ribbon.requestUpdate({
+        tabs: [
+            {
+                id: 'TabPulse',
+                groups: [
+                    {
+                        id: 'PulseGroup',
+                        controls: [
+                            {
+                                id: 'HomePulseStartButton',
+                                label,
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    });
+}

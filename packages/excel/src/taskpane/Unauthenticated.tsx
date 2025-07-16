@@ -1,6 +1,6 @@
 import { PrimaryButton, DefaultButton, TextField } from '@fluentui/react';
 import type { TaskpaneApi } from './api';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // Import company logo via webpack asset module for correct path resolution
 import logo from '../../assets/logo-filled.png';
 import { findOrganization } from 'pulse-common/org';
@@ -8,6 +8,7 @@ import { setupExcelPKCEAuth } from './pkceAuth';
 import { getAccessToken, signIn } from 'pulse-common/auth';
 import { configureClient } from 'pulse-common/api';
 import { getRelativeUrl } from '../services/relativeUrl';
+import { showConnectHelpDialog } from '../services/connectHelp';
 
 interface Props {
     api: TaskpaneApi;
@@ -16,6 +17,10 @@ interface Props {
 export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [connecting, setConnecting] = useState(false);
     const [email, setEmail] = useState('');
+
+    useEffect(() => {
+        showConnectHelpDialog().catch((e) => console.error(e));
+    }, []);
     // Registration URL opens in browser for new users
     const handleRegister = useCallback(() => {
         const url = 'https://researchwiseai.com/register';
@@ -129,9 +134,9 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     <PrimaryButton
                         disabled={connecting}
                         onClick={() => clickConnect(email)}
-                        id="connect"
+                        id="start"
                     >
-                        {connecting ? 'Connecting...' : 'Connect'}
+                        {connecting ? 'Connecting...' : 'Start'}
                     </PrimaryButton>
                     <DefaultButton id="register" onClick={handleRegister}>
                         Register
