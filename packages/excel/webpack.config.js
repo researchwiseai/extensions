@@ -152,6 +152,12 @@ module.exports = async (env, options) => {
                 template: './src/taskpane/AllocationModeDialog.html',
                 inject: false,
             }),
+            // Dialog explaining how to connect
+            new HtmlWebpackPlugin({
+                filename: 'ConnectHelpDialog.html',
+                template: './src/taskpane/ConnectHelpDialog.html',
+                inject: false,
+            }),
             // Dialog for modals
             new HtmlWebpackPlugin({
                 filename: 'Modal.html',

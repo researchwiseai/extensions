@@ -19,9 +19,11 @@ function checkForLogin(success?: () => void, failure?: () => void) {
     const orgId = sessionStorage.getItem('org-id');
     if (token && email && orgId) {
         Ribbon.enableRibbonButtons();
+        Ribbon.updateHomeStartButtonLabel('Settings');
         success?.();
     } else {
         Ribbon.disableRibbonButtons();
+        Ribbon.updateHomeStartButtonLabel('Start');
         failure?.();
     }
 }

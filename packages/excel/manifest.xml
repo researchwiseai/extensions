@@ -430,7 +430,7 @@
                 <bt:String id="HomePulseGroup.Label"
                            DefaultValue="Pulse" />
                 <bt:String id="HomePulseStartButton.Label"
-                           DefaultValue="Settings" />
+                           DefaultValue="Start" />
                 <bt:String id="FeedButton.Label"
                            DefaultValue="Feed" />
                 <!-- Label for Analyze Sentiment button on Home tab -->

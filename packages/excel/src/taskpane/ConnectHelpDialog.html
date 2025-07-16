@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <title>Getting Started</title>
+  </head>
+  <body style="font-family:'Segoe UI', sans-serif; margin:20px;">
+    <p>Enter your email address and click <strong>Start</strong>. A browser window will open so you can sign in. After completing authentication, return to Excel.</p>
+    <div style="margin-top:16px; text-align:right;">
+      <button id="okBtn">OK</button>
+    </div>
+    <script>
+      document.getElementById('okBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent('ok');
+      });
+    </script>
+  </body>
+</html>
