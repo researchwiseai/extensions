@@ -23,7 +23,7 @@ export async function splitIntoSentencesFlow(
     );
     const maxSentences = Math.max(...sentences.map((s) => s.length));
     const result = Array.from({ length: maxSentences }, () =>
-        Array.from({ length: inputs.length }, () => ''),
+        Array.from({ length: positions.length }, () => ''),
     );
 
     console.log('sentences', sentences);
