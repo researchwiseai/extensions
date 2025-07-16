@@ -10,3 +10,4 @@ export * from './themes.js';
 export * from './auth.js';
 export * from './pkce.js';
 export * from './org.js';
+export * from './storage.js';

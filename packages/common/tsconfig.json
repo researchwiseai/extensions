@@ -7,10 +7,18 @@
     "outDir": "dist",
     "rootDir": "src",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "lib": [
+      "ES2020"
+    ],
+    "types": [
+      "node"
+    ]
   },
   "include": [
-    "src",
+    "src"
+  ],
+  "exclude": [
     "__tests__",
     "test"
   ]

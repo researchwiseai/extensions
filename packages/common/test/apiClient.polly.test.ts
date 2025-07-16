@@ -8,8 +8,8 @@ import {
   configureClient,
   analyzeSentiment,
   generateThemes,
-  allocateThemes,
 } from '../src/apiClient.js';
+import { allocateThemes } from '../src/themes.js';
 import { configureAuth, createAuth0Provider, getAccessToken } from '../src/auth.js';
 
 // Skip integration tests if env vars not set
