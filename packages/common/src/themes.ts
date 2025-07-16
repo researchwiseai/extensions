@@ -46,7 +46,10 @@ export async function saveManualThemeSet(
 ): Promise<void> {
     await saveThemeSet(
         name,
-        themes.map(({ label, representatives }) => ({ label, representatives })),
+        themes.map(({ label, representatives }) => ({
+            label,
+            representatives,
+        })),
     );
 }
 
@@ -93,20 +96,6 @@ export async function renameThemeSet(
     }
     setObj.name = newName;
     await storage.set(STORAGE_KEY, sets);
-}
-
-/**
- * Save a manual theme set (alias for saveThemeSet with full Theme objects).
- */
-export async function saveManualThemeSet(
-    name: string,
-    themes: Theme[],
-): Promise<void> {
-    const shortThemes = themes.map((t) => ({
-        label: t.label,
-        representatives: t.representatives,
-    }));
-    await saveThemeSet(name, shortThemes);
 }
 
 interface AllocateThemeOptions {
