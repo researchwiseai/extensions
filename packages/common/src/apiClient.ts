@@ -316,6 +316,11 @@ export async function generateThemes(
     throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
+/**
+ * Expose allocateThemes from themes module through API client.
+ */
+export { allocateThemes } from './themes';
+
 type Split = {
     set_a?: {
         unit: 'sentence' | 'newline';
