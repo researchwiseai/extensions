@@ -37,6 +37,18 @@ export async function saveThemeSet(
     }
     await storage.set(STORAGE_KEY, sets);
 }
+/**
+ * Alias to save a manual theme set from full Theme objects.
+ */
+export async function saveManualThemeSet(
+    name: string,
+    themes: Theme[],
+): Promise<void> {
+    await saveThemeSet(
+        name,
+        themes.map(({ label, representatives }) => ({ label, representatives })),
+    );
+}
 
 export async function saveAllThemeSets(
     themeSets: ThemeSet<ShortTheme | Theme>[],

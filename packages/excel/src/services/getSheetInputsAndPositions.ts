@@ -32,13 +32,20 @@ export async function getSheetInputsAndPositions(
     }
 
     const target = sheet.getRange(rangeNotation);
-    target.load(['rowIndex', 'columnIndex', 'rowCount', 'columnCount']);
+    const used = sheet.getUsedRange();
+    const intersection = target.getIntersectionOrNullObject(used);
+    intersection.load(['rowIndex', 'columnIndex', 'rowCount', 'columnCount']);
 
     await context.sync();
 
+    if (intersection.isNullObject) {
+        console.error('Selected range contains no used cells');
+        throw new Error('No text found in selected data range');
+    }
+
     const batchSize = 1000;
     const values: any[][] = [];
-    const { rowIndex, columnIndex, rowCount, columnCount } = target;
+    const { rowIndex, columnIndex, rowCount, columnCount } = intersection;
 
     for (let rowStart = 0; rowStart < rowCount; rowStart += batchSize) {
         const rowEnd = Math.min(rowStart + batchSize, rowCount);
