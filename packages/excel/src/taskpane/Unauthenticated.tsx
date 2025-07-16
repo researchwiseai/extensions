@@ -18,9 +18,12 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [connecting, setConnecting] = useState(false);
     const [email, setEmail] = useState('');
 
-    useEffect(() => {
-        showConnectHelpDialog().catch((e) => console.error(e));
-    }, []);
+    // Temporarily disable the "Getting Started" dialog as it appears on every
+    // launch. Once we have a persistent dismissal mechanism this can be
+    // re-enabled.
+    // useEffect(() => {
+    //     showConnectHelpDialog().catch((e) => console.error(e));
+    // }, []);
     // Registration URL opens in browser for new users
     const handleRegister = useCallback(() => {
         const url = 'https://researchwiseai.com/register';
