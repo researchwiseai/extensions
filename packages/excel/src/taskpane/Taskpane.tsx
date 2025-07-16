@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import './taskpane.css';
+// Import styles only in a browser environment to avoid issues in Jest tests
+// Avoid importing styles during Jest tests to prevent transform errors
+if (typeof window !== 'undefined' && !process.env.JEST_WORKER_ID) {
+    require('./taskpane.css');
+}
 import { createRoot } from 'react-dom/client';
 import { Settings } from './Settings';
 import { Feed } from './Feed';
