@@ -14,7 +14,7 @@ export async function allocateThemesFromSetFlow(
 ) {
     console.log('Allocating themes from set', themeSetName);
 
-    const { sheet, inputs, positions } = await getSheetInputsAndPositions(
+    const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
     );
@@ -34,7 +34,13 @@ export async function allocateThemesFromSetFlow(
         },
     });
 
-    await writeAllocationsToSheet(positions, sheet, allocations, context);
+    await writeAllocationsToSheet(
+        positions,
+        sheet,
+        allocations,
+        context,
+        rangeInfo,
+    );
 }
 
 export async function writeAllocationsToSheet(
@@ -42,13 +48,31 @@ export async function writeAllocationsToSheet(
     sheet: Excel.Worksheet,
     allocations: { theme: ShortTheme; score: number; belowThreshold: boolean }[],
     context: Excel.RequestContext,
+    rangeInfo: { rowIndex: number; columnIndex: number; rowCount: number; columnCount: number },
 ) {
+    const originalRange = sheet.getRangeByIndexes(
+        rangeInfo.rowIndex,
+        rangeInfo.columnIndex,
+        rangeInfo.rowCount,
+        rangeInfo.columnCount,
+    );
+    originalRange.load('values');
+    await context.sync();
+
+    const outputSheet = context.workbook.worksheets.add(`Allocation_${Date.now()}`);
+    outputSheet.getRange('A1:B1').values = [['Text', 'Theme']];
+    const target = outputSheet
+        .getRange('A2')
+        .getResizedRange(rangeInfo.rowCount - 1, 0);
+    target.values = originalRange.values;
+
     const batchSize = 1000;
     for (let i = 0; i < positions.length; i += batchSize) {
         const batch = positions.slice(i, i + batchSize);
         batch.forEach((pos, j) => {
             const alloc = allocations[i + j];
-            const cell = sheet.getCell(pos.row - 1, pos.col);
+            const rowIndex = pos.row - rangeInfo.rowIndex;
+            const cell = outputSheet.getCell(rowIndex, 1);
             cell.values = [[alloc.theme.label]];
             if (alloc.belowThreshold) {
                 cell.format.fill.color = '#FFF2CC';

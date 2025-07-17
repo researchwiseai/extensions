@@ -10,7 +10,7 @@ export async function splitIntoTokensFlow(
     range: string,
 ): Promise<void> {
     console.log('splitIntoTokensFlow', range);
-    const { inputs, positions, sheet } = await getSheetInputsAndPositions(
+    const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
     );
@@ -24,13 +24,37 @@ export async function splitIntoTokensFlow(
             .filter((t: string) => t.trim() !== '');
     });
 
+    const originalRange = sheet.getRangeByIndexes(
+        rangeInfo.rowIndex,
+        rangeInfo.columnIndex,
+        rangeInfo.rowCount,
+        rangeInfo.columnCount,
+    );
+    originalRange.load('values');
+    await context.sync();
+
+    const maxTokens = Math.max(...tokenLists.map((t) => t.length));
+    const outputSheet = context.workbook.worksheets.add(`Tokens_${Date.now()}`);
+    const header = ['Text'];
+    for (let i = 0; i < maxTokens; i++) {
+        header.push(`Token ${i + 1}`);
+    }
+    outputSheet
+        .getRangeByIndexes(0, 0, 1, header.length)
+        .values = [header];
+    const target = outputSheet
+        .getRange('A2')
+        .getResizedRange(rangeInfo.rowCount - 1, 0);
+    target.values = originalRange.values;
+
     const batchSize = 1000;
     let batch: { cell: Excel.Range; value: string }[] = [];
 
     positions.forEach((pos, i) => {
         const tokens = tokenLists[i];
         tokens.forEach((token, j) => {
-            const cell = sheet.getCell(pos.row - 1, pos.col + j);
+            const rowIndex = pos.row - rangeInfo.rowIndex;
+            const cell = outputSheet.getCell(rowIndex, j + 1);
             batch.push({ cell, value: token });
 
             if (batch.length >= batchSize) {

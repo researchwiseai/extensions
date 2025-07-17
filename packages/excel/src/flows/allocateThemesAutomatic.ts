@@ -7,7 +7,7 @@ export async function allocateThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
 ) {
-    const { inputs, positions, sheet, themes } = await themeGenerationFlow(
+    const { inputs, positions, sheet, themes, rangeInfo } = await themeGenerationFlow(
         context,
         range,
     );
@@ -20,5 +20,11 @@ export async function allocateThemesAutomaticFlow(
         },
     });
 
-    await writeAllocationsToSheet(positions, sheet, allocations, context);
+    await writeAllocationsToSheet(
+        positions,
+        sheet,
+        allocations,
+        context,
+        rangeInfo,
+    );
 }
