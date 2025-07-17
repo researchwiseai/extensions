@@ -7,7 +7,7 @@ export async function themeGenerationFlow(
     context: Excel.RequestContext,
     range: string,
 ) {
-    const { sheet, inputs, positions } = await getSheetInputsAndPositions(
+    const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
     );
@@ -74,6 +74,6 @@ export async function themeGenerationFlow(
         result.themes,
     );
 
-    return { inputs, positions, sheet, themes: result.themes }; // Return the inputs and positions for further processing
+    return { inputs, positions, sheet, themes: result.themes, rangeInfo }; // Return the inputs and positions for further processing
     // by other flows
 }

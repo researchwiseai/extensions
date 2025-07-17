@@ -5,7 +5,7 @@ export async function splitIntoSentencesFlow(
     range: string,
 ): Promise<void> {
     console.log('splitIntoSentencesFlow', range);
-    const { inputs, positions, sheet } = await getSheetInputsAndPositions(
+    const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
     );
@@ -29,13 +29,36 @@ export async function splitIntoSentencesFlow(
     console.log('sentences', sentences);
     console.log('result', result);
 
+    const originalRange = sheet.getRangeByIndexes(
+        rangeInfo.rowIndex,
+        rangeInfo.columnIndex,
+        rangeInfo.rowCount,
+        rangeInfo.columnCount,
+    );
+    originalRange.load('values');
+    await context.sync();
+
+    const outputSheet = context.workbook.worksheets.add(`Sentences_${Date.now()}`);
+    const header = ['Text'];
+    for (let i = 0; i < maxSentences; i++) {
+        header.push(`Sentence ${i + 1}`);
+    }
+    outputSheet
+        .getRangeByIndexes(0, 0, 1, header.length)
+        .values = [header];
+    const target = outputSheet
+        .getRange('A2')
+        .getResizedRange(rangeInfo.rowCount - 1, 0);
+    target.values = originalRange.values;
+
     const batchSize = 1000;
     let batch: { cell: Excel.Range; value: string }[] = [];
 
     positions.forEach((pos, i) => {
         const sens = sentences[i];
         sens.forEach((s, j) => {
-            const cell = sheet.getCell(pos.row - 1, pos.col + j);
+            const rowIndex = pos.row - rangeInfo.rowIndex;
+            const cell = outputSheet.getCell(rowIndex, j + 1);
             batch.push({ cell, value: s.segment });
 
             if (batch.length >= batchSize) {

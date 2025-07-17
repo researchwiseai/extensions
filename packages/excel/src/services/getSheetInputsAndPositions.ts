@@ -78,5 +78,11 @@ export async function getSheetInputsAndPositions(
         sheet,
         inputs,
         positions,
+        rangeInfo: {
+            rowIndex,
+            columnIndex,
+            rowCount,
+            columnCount,
+        },
     };
 }
