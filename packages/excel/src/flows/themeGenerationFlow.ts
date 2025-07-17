@@ -2,11 +2,15 @@ import { generateThemes } from 'pulse-common/api';
 import { saveThemeSet } from 'pulse-common/themes';
 
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from '../services/maybeActivateSheet';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export async function themeGenerationFlow(
     context: Excel.RequestContext,
     range: string,
+    startTime?: number,
 ) {
+    const start = startTime ?? Date.now();
     const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
@@ -73,6 +77,16 @@ export async function themeGenerationFlow(
         new Date(Date.now()).toISOString().slice(0, 19),
         result.themes,
     );
+
+    if (startTime !== undefined) {
+        await maybeActivateSheet(context, themesSheet, start);
+
+        const feed = getFeed();
+        const last = feed[feed.length - 1];
+        if (last) {
+            updateItem({ jobId: last.jobId, sheetName: themesSheet.name });
+        }
+    }
 
     return { inputs, positions, sheet, themes: result.themes, rangeInfo }; // Return the inputs and positions for further processing
     // by other flows

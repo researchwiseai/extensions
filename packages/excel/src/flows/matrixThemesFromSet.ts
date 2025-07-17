@@ -9,6 +9,7 @@ export async function matrixThemesFromSetFlow(
     themeSetName: string,
 ) {
     console.log('Allocating themes matrix from set', themeSetName);
+    const startTime = Date.now();
 
     const { inputs, positions } = await getSheetInputsAndPositions(context, range);
     const expanded = expandInputsWithBlankRows(inputs, positions);
@@ -33,5 +34,6 @@ export async function matrixThemesFromSetFlow(
         matrix,
         inputs: expanded,
         themes: themeSet.themes,
+        startTime,
     });
 }

@@ -10,6 +10,7 @@ export async function matrixThemesFromSheetFlow(
     themeSheetName: string,
 ) {
     console.log('Allocating themes matrix from sbeet', themeSheetName);
+    const startTime = Date.now();
 
     const { inputs, positions } = await getSheetInputsAndPositions(context, range);
     const expanded = expandInputsWithBlankRows(inputs, positions);
@@ -29,5 +30,6 @@ export async function matrixThemesFromSheetFlow(
         matrix,
         inputs: expanded,
         themes: themes,
+        startTime,
     });
 }

@@ -1,10 +1,12 @@
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from '../services/maybeActivateSheet';
 
 export async function splitIntoSentencesFlow(
     context: Excel.RequestContext,
     range: string,
 ): Promise<void> {
     console.log('splitIntoSentencesFlow', range);
+    const startTime = Date.now();
     const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
@@ -77,4 +79,6 @@ export async function splitIntoSentencesFlow(
         });
         await context.sync();
     }
+
+    await maybeActivateSheet(context, outputSheet, startTime);
 }

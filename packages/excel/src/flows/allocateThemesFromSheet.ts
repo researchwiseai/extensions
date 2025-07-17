@@ -3,6 +3,8 @@ import {
     ShortTheme,
 } from 'pulse-common/themes';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from '../services/maybeActivateSheet';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 import { Pos } from 'pulse-common';
 import { getThemesFromSheet } from './helpers/getThemesFromSheet';
 import { ALLOCATION_THRESHOLD } from './constants';
@@ -13,6 +15,7 @@ export async function allocateThemesFromSheetFlow(
     themeSheetName: string,
 ) {
     console.log('Allocating themes from sheet', themeSheetName);
+    const startTime = Date.now();
 
     const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
         context,
@@ -35,6 +38,7 @@ export async function allocateThemesFromSheetFlow(
         allocations,
         context,
         rangeInfo,
+        startTime,
     );
 }
 
@@ -44,6 +48,7 @@ export async function writeAllocationsToSheet(
     allocations: { theme: ShortTheme; score: number; belowThreshold: boolean }[],
     context: Excel.RequestContext,
     rangeInfo: { rowIndex: number; columnIndex: number; rowCount: number; columnCount: number },
+    startTime: number,
 ) {
     const originalRange = sheet.getRangeByIndexes(
         rangeInfo.rowIndex,
@@ -74,5 +79,13 @@ export async function writeAllocationsToSheet(
             }
         });
         await context.sync();
+    }
+
+    await maybeActivateSheet(context, outputSheet, startTime);
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({ jobId: last.jobId, sheetName: outputSheet.name });
     }
 }

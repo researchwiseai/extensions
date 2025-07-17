@@ -5,6 +5,7 @@ export interface FeedItem {
     title: string;
     status: 'completed' | 'failed' | 'in-progress' | 'waiting';
     message?: string;
+    sheetName?: string;
 }
 
 const feedItems = new Map<string, FeedItem>();
@@ -18,11 +19,13 @@ export function createItem({
     title,
     message,
     status = 'waiting',
+    sheetName,
 }: {
     jobId?: string;
     title: string;
     message?: string;
     status?: 'waiting' | 'in-progress';
+    sheetName?: string;
 }): FeedItem {
     if (!jobId) {
         jobId = crypto.randomUUID();
@@ -35,6 +38,7 @@ export function createItem({
         title,
         status,
         message,
+        sheetName,
     };
     feedItems.set(jobId, item);
     return item;
@@ -45,11 +49,13 @@ export function updateItem({
     status,
     message,
     title,
+    sheetName,
 }: {
     jobId: string;
     status?: Exclude<FeedItem['status'], 'waiting' | 'in-progress'>;
     message?: string;
     title?: string;
+    sheetName?: string;
 }) {
     const item = feedItems.get(jobId);
     if (!item) {
@@ -66,6 +72,9 @@ export function updateItem({
     if (title) {
         item.title = title;
     }
+    if (sheetName) {
+        item.sheetName = sheetName;
+    }
     item.updatedAt = Date.now();
 
     feedItems.set(jobId, item);
@@ -76,4 +85,8 @@ export function getFeed(): FeedItem[] {
     return Array.from(feedItems.values()).sort(
         (a, b) => a.createdAt - b.createdAt,
     );
+}
+
+export function getItem(jobId: string): FeedItem | undefined {
+    return feedItems.get(jobId);
 }

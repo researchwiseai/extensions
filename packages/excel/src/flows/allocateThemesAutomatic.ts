@@ -7,6 +7,7 @@ export async function allocateThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
 ) {
+    const startTime = Date.now();
     const { inputs, positions, sheet, themes, rangeInfo } = await themeGenerationFlow(
         context,
         range,
@@ -26,5 +27,6 @@ export async function allocateThemesAutomaticFlow(
         allocations,
         context,
         rangeInfo,
+        startTime,
     );
 }
