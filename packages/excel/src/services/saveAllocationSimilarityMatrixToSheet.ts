@@ -70,12 +70,28 @@ export async function saveAllocationMatrixToSheet({
     const itemsToUpdate = feed.filter((item) => item.createdAt >= startTime);
     if (itemsToUpdate.length > 0) {
         itemsToUpdate.forEach((item) =>
-            updateItem({ jobId: item.jobId, sheetName: sheet.name }),
+            updateItem({
+                jobId: item.jobId,
+                onClick: () => {
+                    Excel.run(async (context) => {
+                        context.workbook.worksheets.getItem(name).activate();
+                        await context.sync();
+                    });
+                },
+            }),
         );
     } else {
         const last = feed[feed.length - 1];
         if (last) {
-            updateItem({ jobId: last.jobId, sheetName: sheet.name });
+            updateItem({
+                jobId: last.jobId,
+                onClick: () => {
+                    Excel.run(async (context) => {
+                        context.workbook.worksheets.getItem(name).activate();
+                        await context.sync();
+                    });
+                },
+            });
         }
     }
 }

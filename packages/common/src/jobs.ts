@@ -6,6 +6,8 @@ export interface FeedItem {
     status: 'completed' | 'failed' | 'in-progress' | 'waiting';
     message?: string;
     sheetName?: string;
+    /** Optional callback invoked when the feed item is clicked */
+    onClick?: () => void;
 }
 
 const feedItems = new Map<string, FeedItem>();
@@ -20,12 +22,14 @@ export function createItem({
     message,
     status = 'waiting',
     sheetName,
+    onClick,
 }: {
     jobId?: string;
     title: string;
     message?: string;
     status?: 'waiting' | 'in-progress';
     sheetName?: string;
+    onClick?: () => void;
 }): FeedItem {
     if (!jobId) {
         jobId = crypto.randomUUID();
@@ -39,6 +43,7 @@ export function createItem({
         status,
         message,
         sheetName,
+        onClick,
     };
     feedItems.set(jobId, item);
     return item;
@@ -50,13 +55,24 @@ export function updateItem({
     message,
     title,
     sheetName,
+    onClick,
 }: {
     jobId: string;
     status?: Exclude<FeedItem['status'], 'waiting' | 'in-progress'>;
     message?: string;
     title?: string;
     sheetName?: string;
+    onClick?: () => void;
 }) {
+    console.log(
+        'Updating feed item:',
+        jobId,
+        status,
+        message,
+        title,
+        sheetName,
+    );
+
     const item = feedItems.get(jobId);
     if (!item) {
         throw new Error(`Feed item not found: ${jobId}`);
@@ -74,6 +90,9 @@ export function updateItem({
     }
     if (sheetName) {
         item.sheetName = sheetName;
+    }
+    if (onClick) {
+        item.onClick = onClick;
     }
     item.updatedAt = Date.now();
 

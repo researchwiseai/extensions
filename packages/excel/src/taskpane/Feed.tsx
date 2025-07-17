@@ -39,13 +39,6 @@ export function Feed({ api }: Props) {
         return () => clearInterval(interval);
     }, []);
 
-    const goToSheet = async (name: string) => {
-        await Excel.run(async (context) => {
-            const sheet = context.workbook.worksheets.getItem(name);
-            sheet.activate();
-            await context.sync();
-        });
-    };
 
     const getStatusColor = (status: FeedItem['status']) => {
         switch (status) {
@@ -68,24 +61,20 @@ export function Feed({ api }: Props) {
                 <h2 className="ms-font-su">Feed</h2>
                 <div className="space-y-4">
                     {feed.map((item) => {
-                        const clickable = Boolean(item.sheetName);
+                        const clickable = Boolean(item.onClick);
                         return (
                             <div
                                 key={item.jobId}
-                                onClick={
-                                    clickable
-                                        ? () => goToSheet(item.sheetName)
-                                        : undefined
-                                }
+                                onClick={clickable ? item.onClick : undefined}
                                 className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm ${clickable ? 'cursor-pointer' : ''}`}
                             >
                                 <div className="flex justify-between items-center">
                                     <h3 className="font-bold">{item.title}</h3>
-                                    {item.sheetName && (
+                                    {item.onClick && (
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                goToSheet(item.sheetName);
+                                                item.onClick?.();
                                             }}
                                             className="text-blue-600 underline"
                                         >

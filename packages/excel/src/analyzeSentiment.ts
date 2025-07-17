@@ -50,6 +50,15 @@ export async function analyzeSentiment(
     const feed = getFeed();
     const last = feed[feed.length - 1];
     if (last) {
-        updateItem({ jobId: last.jobId, sheetName: outputSheet.name });
+        const name = outputSheet.name;
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                Excel.run(async (context) => {
+                    context.workbook.worksheets.getItem(name).activate();
+                    await context.sync();
+                });
+            },
+        });
     }
 }
