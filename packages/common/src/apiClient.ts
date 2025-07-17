@@ -40,7 +40,7 @@ export function configureSleep(fn: (ms: number) => Promise<void>): void {
 
 /** Configuration options for the API client */
 export interface ConfigureOptions {
-    /** Base URL for the Pulse API (e.g. https://api.example.com/pulse/v1) */
+    /** Base URL for the Pulse API (e.g. https://api.example.com/v1) */
     baseUrl: string;
     /** Async function to retrieve an OAuth access token */
     getAccessToken: () => Promise<string>;
@@ -281,7 +281,7 @@ export async function analyzeSentiment(
     inputs: string[],
     options?: AnalyzeSentimentOptions,
 ): Promise<{ results: SentimentResult[] }> {
-    const url = `${baseUrl}/pulse/v1/sentiment`;
+    const url = `${baseUrl}/v1/sentiment`;
     const data = await postWithJob(
         url,
         { fast: options?.fast, ignoreCache: options?.ignoreCache, inputs },
@@ -310,7 +310,7 @@ export async function generateThemes(
 
     const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
 
-    const url = `${baseUrl}/pulse/v1/themes`;
+    const url = `${baseUrl}/v1/themes`;
     const data = await postWithJob(
         url,
         {
@@ -371,7 +371,7 @@ export async function batchSimilarity(
     setB: string[],
     options?: CompareSimilarityOptions,
 ): Promise<SimilarityResponse> {
-    const url = `${baseUrl}/pulse/v1/similarity`;
+    const url = `${baseUrl}/v1/similarity`;
     const result: SimilarityResponse = { matrix: [] };
 
     const shorter: 'setA' | 'setB' =
@@ -495,7 +495,7 @@ export async function compareSimilarity(
     if (shouldBatchSimilarityRequest({ setA, setB, options })) {
         return batchSimilarity(setA, setB, options);
     } else {
-        const url = `${baseUrl}/pulse/v1/similarity`;
+        const url = `${baseUrl}/v1/similarity`;
         const result: SimilarityResponse = { matrix: [] };
         const data: any = await postWithJob(
             url,
@@ -536,7 +536,7 @@ export async function pollJobStatus(jobId: string): Promise<JobStatus> {
         );
     }
     const token = await getAccessToken();
-    const url = `${baseUrl}/pulse/v1/jobs?jobId=${encodeURIComponent(jobId)}`;
+    const url = `${baseUrl}/v1/jobs?jobId=${encodeURIComponent(jobId)}`;
     const response = await fetchFn(url, {
         method: 'get',
         headers: {

@@ -41,7 +41,7 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
             // Redirect URI must match your Auth0 app and maps to auth-callback.html
             const redirectUri = getRelativeUrl('auth-callback.html');
             const scope = 'openid profile email offline_access';
-            const apiBase = 'https://core.researchwiseai.com';
+            const apiBase = 'https://core.researchwiseai.com/pulse';
 
             const webBase = 'https://researchwiseai.com';
             const orgLookupUrl = `${webBase}/users`;

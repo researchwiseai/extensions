@@ -8,10 +8,8 @@ export async function analyzeSentiment(
     range: string,
 ) {
     const startTime = Date.now();
-    const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { sheet, inputs, positions, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
 
     const originalRange = sheet.getRangeByIndexes(
         rangeInfo.rowIndex,
@@ -23,14 +21,16 @@ export async function analyzeSentiment(
     await context.sync();
 
     const result = await analyzeSentimentApi(inputs, {
-        fast: false,
+        fast: inputs.length < 200,
         onProgress: (message) => {
             console.log(message);
         },
         ignoreCache: true,
     });
 
-    const outputSheet = context.workbook.worksheets.add(`Sentiment_${Date.now()}`);
+    const outputSheet = context.workbook.worksheets.add(
+        `Sentiment_${Date.now()}`,
+    );
     outputSheet.getRange('A1:B1').values = [['Text', 'Sentiment']];
     const target = outputSheet
         .getRange('A2')

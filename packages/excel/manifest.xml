@@ -36,9 +36,9 @@
                       xsi:type="VersionOverridesV1_0">
         <!-- Enable runtime updates to ribbon (show/hide tabs and controls) -->
         <Requirements>
-            <bt:Sets DefaultMinVersion="1.1">
+            <bt:Sets DefaultMinVersion="1.3">
                 <bt:Set Name="RibbonApi"
-                        MinVersion="1.1" />
+                        MinVersion="1.3" />
             </bt:Sets>
         </Requirements>
         <Hosts>

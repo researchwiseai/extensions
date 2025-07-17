@@ -4,7 +4,10 @@ export async function maybeActivateSheet(
     startTime: number,
     thresholdMs = 20000,
 ): Promise<void> {
-    if (Date.now() - startTime <= thresholdMs) {
+    if (
+        Date.now() - startTime <= thresholdMs &&
+        typeof sheet.activate === 'function'
+    ) {
         sheet.activate();
         await context.sync();
     }

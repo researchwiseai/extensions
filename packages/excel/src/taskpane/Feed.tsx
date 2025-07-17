@@ -67,29 +67,38 @@ export function Feed({ api }: Props) {
             <div className="p-5 w-full">
                 <h2 className="ms-font-su">Feed</h2>
                 <div className="space-y-4">
-                    {feed.map((item) => (
-                        <div
-                            key={item.jobId}
-                            onClick={() => item.sheetName && goToSheet(item.sheetName)}
-                            className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm cursor-pointer`}
-                        >
-                            <div className="flex justify-between items-center">
-                                <h3 className="font-bold">{item.title}</h3>
-                                {item.sheetName && (
-                                    <button
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            goToSheet(item.sheetName!);
-                                        }}
-                                        className="text-blue-600 underline"
-                                    >
-                                        Open
-                                    </button>
-                                )}
+                    {feed.map((item) => {
+                        const clickable = Boolean(item.sheetName);
+                        return (
+                            <div
+                                key={item.jobId}
+                                onClick={
+                                    clickable
+                                        ? () => goToSheet(item.sheetName)
+                                        : undefined
+                                }
+                                className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm ${clickable ? 'cursor-pointer' : ''}`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h3 className="font-bold">{item.title}</h3>
+                                    {item.sheetName && (
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                goToSheet(item.sheetName);
+                                            }}
+                                            className="text-blue-600 underline"
+                                        >
+                                            Open
+                                        </button>
+                                    )}
+                                </div>
+                                <p className="text-sm text-gray-600">
+                                    {item.message}
+                                </p>
                             </div>
-                            <p className="text-sm text-gray-600">{item.message}</p>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

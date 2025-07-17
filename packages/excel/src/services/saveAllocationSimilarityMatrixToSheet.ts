@@ -66,8 +66,16 @@ export async function saveAllocationMatrixToSheet({
     await maybeActivateSheet(context, sheet, startTime);
 
     const feed = getFeed();
-    const last = feed[feed.length - 1];
-    if (last) {
-        updateItem({ jobId: last.jobId, sheetName: sheet.name });
+    // Link all feed items created since this operation started to this sheet
+    const itemsToUpdate = feed.filter((item) => item.createdAt >= startTime);
+    if (itemsToUpdate.length > 0) {
+        itemsToUpdate.forEach((item) =>
+            updateItem({ jobId: item.jobId, sheetName: sheet.name }),
+        );
+    } else {
+        const last = feed[feed.length - 1];
+        if (last) {
+            updateItem({ jobId: last.jobId, sheetName: sheet.name });
+        }
     }
 }
