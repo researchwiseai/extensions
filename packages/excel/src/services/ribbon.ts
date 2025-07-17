@@ -102,3 +102,30 @@ export function updateHomeStartButtonLabel(label: string) {
         ],
     });
 }
+
+export function updateHomeStartButtonIcon(useSettingsIcon: boolean) {
+    const base = window.location.origin;
+    const prefix = useSettingsIcon ? 'icons/cog' : 'icon';
+    Office.ribbon.requestUpdate({
+        tabs: [
+            {
+                id: 'TabPulse',
+                groups: [
+                    {
+                        id: 'PulseGroup',
+                        controls: [
+                            {
+                                id: 'HomePulseStartButton',
+                                icon: [
+                                    { size: 16, sourceLocation: `${base}/assets/${prefix}-16.png` },
+                                    { size: 32, sourceLocation: `${base}/assets/${prefix}-32.png` },
+                                    { size: 80, sourceLocation: `${base}/assets/${prefix}-80.png` },
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    });
+}

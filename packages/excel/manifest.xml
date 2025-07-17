@@ -320,11 +320,11 @@
                                     </Supertip>
                                     <Icon>
                                         <bt:Image size="16"
-                                                  resid="SettingsIcon.16x16" />
+                                                  resid="Icon.16x16" />
                                         <bt:Image size="32"
-                                                  resid="SettingsIcon.32x32" />
+                                                  resid="Icon.32x32" />
                                         <bt:Image size="80"
-                                                  resid="SettingsIcon.80x80" />
+                                                  resid="Icon.80x80" />
                                     </Icon>
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>openSettingsHandler</FunctionName>

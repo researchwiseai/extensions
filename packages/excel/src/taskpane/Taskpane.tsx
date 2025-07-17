@@ -24,10 +24,12 @@ function checkForLogin(success?: () => void, failure?: () => void) {
     if (token && email && orgId) {
         Ribbon.enableRibbonButtons();
         Ribbon.updateHomeStartButtonLabel('Settings');
+        Ribbon.updateHomeStartButtonIcon(true);
         success?.();
     } else {
         Ribbon.disableRibbonButtons();
         Ribbon.updateHomeStartButtonLabel('Start');
+        Ribbon.updateHomeStartButtonIcon(false);
         failure?.();
     }
 }
