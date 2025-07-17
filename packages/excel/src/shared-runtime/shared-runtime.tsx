@@ -48,7 +48,7 @@ async function generateThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await themeGenerationFlow(context, confirmed);
+            await themeGenerationFlow(context, confirmed, Date.now());
         } catch (e) {
             console.error('Dialog error', e);
         } finally {

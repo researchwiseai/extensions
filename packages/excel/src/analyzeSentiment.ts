@@ -1,10 +1,13 @@
 import { analyzeSentiment as analyzeSentimentApi } from 'pulse-common/api';
 import { getSheetInputsAndPositions } from './services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from './services/maybeActivateSheet';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export async function analyzeSentiment(
     context: Excel.RequestContext,
     range: string,
 ) {
+    const startTime = Date.now();
     const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
@@ -41,4 +44,12 @@ export async function analyzeSentiment(
         cell.values = [[sentiment]];
     });
     await context.sync();
+
+    await maybeActivateSheet(context, outputSheet, startTime);
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({ jobId: last.jobId, sheetName: outputSheet.name });
+    }
 }

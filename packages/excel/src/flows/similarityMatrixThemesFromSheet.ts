@@ -13,6 +13,7 @@ export async function similarityMatrixThemesFromSheetFlow(
         'Allocating themes similarity matrix from sheet',
         themeSheetName,
     );
+    const startTime = Date.now();
 
     const { inputs, positions } = await getSheetInputsAndPositions(context, range);
     const expanded = expandInputsWithBlankRows(inputs, positions);
@@ -32,5 +33,6 @@ export async function similarityMatrixThemesFromSheetFlow(
         matrix,
         inputs: expanded,
         themes,
+        startTime,
     });
 }

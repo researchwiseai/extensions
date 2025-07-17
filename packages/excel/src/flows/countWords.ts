@@ -1,4 +1,5 @@
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from '../services/maybeActivateSheet';
 import winkNLP from 'wink-nlp';
 import model from 'wink-eng-lite-web-model';
 
@@ -10,6 +11,7 @@ export async function countWordsFlow(
     range: string,
 ): Promise<void> {
     console.log('countWordsFlow', range);
+    const startTime = Date.now();
     const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
@@ -65,4 +67,6 @@ export async function countWordsFlow(
         });
         await context.sync();
     }
+
+    await maybeActivateSheet(context, outputSheet, startTime);
 }

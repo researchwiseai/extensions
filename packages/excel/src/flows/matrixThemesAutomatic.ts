@@ -7,6 +7,7 @@ export async function matrixThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
 ) {
+    const startTime = Date.now();
     const { inputs, positions, themes } = await themeGenerationFlow(context, range);
     const expanded = expandInputsWithBlankRows(inputs, positions);
 
@@ -22,5 +23,6 @@ export async function matrixThemesAutomaticFlow(
         matrix,
         inputs: expanded,
         themes,
+        startTime,
     });
 }

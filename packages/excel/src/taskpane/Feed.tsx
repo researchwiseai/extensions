@@ -39,6 +39,14 @@ export function Feed({ api }: Props) {
         return () => clearInterval(interval);
     }, []);
 
+    const goToSheet = async (name: string) => {
+        await Excel.run(async (context) => {
+            const sheet = context.workbook.worksheets.getItem(name);
+            sheet.activate();
+            await context.sync();
+        });
+    };
+
     const getStatusColor = (status: FeedItem['status']) => {
         switch (status) {
             case 'completed':
@@ -62,12 +70,24 @@ export function Feed({ api }: Props) {
                     {feed.map((item) => (
                         <div
                             key={item.jobId}
-                            className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm`}
+                            onClick={() => item.sheetName && goToSheet(item.sheetName)}
+                            className={`p-4 border-l-4 ${getStatusColor(item.status)} bg-white shadow-sm cursor-pointer`}
                         >
-                            <h3 className="font-bold">{item.title}</h3>
-                            <p className="text-sm text-gray-600">
-                                {item.message}
-                            </p>
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-bold">{item.title}</h3>
+                                {item.sheetName && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            goToSheet(item.sheetName!);
+                                        }}
+                                        className="text-blue-600 underline"
+                                    >
+                                        Open
+                                    </button>
+                                )}
+                            </div>
+                            <p className="text-sm text-gray-600">{item.message}</p>
                         </div>
                     ))}
                 </div>

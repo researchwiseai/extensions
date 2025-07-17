@@ -1,5 +1,7 @@
 import type { Theme } from 'pulse-common/api';
 import type { ShortTheme } from 'pulse-common/themes';
+import { maybeActivateSheet } from './maybeActivateSheet';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 interface Props {
     matrix: (number | boolean)[][];
@@ -7,6 +9,7 @@ interface Props {
     inputs: string[];
     themes: (Theme | ShortTheme)[];
     sheetName?: string;
+    startTime: number;
 }
 
 export async function saveAllocationMatrixToSheet({
@@ -15,6 +18,7 @@ export async function saveAllocationMatrixToSheet({
     inputs,
     themes,
     sheetName,
+    startTime,
 }: Props): Promise<void> {
     // generate a unique name if none provided
     const name = sheetName ?? `Allocation_${Date.now()}`;
@@ -59,8 +63,11 @@ export async function saveAllocationMatrixToSheet({
     row1.format.rowHeight = 30;
     row1.format.wrapText = true;
 
-    // make it visible/active if you want
-    sheet.activate();
+    await maybeActivateSheet(context, sheet, startTime);
 
-    await context.sync();
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({ jobId: last.jobId, sheetName: sheet.name });
+    }
 }

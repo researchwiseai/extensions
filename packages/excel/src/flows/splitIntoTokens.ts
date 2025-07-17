@@ -1,4 +1,5 @@
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { maybeActivateSheet } from '../services/maybeActivateSheet';
 import winkNLP from 'wink-nlp';
 import model from 'wink-eng-lite-web-model';
 
@@ -10,6 +11,7 @@ export async function splitIntoTokensFlow(
     range: string,
 ): Promise<void> {
     console.log('splitIntoTokensFlow', range);
+    const startTime = Date.now();
     const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
         context,
         range,
@@ -73,4 +75,6 @@ export async function splitIntoTokensFlow(
         });
         await context.sync();
     }
+
+    await maybeActivateSheet(context, outputSheet, startTime);
 }
