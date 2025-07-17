@@ -47,8 +47,9 @@ export async function analyzeSentimentFlow(dataRange: string) {
         return;
     }
 
+    const useFast = inputs.length < 200;
     const data = await analyzeSentiment(inputs, {
-        fast: false,
+        fast: useFast,
         onProgress: (message) => {
             ss.toast(message, 'Pulse');
         },

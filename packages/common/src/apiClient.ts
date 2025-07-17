@@ -81,6 +81,9 @@ async function postWithJob(
         title: (options.taskName ?? 'Unknown task') + suffix,
     });
 
+    // mark the job as started so the feed shows activity while waiting
+    Jobs.updateItem({ jobId: jobItem.jobId, message: 'Request submitted...' });
+
     const token = await getAccessToken();
     const response = await fetchFn(url, {
         method: 'post',
@@ -89,15 +92,20 @@ async function postWithJob(
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            ...body,
-            fast: false,
-            // Add any additional headers or data here
-        }),
+        body: JSON.stringify(body),
         mode: 'cors',
     });
 
     if (response.status === 200) {
+        Jobs.updateItem({
+            jobId: jobItem.jobId,
+            message:
+                options.taskName
+                    ? `${options.taskName} completed`
+                    : 'Request completed',
+            status: 'completed',
+        });
+
         options.onProgress?.(
             options.taskName
                 ? `${options.taskName} complete successfully`
@@ -216,6 +224,11 @@ async function postWithJob(
         }
     } else {
         const errText = await response.text();
+        Jobs.updateItem({
+            jobId: jobItem.jobId,
+            message: `Error: ${errText}`,
+            status: 'failed',
+        });
         throw new Error(`${response.statusText}: ${errText}`);
     }
 }
