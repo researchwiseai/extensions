@@ -6,11 +6,16 @@ import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows
 export async function similarityMatrixThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
+    hasHeader = false,
 ) {
     console.log('Allocating themes similarity matrix automatically');
     const startTime = Date.now();
 
-    const { inputs, positions, themes } = await themeGenerationFlow(context, range);
+    const { inputs, positions, themes } = await themeGenerationFlow(
+        context,
+        range,
+        hasHeader,
+    );
     const expanded = expandInputsWithBlankRows(inputs, positions);
 
     const matrix = await splitSimilarityMatrix(expanded, themes, {

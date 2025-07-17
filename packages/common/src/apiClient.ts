@@ -295,6 +295,8 @@ export async function analyzeSentiment(
 
 interface GenerateThemesOptions {
     fast?: boolean;
+    /** Optional context description for the theme generation request */
+    context?: string;
     onProgress?: (message: string) => void;
 }
 
@@ -311,12 +313,17 @@ export async function generateThemes(
     const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
 
     const url = `${baseUrl}/v1/themes`;
+    // Include optional context field when provided
+    const body: Record<string, unknown> = {
+        inputs: sampledInputs,
+        fast: options?.fast ?? false,
+    };
+    if (options?.context) {
+        body.context = options.context;
+    }
     const data = await postWithJob(
         url,
-        {
-            inputs: sampledInputs,
-            fast: options?.fast ?? false,
-        },
+        body,
         {
             onProgress: options?.onProgress,
             taskName: 'Theme generation',

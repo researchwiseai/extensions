@@ -48,7 +48,7 @@ async function generateThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await themeGenerationFlow(context, confirmed, Date.now());
+            await themeGenerationFlow(context, confirmed, _hasHeader, Date.now());
         } catch (e) {
             console.error('Dialog error', e);
         } finally {
@@ -73,7 +73,7 @@ function allocateThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await allocateThemesRoot(context, confirmed);
+            await allocateThemesRoot(context, confirmed, _hasHeader);
         } catch (e) {
             console.error('Dialog error', e);
         } finally {
@@ -99,7 +99,7 @@ function matrixThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await matrixThemesRootFlow(context, confirmed);
+            await matrixThemesRootFlow(context, confirmed, _hasHeader);
         } catch (e) {
             console.error('Dialog error', e);
         } finally {
@@ -124,7 +124,7 @@ function similarityMatrixThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await similarityMatrixThemesRootFlow(context, confirmed);
+            await similarityMatrixThemesRootFlow(context, confirmed, _hasHeader);
         } catch (e) {
             console.error('Dialog error', e);
         } finally {

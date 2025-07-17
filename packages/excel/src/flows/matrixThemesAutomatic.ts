@@ -6,9 +6,14 @@ import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows
 export async function matrixThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
+    hasHeader = false,
 ) {
     const startTime = Date.now();
-    const { inputs, positions, themes } = await themeGenerationFlow(context, range);
+    const { inputs, positions, themes } = await themeGenerationFlow(
+        context,
+        range,
+        hasHeader,
+    );
     const expanded = expandInputsWithBlankRows(inputs, positions);
 
     const matrix = await multiCode(expanded, themes, {

@@ -83,6 +83,7 @@ function openAllocationModeDialog(
 export async function similarityMatrixThemesRootFlow(
     context: Excel.RequestContext,
     range: string,
+    hasHeader = false,
 ) {
     const themeSets = await getThemeSets();
     const themeSetNames = themeSets.map((set) => set.name);
@@ -104,7 +105,7 @@ export async function similarityMatrixThemesRootFlow(
     );
 
     if (allocationMode.mode === 'automatic') {
-        await similarityMatrixThemesAutomaticFlow(context, range);
+        await similarityMatrixThemesAutomaticFlow(context, range, hasHeader);
     } else if (allocationMode.mode === 'set') {
         await similarityMatrixThemesFromSetFlow(
             context,

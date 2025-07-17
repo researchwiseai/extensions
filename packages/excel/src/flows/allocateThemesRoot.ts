@@ -85,6 +85,7 @@ function openAllocationModeDialog(
 export async function allocateThemesRoot(
     context: Excel.RequestContext,
     range: string,
+    hasHeader = false,
 ) {
     const themeSets = await getThemeSets();
     const themeSetNames = themeSets.map((set) => set.name);
@@ -108,7 +109,7 @@ export async function allocateThemesRoot(
     console.log('Allocation mode', allocationMode);
 
     if (allocationMode.mode === 'automatic') {
-        await allocateThemesAutomaticFlow(context, range);
+        await allocateThemesAutomaticFlow(context, range, hasHeader);
     } else if (allocationMode.mode === 'set') {
         await allocateThemesFromSetFlow(context, range, allocationMode.setName);
     } else {

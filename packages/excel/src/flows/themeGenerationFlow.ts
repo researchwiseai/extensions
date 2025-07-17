@@ -8,16 +8,36 @@ import { getFeed, updateItem } from 'pulse-common/jobs';
 export async function themeGenerationFlow(
     context: Excel.RequestContext,
     range: string,
+    hasHeader = false,
     startTime?: number,
 ) {
     const start = startTime ?? Date.now();
-    const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
+
+    let header: string | undefined;
+    let inputs = rawInputs;
+    let positions = rawPositions;
+    if (hasHeader) {
+        // Read header cell and exclude it from inputs
+        const headerCell = sheet.getRangeByIndexes(
+            rangeInfo.rowIndex,
+            rangeInfo.columnIndex,
+            1,
+            1,
+        );
+        headerCell.load('values');
+        await context.sync();
+        header = String(headerCell.values[0][0] ?? '');
+        inputs = rawInputs.slice(1);
+        positions = rawPositions.slice(1);
+    }
 
     const result = await generateThemes(inputs, {
         fast: false,
+        context: hasHeader
+            ? `The inputs provided are from a column of data in Excel. The column header is: ${header}`
+            : undefined,
         onProgress: (message) => {
             console.log(message);
         },
