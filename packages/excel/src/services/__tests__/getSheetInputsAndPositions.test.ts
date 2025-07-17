@@ -62,4 +62,40 @@ describe('getSheetInputsAndPositions', () => {
             { row: 3, col: 1 },
         ]);
     });
+
+    it('throws if more than one column is selected', async () => {
+        const values = [['a', 'b']];
+
+        const intersection = createRange({
+            rowIndex: 0,
+            columnIndex: 0,
+            rowCount: 1,
+            columnCount: 2,
+            values,
+        }) as MockRange & { isNullObject?: boolean };
+        intersection.isNullObject = false;
+
+        const target = createRange({
+            getIntersectionOrNullObject: jest.fn(() => intersection),
+        });
+
+        const sheet = {
+            getRange: jest.fn(() => target),
+            getUsedRange: jest.fn(() => createRange()),
+            getRangeByIndexes: jest.fn(() => createRange({ values })),
+        } as any;
+
+        const context = {
+            workbook: {
+                worksheets: {
+                    getActiveWorksheet: jest.fn(() => sheet),
+                },
+            },
+            sync: jest.fn().mockResolvedValue(undefined),
+        } as any;
+
+        await expect(getSheetInputsAndPositions(context, 'A:B')).rejects.toThrow(
+            'single column',
+        );
+    });
 });

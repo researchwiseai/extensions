@@ -38,6 +38,10 @@ export async function getSheetInputsAndPositions(
 
     await context.sync();
 
+    if (intersection.columnCount > 1) {
+        throw new Error('Please select a single column range');
+    }
+
     if (intersection.isNullObject) {
         console.error('Selected range contains no used cells');
         throw new Error('No text found in selected data range');
