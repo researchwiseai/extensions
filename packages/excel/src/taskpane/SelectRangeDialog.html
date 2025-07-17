@@ -12,6 +12,9 @@
     <label for="rangeInput">Range (Sheet!A1 notation):</label><br/>
     <input id="rangeInput" type="text" style="width:100%; margin-top:8px; padding:4px;" />
   </div>
+  <div style="margin-top: 16px;">
+    <label><input id="headerCheckbox" type="checkbox" checked /> First row contains header</label>
+  </div>
   <div style="margin-top: 16px; text-align: right;">
     <button id="cancelBtn" style="margin-right:8px;">Cancel</button>
     <button id="okBtn">OK</button>
@@ -22,11 +25,16 @@
       const range = params.get('range') || '';
       const input = document.getElementById('rangeInput');
       input.value = range;
+      const headerCheckbox = document.getElementById('headerCheckbox');
       document.getElementById('okBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ range: input.value }));
+        Office.context.ui.messageParent(
+          JSON.stringify({ range: input.value, hasHeader: headerCheckbox.checked }),
+        );
       });
       document.getElementById('cancelBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ range: null }));
+        Office.context.ui.messageParent(
+          JSON.stringify({ range: null, hasHeader: headerCheckbox.checked }),
+        );
       });
       input.focus();
       input.select();

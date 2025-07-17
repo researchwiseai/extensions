@@ -14,7 +14,7 @@ import { getRelativeUrl } from '../services/relativeUrl';
 function analyzeSentimentHandler(event: any) {
     Excel.run(async (context) => {
         try {
-            const confirmed = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -39,7 +39,7 @@ Office.actions.associate('analyzeSentimentHandler', analyzeSentimentHandler);
 async function generateThemesHandler(event: any) {
     Excel.run(async (context) => {
         try {
-            const confirmed = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -64,7 +64,7 @@ function allocateThemesHandler(event: any) {
     console.log('Allocate themes handler');
     Excel.run(async (context) => {
         try {
-            const confirmed = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -90,7 +90,7 @@ function matrixThemesHandler(event: any) {
 
     Excel.run(async (context) => {
         try {
-            const confirmed = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -115,7 +115,7 @@ function similarityMatrixThemesHandler(event: any) {
     console.log('Similarity matrix themes handler');
     Excel.run(async (context) => {
         try {
-            const confirmed = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {

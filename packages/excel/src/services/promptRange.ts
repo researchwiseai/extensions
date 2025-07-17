@@ -3,9 +3,9 @@ import { getRelativeUrl } from './relativeUrl';
 /**
  * Prompts the user to confirm or change the range via a dialog.
  * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
- * @returns The confirmed range string, or null if cancelled.
+ * @returns An object containing the confirmed range string (null if cancelled) and a flag indicating whether the first row contains header.
  */
-export function promptRange(defaultRange: string): Promise<string | null> {
+export function promptRange(defaultRange: string): Promise<{ range: string | null; hasHeader: boolean }> {
     return new Promise((resolve, reject) => {
         const url = getRelativeUrl(
             `SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
@@ -30,7 +30,7 @@ export function promptRange(defaultRange: string): Promise<string | null> {
                             try {
                                 const msg = JSON.parse(arg.message);
                                 dialog.close();
-                                resolve(msg.range);
+                                resolve({ range: msg.range, hasHeader: !!msg.hasHeader });
                             } catch (e) {
                                 dialog.close();
                                 reject(e);
@@ -45,7 +45,7 @@ export function promptRange(defaultRange: string): Promise<string | null> {
 
 export async function confirmRange(
     context: Excel.RequestContext,
-): Promise<string | null> {
+): Promise<{ range: string | null; hasHeader: boolean }> {
     const sel = context.workbook.getSelectedRange();
     sel.load('address');
     await context.sync();
