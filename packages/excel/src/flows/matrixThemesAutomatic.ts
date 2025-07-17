@@ -1,14 +1,16 @@
 import { multiCode } from 'pulse-common/themes';
 import { themeGenerationFlow } from './themeGenerationFlow';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
+import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
 
 export async function matrixThemesAutomaticFlow(
     context: Excel.RequestContext,
     range: string,
 ) {
-    const { inputs, themes } = await themeGenerationFlow(context, range);
+    const { inputs, positions, themes } = await themeGenerationFlow(context, range);
+    const expanded = expandInputsWithBlankRows(inputs, positions);
 
-    const matrix = await multiCode(inputs, themes, {
+    const matrix = await multiCode(expanded, themes, {
         fast: false,
         onProgress: (message) => {
             console.log(message);
@@ -18,7 +20,7 @@ export async function matrixThemesAutomaticFlow(
     await saveAllocationMatrixToSheet({
         context,
         matrix,
-        inputs,
+        inputs: expanded,
         themes,
     });
 }

@@ -1,6 +1,7 @@
 import { splitSimilarityMatrix } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
 import { getThemesFromSheet } from './helpers/getThemesFromSheet';
 
 export async function similarityMatrixThemesFromSheetFlow(
@@ -13,11 +14,12 @@ export async function similarityMatrixThemesFromSheetFlow(
         themeSheetName,
     );
 
-    const { inputs } = await getSheetInputsAndPositions(context, range);
+    const { inputs, positions } = await getSheetInputsAndPositions(context, range);
+    const expanded = expandInputsWithBlankRows(inputs, positions);
 
     const themes = await getThemesFromSheet(context, themeSheetName);
 
-    const matrix = await splitSimilarityMatrix(inputs, themes, {
+    const matrix = await splitSimilarityMatrix(expanded, themes, {
         fast: false,
         normalize: false,
         onProgress: (message) => {
@@ -28,7 +30,7 @@ export async function similarityMatrixThemesFromSheetFlow(
     await saveAllocationMatrixToSheet({
         context,
         matrix,
-        inputs,
+        inputs: expanded,
         themes,
     });
 }
