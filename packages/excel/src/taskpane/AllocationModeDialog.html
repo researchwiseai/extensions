@@ -33,10 +33,11 @@
             }
             /* Dropdown sizing */
             .ms-Dropdown {
-                width: 100%;
+                width: 220px;
                 min-height: 40px;
             }
             .ms-Dropdown-select {
+                width: 220px;
                 height: 38px;
                 line-height: 38px;
             }
@@ -148,6 +149,17 @@
                     opt.text = sheet;
                     sheetSelect.appendChild(opt);
                 });
+
+                const modeSet = document.getElementById('mode-set');
+                const modeSheet = document.getElementById('mode-sheet');
+
+                if (select.options.length === 0) {
+                    modeSet.disabled = true;
+                }
+
+                if (sheetSelect.options.length === 0) {
+                    modeSheet.disabled = true;
+                }
                 document
                     .getElementById('mode-set')
                     .addEventListener('change', (e) => {
@@ -172,6 +184,16 @@
                         const mode = document.querySelector(
                             'input[name="mode"]:checked',
                         ).value;
+
+                        if (mode === 'set' && !select.value) {
+                            alert('Please select a theme set');
+                            return;
+                        }
+                        if (mode === 'sheet' && !sheetSelect.value) {
+                            alert('Please select a worksheet');
+                            return;
+                        }
+
                         const msg = { mode };
                         if (mode === 'set') {
                             msg.setName = select.value;
