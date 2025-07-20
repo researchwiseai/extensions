@@ -5,7 +5,7 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
     <Id>e6d579a3-3169-458f-a1f3-c5bf0a868198</Id>
-    <Version>1.0.0.0</Version>
+    <Version>1.1.0.0</Version>
     <ProviderName>ResearchWiseAI</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Pulse" />

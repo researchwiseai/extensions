@@ -118,7 +118,7 @@ Office.onReady().then(() => {
             scope: 'openid profile email offline_access',
         });
         configureClient({
-            baseUrl: 'https://core.researchwiseai.com/pulse',
+            baseUrl: 'https://pulse.researchwiseai.com',
             getAccessToken,
         });
     } else if (storedToken || storedEmail || organization) {

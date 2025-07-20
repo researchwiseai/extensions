@@ -99,10 +99,9 @@ async function postWithJob(
     if (response.status === 200) {
         Jobs.updateItem({
             jobId: jobItem.jobId,
-            message:
-                options.taskName
-                    ? `${options.taskName} completed`
-                    : 'Request completed',
+            message: options.taskName
+                ? `${options.taskName} completed`
+                : 'Request completed',
             status: 'completed',
         });
 
@@ -134,7 +133,7 @@ async function postWithJob(
 
         // Job accepted; poll for completion
         const data = await response.json();
-        const jobId = data.jobId;
+        const jobId = data.job_id;
         if (typeof jobId !== 'string') {
             throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
         }
@@ -173,7 +172,7 @@ async function postWithJob(
             if (status.status === 'pending') {
                 continue;
             } else if (status.status === 'completed') {
-                if (!status.resultUrl) {
+                if (!status.result_url) {
                     Jobs.updateItem({
                         jobId: jobItem.jobId,
                         message: 'Results URL missing',
@@ -184,35 +183,41 @@ async function postWithJob(
                         `Missing resultUrl in job status: ${JSON.stringify(status)}`,
                     );
                 }
-                const resultResp = await fetchFn(status.resultUrl, {
-                    contentType: 'application/json',
-                    method: 'get',
-                    headers: { 'Content-Type': 'application/json' },
-                });
-                if (!resultResp.ok) {
-                    const errText = await resultResp.text();
+                try {
+                    const resultResp = await fetchFn(status.result_url);
+                    if (!resultResp.ok) {
+                        const errText = await resultResp.text();
+
+                        Jobs.updateItem({
+                            jobId: jobItem.jobId,
+                            message: `Error fetching results: ${errText}`,
+                            status: 'failed',
+                        });
+
+                        throw new Error(`${resultResp.statusText}: ${errText}`);
+                    }
 
                     Jobs.updateItem({
                         jobId: jobItem.jobId,
-                        message: `Error fetching results: ${errText}`,
-                        status: 'failed',
+                        message: `Job completed in ${elapsedTimeStr()}`,
+                        status: 'completed',
                     });
 
-                    throw new Error(`${resultResp.statusText}: ${errText}`);
+                    options.onProgress?.(
+                        options.taskName
+                            ? `${options.taskName} job completed successfully`
+                            : 'Job completed successfully',
+                    );
+                    return await resultResp.json();
+                } catch (err) {
+                    console.error(err);
+                    Jobs.updateItem({
+                        jobId: jobItem.jobId,
+                        message: `Error fetching results: ${err}`,
+                        status: 'failed',
+                    });
+                    throw err;
                 }
-
-                Jobs.updateItem({
-                    jobId: jobItem.jobId,
-                    message: `Job completed in ${elapsedTimeStr()}`,
-                    status: 'completed',
-                });
-
-                options.onProgress?.(
-                    options.taskName
-                        ? `${options.taskName} job completed successfully`
-                        : 'Job completed successfully',
-                );
-                return await resultResp.json();
             } else {
                 Jobs.updateItem({
                     jobId: jobItem.jobId,
@@ -321,14 +326,10 @@ export async function generateThemes(
     if (options?.context) {
         body.context = options.context;
     }
-    const data = await postWithJob(
-        url,
-        body,
-        {
-            onProgress: options?.onProgress,
-            taskName: 'Theme generation',
-        },
-    );
+    const data = await postWithJob(url, body, {
+        onProgress: options?.onProgress,
+        taskName: 'Theme generation',
+    });
     console.log('Generated themes:', data);
     if (Array.isArray(data.themes)) {
         return { themes: data.themes };
