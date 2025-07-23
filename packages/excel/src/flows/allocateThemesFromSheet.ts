@@ -17,10 +17,8 @@ export async function allocateThemesFromSheetFlow(
     console.log('Allocating themes from sheet', themeSheetName);
     const startTime = Date.now();
 
-    const { sheet, inputs, positions, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { sheet, inputs, positions, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
 
     const themes = await getThemesFromSheet(context, themeSheetName);
 
@@ -45,9 +43,18 @@ export async function allocateThemesFromSheetFlow(
 export async function writeAllocationsToSheet(
     positions: Pos[],
     sheet: Excel.Worksheet,
-    allocations: { theme: ShortTheme; score: number; belowThreshold: boolean }[],
+    allocations: {
+        theme: ShortTheme;
+        score: number;
+        belowThreshold: boolean;
+    }[],
     context: Excel.RequestContext,
-    rangeInfo: { rowIndex: number; columnIndex: number; rowCount: number; columnCount: number },
+    rangeInfo: {
+        rowIndex: number;
+        columnIndex: number;
+        rowCount: number;
+        columnCount: number;
+    },
     startTime: number,
 ) {
     const originalRange = sheet.getRangeByIndexes(
@@ -59,7 +66,8 @@ export async function writeAllocationsToSheet(
     originalRange.load('values');
     await context.sync();
 
-    const outputSheet = context.workbook.worksheets.add(`Allocation_${Date.now()}`);
+    const name = `Allocation_${Date.now()}`;
+    const outputSheet = context.workbook.worksheets.add(name);
     outputSheet.getRange('A1:B1').values = [['Text', 'Theme']];
     const target = outputSheet
         .getRange('A2')
@@ -86,7 +94,6 @@ export async function writeAllocationsToSheet(
     const feed = getFeed();
     const last = feed[feed.length - 1];
     if (last) {
-        const name = outputSheet.name;
         updateItem({
             jobId: last.jobId,
             onClick: () => {

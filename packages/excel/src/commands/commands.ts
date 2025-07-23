@@ -21,8 +21,9 @@ async function analyzeSentiment(event: Office.AddinCommands.Event) {
       const defaultRange = selected.address;
       // Prompt user to confirm or change range
       let confirmedRange: string | null;
+      let hasHeader = false;
       try {
-        confirmedRange = await promptRange(defaultRange);
+        ({ range: confirmedRange, hasHeader } = await promptRange(defaultRange));
       } catch (err) {
         console.error('Range selection dialog error:', err);
         return;
@@ -32,7 +33,7 @@ async function analyzeSentiment(event: Office.AddinCommands.Event) {
         return;
       }
       // Perform sentiment analysis
-      await analyzeSentimentLogic(context, confirmedRange);
+      await analyzeSentimentLogic(context, confirmedRange, hasHeader);
     });
   } catch (err) {
     console.error('Analyze Sentiment error:', err);

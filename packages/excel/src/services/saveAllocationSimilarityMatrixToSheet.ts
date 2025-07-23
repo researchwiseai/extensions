@@ -68,19 +68,7 @@ export async function saveAllocationMatrixToSheet({
     const feed = getFeed();
     // Link all feed items created since this operation started to this sheet
     const itemsToUpdate = feed.filter((item) => item.createdAt >= startTime);
-    if (itemsToUpdate.length > 0) {
-        itemsToUpdate.forEach((item) =>
-            updateItem({
-                jobId: item.jobId,
-                onClick: () => {
-                    Excel.run(async (context) => {
-                        context.workbook.worksheets.getItem(name).activate();
-                        await context.sync();
-                    });
-                },
-            }),
-        );
-    } else {
+    if (itemsToUpdate.length === 0) {
         const last = feed[feed.length - 1];
         if (last) {
             updateItem({

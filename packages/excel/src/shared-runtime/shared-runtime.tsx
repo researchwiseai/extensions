@@ -14,7 +14,7 @@ import { getRelativeUrl } from '../services/relativeUrl';
 function analyzeSentimentHandler(event: any) {
     Excel.run(async (context) => {
         try {
-            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
+            const { range: confirmed, hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -23,7 +23,7 @@ function analyzeSentimentHandler(event: any) {
             }
 
             openFeedHandler();
-            await analyzeSentiment(context, confirmed);
+            await analyzeSentiment(context, confirmed, hasHeader);
         } catch (e) {
             console.error('Dialog error', e);
             console.error((e as Error).stack);
