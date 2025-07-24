@@ -1,12 +1,17 @@
-import { allocateThemes, extractInputs, getThemeSets } from 'pulse-common';
-import { writeAllocationsToSheet } from './writeAllocationsToSheet';
+import { allocateThemes } from 'pulse-common/api';
+import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import { getThemeSets } from 'pulse-common/themes';
 
 /**
  * Allocate themes from an existing saved set.
  * @param {string} dataRange A1 notation of the data range.
  * @param {string} name Name of the saved theme set.
  */
-export async function allocateThemesFromSet(dataRange: string, name: string) {
+export async function allocateThemesFromSet(
+    dataRange: string,
+    name: string,
+    hasHeader = false,
+) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
@@ -19,9 +24,10 @@ export async function allocateThemesFromSet(dataRange: string, name: string) {
     }
     const values = dataRangeObj.getValues();
 
-    const { inputs, positions } = extractInputs(values, {
+    const { inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
+        hasHeader,
     });
 
     const themeSet = await getThemeSets();
@@ -35,14 +41,21 @@ export async function allocateThemesFromSet(dataRange: string, name: string) {
     const themes = setObj.themes;
 
     const dataSheet = dataRangeObj.getSheet();
-    writeAllocationsToSheet(
-        await allocateThemes(inputs, themes, {
-            fast: false,
-            onProgress: (message: string) => {
-                ss.toast(message, 'Pulse');
-            }
-        }),
-        dataSheet,
-        positions,
+
+    const allocations = await allocateThemes(inputs, themes, {
+        fast: false,
+        onProgress: (message: string) => {
+            ss.toast(message, 'Pulse');
+        },
+    });
+
+    const labels = allocations.map((a) =>
+        a.belowThreshold ? '' : a.theme.label,
     );
+    const expanded = expandWithBlankRows(labels, positions);
+    const startRow = Math.min(...positions.map((p) => p.row));
+    const col = dataRangeObj.getColumn() + 1;
+    dataSheet
+        .getRange(startRow, col, expanded.length, 1)
+        .setValues(expanded.map((l) => [l]));
 }

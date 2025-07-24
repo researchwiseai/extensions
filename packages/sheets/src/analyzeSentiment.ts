@@ -1,4 +1,5 @@
-import { analyzeSentiment, extractInputs } from 'pulse-common';
+import { analyzeSentiment } from 'pulse-common/api';
+import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
 
 /**
  * Analyze sentiment of selected text in the active sheet.
@@ -12,7 +13,10 @@ import { analyzeSentiment, extractInputs } from 'pulse-common';
  *
  * @param dataRange A1 notation of the data range to analyze, including sheet name (e.g., 'Sheet1!A1:B10').
  */
-export async function analyzeSentimentFlow(dataRange: string) {
+export async function analyzeSentimentFlow(
+    dataRange: string,
+    hasHeader = false,
+) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     // Notify user
@@ -36,9 +40,10 @@ export async function analyzeSentimentFlow(dataRange: string) {
     }
     const values = dataRangeObj.getValues();
 
-    const { inputs, positions } = extractInputs(values, {
+    const { inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
+        hasHeader,
     });
     // Determine sheet and values for data range
 
@@ -55,15 +60,14 @@ export async function analyzeSentimentFlow(dataRange: string) {
         },
     })
 
-    function writeResults(results) {
-        results.forEach((res, idx) => {
-            const pos = positions[idx];
-            const sentiment = res.sentiment;
-            dataSheet.getRange(pos.row, pos.col + 1).setValue(sentiment);
-        });
-    }
+    const sentiments = data.results.map((r) => r.sentiment);
+    const expanded = expandWithBlankRows(sentiments, positions);
+    const startRow = Math.min(...positions.map((p) => p.row));
+    const col = dataRangeObj.getColumn() + 1;
+    dataSheet
+        .getRange(startRow, col, expanded.length, 1)
+        .setValues(expanded.map((s) => [s]));
 
-    writeResults(data.results);
     ss.toast('Sentiment analysis complete', 'Pulse');
 
 }

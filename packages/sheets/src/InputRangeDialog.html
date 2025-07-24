@@ -10,14 +10,20 @@
   <body class="container">
     <input id="mode" type="hidden" value="<?= mode ?>" />
     <div class="input-field">
-      <input
-        id="dataRange"
-        type="text"
-        onfocus="pickRange()"
-        value="<?= dataRange ?>"
-      />
-      <label for="dataRange">Input Range (A1 notation)</label>
+        <input
+            id="dataRange"
+            type="text"
+            onfocus="pickRange()"
+            value="<?= dataRange ?>"
+        />
+        <label for="dataRange">Input Range (A1 notation)</label>
     </div>
+    <p>
+        <label>
+            <input type="checkbox" id="hasHeader" />
+            <span>First row is header</span>
+        </label>
+    </p>
     <button class="btn waves-effect waves-light" onclick="submitRange()">
       OK
     </button>
@@ -41,18 +47,19 @@
       function submitRange() {
         const dataRange = document.getElementById('dataRange').value;
         const mode = document.getElementById('mode').value;
+        const hasHeader = document.getElementById('hasHeader').checked;
         if (mode === 'sentiment') {
           google.script.run
             .withFailureHandler(function (err) {
               M.toast({ html: 'Error: ' + err.message });
             })
-            .analyzeSentimentFlow(dataRange);
+            .analyzeSentimentFlow(dataRange, hasHeader);
         } else {
           google.script.run
             .withFailureHandler(function (err) {
               M.toast({ html: 'Error: ' + err.message });
             })
-            .submitSelectedInputRangeForGeneration(dataRange, mode);
+            .submitSelectedInputRangeForGeneration(dataRange, mode, hasHeader);
         }
         google.script.host.close();
       }
