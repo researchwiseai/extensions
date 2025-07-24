@@ -8,6 +8,7 @@ export async function similarityMatrixThemesFromSheetFlow(
     context: Excel.RequestContext,
     range: string,
     themeSheetName: string,
+    hasHeader = false,
 ) {
     console.log(
         'Allocating themes similarity matrix from sheet',
@@ -15,7 +16,24 @@ export async function similarityMatrixThemesFromSheetFlow(
     );
     const startTime = Date.now();
 
-    const { inputs, positions } = await getSheetInputsAndPositions(context, range);
+    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
+    let header: string | undefined;
+    let inputs = rawInputs;
+    let positions = rawPositions;
+    if (hasHeader) {
+        const headerCell = sheet.getRangeByIndexes(
+            rangeInfo.rowIndex,
+            rangeInfo.columnIndex,
+            1,
+            1,
+        );
+        headerCell.load('values');
+        await context.sync();
+        header = String(headerCell.values[0][0] ?? '');
+        inputs = rawInputs.slice(1);
+        positions = rawPositions.slice(1);
+    }
     const expanded = expandInputsWithBlankRows(inputs, positions);
 
     const themes = await getThemesFromSheet(context, themeSheetName);
@@ -33,6 +51,7 @@ export async function similarityMatrixThemesFromSheetFlow(
         matrix,
         inputs: expanded,
         themes,
+        header,
         startTime,
     });
 }

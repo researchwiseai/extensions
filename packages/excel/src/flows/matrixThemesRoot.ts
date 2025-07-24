@@ -109,12 +109,18 @@ export async function matrixThemesRootFlow(
     if (allocationMode.mode === 'automatic') {
         await matrixThemesAutomaticFlow(context, range, hasHeader);
     } else if (allocationMode.mode === 'set') {
-        await matrixThemesFromSetFlow(context, range, allocationMode.setName);
+        await matrixThemesFromSetFlow(
+            context,
+            range,
+            allocationMode.setName,
+            hasHeader,
+        );
     } else {
         await matrixThemesFromSheetFlow(
             context,
             range,
             allocationMode.sheetName,
+            hasHeader,
         );
     }
 }

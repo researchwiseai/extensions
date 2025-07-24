@@ -8,6 +8,7 @@ interface Props {
     context: Excel.RequestContext;
     inputs: string[];
     themes: (Theme | ShortTheme)[];
+    header?: string;
     sheetName?: string;
     startTime: number;
 }
@@ -17,6 +18,7 @@ export async function saveAllocationMatrixToSheet({
     context,
     inputs,
     themes,
+    header,
     sheetName,
     startTime,
 }: Props): Promise<void> {
@@ -26,9 +28,9 @@ export async function saveAllocationMatrixToSheet({
     // add a new sheet
     const sheet = context.workbook.worksheets.add(name);
 
-    // build headers: first cell blank, then theme shortLabels
+    // build headers: first cell is original header (if any), then theme shortLabels
     const headerRow = [
-        '',
+        header ?? '',
         ...themes.map((t) =>
             'shortLabel' in t && t.shortLabel.length > 0
                 ? t.shortLabel

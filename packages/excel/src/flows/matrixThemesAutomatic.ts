@@ -9,7 +9,7 @@ export async function matrixThemesAutomaticFlow(
     hasHeader = false,
 ) {
     const startTime = Date.now();
-    const { inputs, positions, themes } = await themeGenerationFlow(
+    const { inputs, positions, themes, header } = await themeGenerationFlow(
         context,
         range,
         hasHeader,
@@ -28,6 +28,7 @@ export async function matrixThemesAutomaticFlow(
         matrix,
         inputs: expanded,
         themes,
+        header,
         startTime,
     });
 }

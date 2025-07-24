@@ -8,11 +8,29 @@ export async function matrixThemesFromSheetFlow(
     context: Excel.RequestContext,
     range: string,
     themeSheetName: string,
+    hasHeader = false,
 ) {
     console.log('Allocating themes matrix from sbeet', themeSheetName);
     const startTime = Date.now();
 
-    const { inputs, positions } = await getSheetInputsAndPositions(context, range);
+    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
+    let header: string | undefined;
+    let inputs = rawInputs;
+    let positions = rawPositions;
+    if (hasHeader) {
+        const headerCell = sheet.getRangeByIndexes(
+            rangeInfo.rowIndex,
+            rangeInfo.columnIndex,
+            1,
+            1,
+        );
+        headerCell.load('values');
+        await context.sync();
+        header = String(headerCell.values[0][0] ?? '');
+        inputs = rawInputs.slice(1);
+        positions = rawPositions.slice(1);
+    }
     const expanded = expandInputsWithBlankRows(inputs, positions);
 
     const themes = await getThemesFromSheet(context, themeSheetName);
@@ -30,6 +48,7 @@ export async function matrixThemesFromSheetFlow(
         matrix,
         inputs: expanded,
         themes: themes,
+        header,
         startTime,
     });
 }

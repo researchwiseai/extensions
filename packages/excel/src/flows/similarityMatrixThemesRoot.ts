@@ -111,12 +111,14 @@ export async function similarityMatrixThemesRootFlow(
             context,
             range,
             allocationMode.setName,
+            hasHeader,
         );
     } else {
         await similarityMatrixThemesFromSheetFlow(
             context,
             range,
             allocationMode.sheetName,
+            hasHeader,
         );
     }
 }

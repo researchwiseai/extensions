@@ -111,12 +111,18 @@ export async function allocateThemesRoot(
     if (allocationMode.mode === 'automatic') {
         await allocateThemesAutomaticFlow(context, range, hasHeader);
     } else if (allocationMode.mode === 'set') {
-        await allocateThemesFromSetFlow(context, range, allocationMode.setName);
+        await allocateThemesFromSetFlow(
+            context,
+            range,
+            allocationMode.setName,
+            hasHeader,
+        );
     } else {
         await allocateThemesFromSheetFlow(
             context,
             range,
             allocationMode.sheetName,
+            hasHeader,
         );
     }
 }

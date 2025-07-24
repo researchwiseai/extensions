@@ -11,7 +11,7 @@ export async function similarityMatrixThemesAutomaticFlow(
     console.log('Allocating themes similarity matrix automatically');
     const startTime = Date.now();
 
-    const { inputs, positions, themes } = await themeGenerationFlow(
+    const { inputs, positions, themes, header } = await themeGenerationFlow(
         context,
         range,
         hasHeader,
@@ -31,6 +31,7 @@ export async function similarityMatrixThemesAutomaticFlow(
         matrix,
         inputs: expanded,
         themes,
+        header,
         startTime,
     });
 }

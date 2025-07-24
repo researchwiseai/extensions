@@ -9,7 +9,7 @@ export async function allocateThemesAutomaticFlow(
     hasHeader = false,
 ) {
     const startTime = Date.now();
-    const { inputs, positions, sheet, themes, rangeInfo } = await themeGenerationFlow(
+    const { inputs, positions, sheet, themes, rangeInfo, header } = await themeGenerationFlow(
         context,
         range,
         hasHeader,
@@ -31,5 +31,6 @@ export async function allocateThemesAutomaticFlow(
         context,
         rangeInfo,
         startTime,
+        header,
     );
 }

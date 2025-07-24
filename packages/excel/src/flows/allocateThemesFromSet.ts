@@ -13,12 +13,29 @@ export async function allocateThemesFromSetFlow(
     context: Excel.RequestContext,
     range: string,
     themeSetName: string,
+    hasHeader = false,
 ) {
     console.log('Allocating themes from set', themeSetName);
     const startTime = Date.now();
 
-    const { sheet, inputs, positions, rangeInfo } =
+    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
         await getSheetInputsAndPositions(context, range);
+    let header: string | undefined;
+    let inputs = rawInputs;
+    let positions = rawPositions;
+    if (hasHeader) {
+        const headerCell = sheet.getRangeByIndexes(
+            rangeInfo.rowIndex,
+            rangeInfo.columnIndex,
+            1,
+            1,
+        );
+        headerCell.load('values');
+        await context.sync();
+        header = String(headerCell.values[0][0] ?? '');
+        inputs = rawInputs.slice(1);
+        positions = rawPositions.slice(1);
+    }
 
     const themeSets = await getThemeSets();
     const themeSet = themeSets.find((set) => set.name === themeSetName);
@@ -42,6 +59,8 @@ export async function allocateThemesFromSetFlow(
         context,
         rangeInfo,
         startTime,
+        hasHeader,
+        header,
     );
 }
 
@@ -61,6 +80,8 @@ export async function writeAllocationsToSheet(
         columnCount: number;
     },
     startTime: number,
+    hasHeader = false,
+    header?: string,
 ) {
     const originalRange = sheet.getRangeByIndexes(
         rangeInfo.rowIndex,
@@ -73,11 +94,13 @@ export async function writeAllocationsToSheet(
 
     const name = `Allocation_${Date.now()}`;
     const outputSheet = context.workbook.worksheets.add(name);
-    outputSheet.getRange('A1:B1').values = [['Text', 'Theme']];
+    const headerLabel = hasHeader && header ? header : 'Text';
+    outputSheet.getRange('A1:B1').values = [[headerLabel, 'Theme']];
+    const valuesToWrite = hasHeader ? originalRange.values.slice(1) : originalRange.values;
     const target = outputSheet
         .getRange('A2')
-        .getResizedRange(rangeInfo.rowCount - 1, 0);
-    target.values = originalRange.values;
+        .getResizedRange(valuesToWrite.length - 1, 0);
+    target.values = valuesToWrite;
 
     const batchSize = 1000;
     for (let i = 0; i < positions.length; i += batchSize) {
