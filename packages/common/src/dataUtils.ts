@@ -62,3 +62,37 @@ export function expandWithBlankRows(
     }
     return result;
 }
+
+import type { Theme } from './apiClient';
+
+/**
+ * Convert an array of Theme objects to a 2D row representation.
+ */
+export function themesToRows(themes: Theme[]): string[][] {
+    return themes.map((t) => [
+        t.label ?? '',
+        t.shortLabel ?? '',
+        t.description ?? '',
+        t.representatives[0] ?? '',
+        t.representatives[1] ?? '',
+    ]);
+}
+
+/**
+ * Convert rows from a sheet to Theme objects. Rows without a label are skipped.
+ */
+export function rowsToThemes(rows: string[][]): Theme[] {
+    return rows
+        .map((row) => {
+            const reps = [row[3], row[4]]
+                .filter((r) => r != null && r !== '')
+                .map((r) => String(r));
+            return {
+                label: String(row[0] ?? ''),
+                shortLabel: String(row[1] ?? ''),
+                description: String(row[2] ?? ''),
+                representatives: reps,
+            } as Theme;
+        })
+        .filter((t) => t.label !== '');
+}

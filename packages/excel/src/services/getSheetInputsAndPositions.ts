@@ -1,4 +1,4 @@
-import { extractInputs } from 'pulse-common/input';
+import { extractInputsWithHeader } from 'pulse-common/dataUtils';
 
 export async function getSheetInputsAndPositions(
     context: Excel.RequestContext,
@@ -64,7 +64,7 @@ export async function getSheetInputsAndPositions(
         values.push(...batchRange.values);
     }
 
-    const { inputs, positions } = extractInputs(values, {
+    const { inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: rowIndex + 1,
         colOffset: columnIndex + 1,
     });

@@ -1,4 +1,5 @@
 import type { Theme } from 'pulse-common';
+import { themesToRows } from 'pulse-common/dataUtils';
 
 interface Props {
     themes: Theme[];
@@ -40,13 +41,7 @@ export async function saveThemesToSheet({ context, themes }: Props) {
 
     await context.sync();
 
-    const themesArr = themes.map((theme) => [
-        theme.label,
-        theme.shortLabel,
-        theme.description,
-        theme.representatives[0],
-        theme.representatives[1],
-    ]);
+    const themesArr = themesToRows(themes);
     console.log('Range', `A2:E${themesArr.length + 1}`);
     themesSheet.getRange(`A2:E${themesArr.length + 1}`).values = themesArr;
     themesSheet.getRange(`A2:E${themesArr.length + 1}`).format.autofitColumns();
