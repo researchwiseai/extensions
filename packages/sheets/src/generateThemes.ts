@@ -1,12 +1,13 @@
-import {
-    extractInputsWithHeader,
-    sampleInputs,
-    generateThemes,
-    saveThemeSet,
-} from 'pulse-common';
+import { generateThemes } from 'pulse-common/api';
+import { extractInputsWithHeader } from 'pulse-common/dataUtils';
+import { sampleInputs } from 'pulse-common/input';
+import { saveThemeSet } from 'pulse-common/themes';
 import { writeThemes } from './writeThemes';
 
-export async function generateThemesFlow(dataRange: string) {
+export async function generateThemesFlow(
+    dataRange: string,
+    hasHeader = false,
+) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     ss.toast('Starting theme generation...', 'Pulse');
@@ -20,9 +21,10 @@ export async function generateThemesFlow(dataRange: string) {
     }
     const values = dataRangeObj.getValues();
 
-    const { inputs, positions } = extractInputsWithHeader(values, {
+    const { header, inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
+        hasHeader,
     });
 
     console.log('inputs', inputs);
@@ -52,6 +54,9 @@ export async function generateThemesFlow(dataRange: string) {
     console.log('usedInputs', usedInputs);
     const themesResponse = await generateThemes(usedInputs, {
         fast: false,
+        context: hasHeader && header
+            ? `The column header is: ${header}`
+            : undefined,
         onProgress: (message) => {
             ss.toast(message, 'Pulse');
         },
@@ -73,6 +78,7 @@ export async function generateThemesFlow(dataRange: string) {
         inputs,
         positions,
         dataRangeObj,
+        header,
     };
 }
 

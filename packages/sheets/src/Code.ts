@@ -158,12 +158,16 @@ export function debounceByArgs<F extends (...args: any[]) => any>(
  * @param {string} dataRange A1 notation of the data range to allocate.
  * @param {string} mode Allocation mode: 'generation' or 'allocation'
  */
-export function themeGenerationRouting(dataRange: string, mode: 'generation' | 'allocation') {
+export function themeGenerationRouting(
+    dataRange: string,
+    mode: 'generation' | 'allocation',
+    hasHeader = false,
+) {
     console.log('submitSelectedInputRangeForGeneration', dataRange, mode);
     if (mode === 'generation') {
-        generateThemesFlow(dataRange);
+        generateThemesFlow(dataRange, hasHeader);
     } else {
-        allocateThemesWithRange(dataRange);
+        allocateThemesWithRange(dataRange, hasHeader);
     }
 }
 
@@ -172,8 +176,12 @@ const debouncedThemeGenerationRouting = debounceByArgs(
     20000
 );
 
-export function submitSelectedInputRangeForGeneration(dataRange: string, mode: 'generation' | 'allocation') {
-    return debouncedThemeGenerationRouting(dataRange, mode);
+export function submitSelectedInputRangeForGeneration(
+    dataRange: string,
+    mode: 'generation' | 'allocation',
+    hasHeader = false,
+) {
+    return debouncedThemeGenerationRouting(dataRange, mode, hasHeader);
 }
 
 /**
@@ -183,8 +191,11 @@ export function submitSelectedInputRangeForGeneration(dataRange: string, mode: '
  * 
  * @param {string} dataRange A1 notation of the data range to allocate.
  */
-export function allocateThemesWithRange(dataRange: string) {
-    showAllocationModeDialog(dataRange);
+export function allocateThemesWithRange(
+    dataRange: string,
+    hasHeader = false,
+) {
+    showAllocationModeDialog(dataRange, hasHeader);
 }
 /**
  * Save a manually created theme set.

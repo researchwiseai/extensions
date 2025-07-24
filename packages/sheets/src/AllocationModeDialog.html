@@ -17,6 +17,12 @@
     </head>
     <body class="container">
         <input id="dataRange" type="hidden" value="<?= dataRange ?>" />
+        <p>
+            <label>
+                <input type="checkbox" id="hasHeader" <?= hasHeader ? 'checked' : '' ?> />
+                <span>First row is header</span>
+            </label>
+        </p>
         <form id="modeForm">
             <p>
                 <label>
@@ -67,15 +73,16 @@
                 const form = document.getElementById('modeForm');
                 const mode = form.mode.value;
                 const dr = document.getElementById('dataRange').value;
+                const hasHeader = document.getElementById('hasHeader').checked;
                 // Start the allocation job and close the dialog immediately
                 if (mode === 'new') {
                     const name = prompt('Name for this Theme Set?');
                     if (!name) return;
                     google.script.run.showRangeDialog(dr, name);
                 } else if (mode === 'auto') {
-                    google.script.run.allocateThemesAutomatic(dr);
+                    google.script.run.allocateThemesAutomatic(dr, hasHeader);
                 } else {
-                    google.script.run.allocateThemesFromSet(dr, mode);
+                    google.script.run.allocateThemesFromSet(dr, mode, hasHeader);
                 }
                 google.script.host.close();
             }
