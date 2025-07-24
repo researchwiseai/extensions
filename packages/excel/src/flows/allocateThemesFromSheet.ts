@@ -95,6 +95,7 @@ export async function writeAllocationsToSheet(
     const outputSheet = context.workbook.worksheets.add(name);
     const headerLabel = hasHeader && header ? header : 'Text';
     outputSheet.getRange('A1:B1').values = [[headerLabel, 'Theme']];
+
     const valuesToWrite = hasHeader
         ? originalRange.values.slice(1)
         : originalRange.values;
@@ -103,20 +104,29 @@ export async function writeAllocationsToSheet(
         .getResizedRange(valuesToWrite.length - 1, 0);
     target.values = valuesToWrite;
 
-    const batchSize = 1000;
-    for (let i = 0; i < positions.length; i += batchSize) {
-        const batch = positions.slice(i, i + batchSize);
-        batch.forEach((pos, j) => {
-            const alloc = allocations[i + j];
-            const rowIndex = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
-            const cell = outputSheet.getCell(rowIndex, 1);
-            cell.values = [[alloc.theme.label]];
-            if (alloc.belowThreshold) {
-                cell.values = [[]];
-            } else {
-                cell.values = [[alloc.theme.label]];
+    // Build and batch‑write column B using positions to align themes with input rows
+    const rowCount = valuesToWrite.length;
+    const bValues: string[][] = Array.from({ length: rowCount }, () => ['']);
+    positions.forEach((pos, i) => {
+        if (i === 0 && hasHeader) return; // Skip header row
+
+        const alloc = allocations[i];
+        if (!alloc.belowThreshold) {
+            const idx = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
+            if (idx >= 0 && idx < rowCount) {
+                bValues[idx] = [alloc.theme.label];
             }
-        });
+        }
+    });
+    const batchSize = 1000;
+    for (let i = 0; i < rowCount; i += batchSize) {
+        const start = hasHeader && i === 0 ? 1 : i;
+        const batch = bValues.slice(start, i + batchSize);
+        const startRow = 2 + i;
+        const range = outputSheet
+            .getRange(`B${startRow}`)
+            .getResizedRange(batch.length - 1, 0);
+        range.values = batch;
         await context.sync();
     }
 
