@@ -1,0 +1,64 @@
+import { extractInputs, Pos } from './input';
+
+export interface ExtractOptions {
+    rowOffset?: number;
+    colOffset?: number;
+    hasHeader?: boolean;
+}
+
+/**
+ * Extract inputs from tabular data with optional header row.
+ *
+ * When `hasHeader` is true, the first row is treated as a header and omitted
+ * from the returned inputs/positions. The header string is returned separately.
+ */
+export function extractInputsWithHeader(
+    data: any[][],
+    opts: ExtractOptions = {},
+): { header?: string; inputs: string[]; positions: Pos[] } {
+    const { rowOffset = 0, colOffset = 0, hasHeader = false } = opts;
+
+    let header: string | undefined;
+    let rows = data;
+    let offset = rowOffset;
+    if (hasHeader && data.length > 0) {
+        header = data[0][0] != null ? String(data[0][0]) : '';
+        rows = data.slice(1);
+        offset = rowOffset + 1;
+    }
+
+    const { inputs, positions } = extractInputs(rows, {
+        rowOffset: offset,
+        colOffset,
+    });
+
+    return { header, inputs, positions };
+}
+
+/**
+ * Expand sparse inputs to cover all rows between the first and last position.
+ *
+ * Blank strings are inserted for any missing rows so that the returned array
+ * aligns with the original sheet rows.
+ */
+export function expandWithBlankRows(
+    inputs: string[],
+    positions: Pos[],
+): string[] {
+    if (inputs.length === 0) {
+        return [];
+    }
+    const map = new Map<number, string>();
+    positions.forEach((pos, i) => {
+        map.set(pos.row, inputs[i]);
+    });
+    const rows = positions.map((p) => p.row);
+    const minRow = Math.min(...rows);
+    const maxRow = Math.max(...rows);
+
+    const result: string[] = [];
+    for (let r = minRow; r <= maxRow; r++) {
+        result.push(map.get(r) ?? '');
+    }
+    return result;
+}

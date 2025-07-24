@@ -1,7 +1,7 @@
 import { multiCode, getThemeSets } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
-import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function matrixThemesFromSetFlow(
@@ -35,7 +35,7 @@ export async function matrixThemesFromSetFlow(
         inputs = rawInputs.slice(1);
         positions = rawPositions.slice(1);
     }
-    const expanded = expandInputsWithBlankRows(inputs, positions);
+    const expanded = expandWithBlankRows(inputs, positions);
 
     const themeSets = await getThemeSets();
     const themeSet = themeSets.find((set) => set.name === themeSetName);

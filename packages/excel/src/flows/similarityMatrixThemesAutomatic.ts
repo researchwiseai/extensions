@@ -1,7 +1,7 @@
 import { splitSimilarityMatrix } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { themeGenerationFlow } from './themeGenerationFlow';
-import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function similarityMatrixThemesAutomaticFlow(
@@ -17,7 +17,7 @@ export async function similarityMatrixThemesAutomaticFlow(
         range,
         hasHeader,
     );
-    const expanded = expandInputsWithBlankRows(inputs, positions);
+    const expanded = expandWithBlankRows(inputs, positions);
 
     const matrix = await splitSimilarityMatrix(expanded, themes, {
         fast: false,

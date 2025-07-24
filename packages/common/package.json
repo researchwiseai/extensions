@@ -16,7 +16,8 @@
         "./org": "./src/org.ts",
         "./jobs": "./src/jobs.ts",
         "./storage": "./src/storage.ts",
-        "./themes": "./src/themes.ts"
+        "./themes": "./src/themes.ts",
+        "./dataUtils": "./src/dataUtils.ts"
     },
     "scripts": {
         "build": "tsc -b",
