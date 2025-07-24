@@ -8,19 +8,15 @@
 import { API_AUD, AUTH_DOMAIN, SCRIPT_PROPS } from './config';
 
 export function getOAuthService(): GoogleAppsScriptOAuth2.OAuth2Service {
-    const orgId = PropertiesService.getUserProperties().getProperty('ORG_ID');
-
+    const props = PropertiesService.getUserProperties();
+    const orgId = props.getProperty('ORG_ID');
     if (!orgId) {
-        return {
-            hasAccess: () => false,
-        } as GoogleAppsScriptOAuth2.OAuth2Service;
+        return { hasAccess: () => false } as GoogleAppsScriptOAuth2.OAuth2Service;
     }
-
-    const orgIdParts = orgId.split('/');
-    const auth0OrgId = orgIdParts[orgIdParts.length - 1];
-
+    const email = props.getProperty('USER_EMAIL');
+    const auth0OrgId = orgId.split('/').pop();
     // Configure OAuth2 service using script properties
-    return OAuth2.createService('ResearchWiseAI')
+    const service = OAuth2.createService('ResearchWiseAI')
         .setAuthorizationBaseUrl(`https://${AUTH_DOMAIN}/authorize`)
         .setCache(CacheService.getUserCache())
         .setLock(LockService.getUserLock())
@@ -28,13 +24,14 @@ export function getOAuthService(): GoogleAppsScriptOAuth2.OAuth2Service {
         .setClientId(SCRIPT_PROPS.getProperty('CLIENT_ID'))
         .setClientSecret(SCRIPT_PROPS.getProperty('CLIENT_SECRET'))
         .setCallbackFunction('authCallback')
-        .setPropertyStore(PropertiesService.getUserProperties())
+        .setPropertyStore(props)
         .setScope('openid profile email offline_access')
         .setParam('audience', API_AUD)
-        .setParam('organization', auth0OrgId)
-        .setParam('prompt', 'consent')
-        .setParam(
-            'login_hint',
-            PropertiesService.getUserProperties().getProperty('USER_EMAIL'),
-        );
+        .setParam('organization', auth0OrgId || '')
+        .setParam('prompt', 'consent');
+
+    if (email) {
+        service.setParam('login_hint', email);
+    }
+    return service;
 }

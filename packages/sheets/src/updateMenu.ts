@@ -1,4 +1,4 @@
-import { getOAuthService } from './getOAuthService';
+import { isAuthorized } from './auth';
 
 /**
  * Updates the Pulse menu based on the current authorization state.
@@ -6,7 +6,7 @@ import { getOAuthService } from './getOAuthService';
 export function updateMenu() {
     const ui = SpreadsheetApp.getUi();
     const pulseMenu = ui.createMenu('Pulse');
-    if (getOAuthService().hasAccess()) {
+    if (isAuthorized()) {
         pulseMenu.addItem('Analyze Sentiment', 'analyzeSentiment');
         const themesMenu = ui
             .createMenu('Themes')

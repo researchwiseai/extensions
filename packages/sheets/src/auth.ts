@@ -1,6 +1,32 @@
-import { ORG_LOOKUP_URL } from "./config";
-import { getOAuthService } from "./getOAuthService";
-import { findOrganization as commonFindOrganization, OrgLookupResult } from "pulse-common/org";
+import { ORG_LOOKUP_URL } from './config';
+import { getOAuthService } from './getOAuthService';
+import {
+    AuthProvider,
+    configureAuth,
+    getAccessToken,
+    signOut as commonSignOut,
+} from 'pulse-common/auth';
+import { findOrganization as commonFindOrganization, OrgLookupResult } from 'pulse-common/org';
+
+// Thin Apps Script implementation of the AuthProvider interface
+class AppsScriptAuthProvider implements AuthProvider {
+    async signIn(): Promise<void> {
+        // No-op; interactive sign-in handled on client via getAuthorizationUrl
+    }
+    async signOut(): Promise<void> {
+        getOAuthService().reset();
+    }
+    async getAccessToken(): Promise<string> {
+        const service = getOAuthService();
+        if (!service.hasAccess()) {
+            throw new Error('Not authorized');
+        }
+        return service.getAccessToken();
+    }
+}
+
+// Register the provider for common auth utilities
+configureAuth(new AppsScriptAuthProvider());
 
 /**
  * Handles the OAuth2 callback.
@@ -40,11 +66,11 @@ export function isAuthorized(): boolean {
  * Disconnects the user by clearing stored credentials.
  * @return {{success: boolean}}
  */
-export function disconnect(): { success: boolean; } {
+export function disconnect(): { success: boolean } {
     const props = PropertiesService.getUserProperties();
     try {
-        getOAuthService().reset();
-    } catch {
+        commonSignOut();
+    } catch (e) {
         console.warn('Error resetting OAuth service');
     }
     props.deleteProperty('USER_EMAIL');
@@ -66,3 +92,6 @@ export async function findOrganization(email: string): Promise<OrgLookupResult> 
   }
   return result;
 }
+
+// Re-export token retrieval for consumers
+export { getAccessToken };
