@@ -9,30 +9,41 @@
   </head>
   <body>
     <div class="container">
-      <h5>Settings</h5>
-      <!-- Disconnected state: show email input and Connect button -->
-      <div id="disconnectedSection">
+      <h5>Pulse Settings</h5>
+      <!-- Login state -->
+      <div id="loginSection">
         <div class="input-field">
           <input id="email" type="email" />
-          <label for="email">Email Address</label>
+          <label for="email">Email address</label>
         </div>
         <button
           id="connectButton"
           class="btn waves-effect waves-light"
           onclick="lookupOrganization()"
         >
-          Connect
+          Start
+        </button>
+        <button
+          id="registerButton"
+          class="btn-flat"
+          onclick="register()"
+        >
+          Register
         </button>
       </div>
-      <!-- Connected state: show status and Disconnect button -->
+
+      <!-- Connected state -->
       <div id="connectedSection" style="display: none">
-        <p><span class="green-text text-darken-2">Connected</span></p>
+        <p>
+          <span class="green-text text-darken-2">Connected</span>
+          <span id="userEmail" class="ml-2"></span>
+        </p>
         <button
           id="disconnectButton"
           class="btn waves-effect waves-light"
           onclick="disconnect()"
         >
-          Disconnect
+          Logout
         </button>
       </div>
     </div>
@@ -43,6 +54,9 @@
       function onFailure(err) {
         M.toast({ html: 'Error: ' + err.message });
       }
+      function register() {
+        window.open(webBase + '/register', '_blank');
+      }
       function onOrgFound(res) {
         if (res.success) {
           M.toast({ html: 'Account found. Authorizing...' });
@@ -50,9 +64,9 @@
         } else if (res.notFound) {
           M.toast({
             html:
-              'No account found for that email address. To <a href="' +
+              'No account found for that email address. <a href="' +
               webBase +
-              '/register" target="_blank">register for ResearchWiseAI, click here</a>.',
+              '/register" target="_blank">Register here</a>.',
           });
         } else {
           M.toast({ html: 'Error finding organization' });
@@ -106,7 +120,7 @@
                   if (settings.isAuthorized) {
                     clearInterval(poll);
                     if (authWin && !authWin.closed) authWin.close();
-                    renderSettings(settings);
+                    render(settings);
                     google.script.run.updateMenu();
                   }
                 })
@@ -119,20 +133,20 @@
       // Fetch current settings (email & auth status), then render UI
       function loadSettings() {
         google.script.run
-          .withSuccessHandler(renderSettings)
+          .withSuccessHandler(render)
           .withFailureHandler(onFailure)
           .getSettings();
       }
       // Render UI based on authorization status
-      function renderSettings(res) {
+      function render(res) {
         const connected = res.isAuthorized;
         document.getElementById('connectedSection').style.display = connected
           ? ''
           : 'none';
-        document.getElementById('disconnectedSection').style.display = connected
-          ? 'none'
-          : '';
-        if (!connected) {
+        document.getElementById('loginSection').style.display = connected ? 'none' : '';
+        if (connected) {
+          document.getElementById('userEmail').innerText = res.email;
+        } else {
           document.getElementById('email').value = res.email || '';
           M.updateTextFields();
         }

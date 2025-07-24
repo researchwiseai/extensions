@@ -1,8 +1,9 @@
 /// <reference types="google-apps-script" />
 
 import { configureClient, configureFetch, configureSleep, configureStorage, FetchOptions, getThemeSets, saveThemeSet, renameThemeSet, deleteThemeSet } from "pulse-common";
-import { isAuthorized } from "./auth";
-import { WEB_BASE } from "./config";
+import { isAuthorized, getAccessToken } from "./auth";
+import { WEB_BASE, API_BASE } from "./config";
+import { configureAuth } from 'pulse-common/auth';
 import { getOAuthService } from "./getOAuthService";
 import { showAllocationModeDialog } from "./showAllocationModeDialog";
 import { showInputRangeDialog } from "./showInputRangeDialog";
@@ -25,11 +26,11 @@ const mapStatusToStatusText = {
     504: 'Gateway Timeout',
 };
 
-// OAuth2 for Apps Script integration (requires adding the OAuth2 library in appsscript.json)
+// Initialize Pulse API client using the shared auth utilities
 configureClient({
-    baseUrl: 'https://core.researchwiseai.com',
-    getAccessToken: async () => getOAuthService().getAccessToken(),
-})
+    baseUrl: API_BASE,
+    getAccessToken,
+});
 
 configureSleep(async (ms) => Utilities.sleep(ms))
 
@@ -92,7 +93,7 @@ export function onOpen() {
     const ui = SpreadsheetApp.getUi();
     const pulseMenu = ui.createMenu('Pulse');
     // If user is authorized, expose analysis and themes
-    if (getOAuthService().hasAccess()) {
+    if (isAuthorized()) {
         // Prompt for range before running sentiment analysis
         pulseMenu.addItem('Analyze Sentiment', 'clickAnalyzeSentiment');
         const themesMenu = ui
