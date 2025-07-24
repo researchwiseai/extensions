@@ -18,8 +18,12 @@ export async function allocateThemesFromSetFlow(
     console.log('Allocating themes from set', themeSetName);
     const startTime = Date.now();
 
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
     let header: string | undefined;
     let inputs = rawInputs;
     let positions = rawPositions;
@@ -96,7 +100,9 @@ export async function writeAllocationsToSheet(
     const outputSheet = context.workbook.worksheets.add(name);
     const headerLabel = hasHeader && header ? header : 'Text';
     outputSheet.getRange('A1:B1').values = [[headerLabel, 'Theme']];
-    const valuesToWrite = hasHeader ? originalRange.values.slice(1) : originalRange.values;
+    const valuesToWrite = hasHeader
+        ? originalRange.values.slice(1)
+        : originalRange.values;
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(valuesToWrite.length - 1, 0);
@@ -111,7 +117,9 @@ export async function writeAllocationsToSheet(
             const cell = outputSheet.getCell(rowIndex, 1);
             cell.values = [[alloc.theme.label]];
             if (alloc.belowThreshold) {
-                cell.format.fill.color = '#FFF2CC';
+                cell.values = [[]];
+            } else {
+                cell.values = [[alloc.theme.label]];
             }
         });
         await context.sync();

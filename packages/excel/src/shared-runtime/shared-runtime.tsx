@@ -39,7 +39,8 @@ Office.actions.associate('analyzeSentimentHandler', analyzeSentimentHandler);
 async function generateThemesHandler(event: any) {
     Excel.run(async (context) => {
         try {
-            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } =
+                await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -48,7 +49,12 @@ async function generateThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await themeGenerationFlow(context, confirmed, _hasHeader, Date.now());
+            await themeGenerationFlow(
+                context,
+                confirmed,
+                _hasHeader,
+                Date.now(),
+            );
         } catch (e) {
             console.error('Dialog error', e);
         } finally {
@@ -64,7 +70,8 @@ function allocateThemesHandler(event: any) {
     console.log('Allocate themes handler');
     Excel.run(async (context) => {
         try {
-            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } =
+                await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -90,7 +97,8 @@ function matrixThemesHandler(event: any) {
 
     Excel.run(async (context) => {
         try {
-            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
+            const { range: confirmed, hasHeader: _hasHeader } =
+                await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -115,7 +123,7 @@ function similarityMatrixThemesHandler(event: any) {
     console.log('Similarity matrix themes handler');
     Excel.run(async (context) => {
         try {
-            const { range: confirmed, hasHeader: _hasHeader } = await confirmRange(context);
+            const { range: confirmed, hasHeader } = await confirmRange(context);
             event.completed();
 
             if (confirmed === null) {
@@ -124,7 +132,7 @@ function similarityMatrixThemesHandler(event: any) {
             }
 
             openFeedHandler();
-            await similarityMatrixThemesRootFlow(context, confirmed, _hasHeader);
+            await similarityMatrixThemesRootFlow(context, confirmed, hasHeader);
         } catch (e) {
             console.error('Dialog error', e);
         } finally {
