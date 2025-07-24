@@ -112,7 +112,9 @@ export async function writeAllocationsToSheet(
             const cell = outputSheet.getCell(rowIndex, 1);
             cell.values = [[alloc.theme.label]];
             if (alloc.belowThreshold) {
-                cell.format.fill.color = '#FFF2CC';
+                cell.values = [[]];
+            } else {
+                cell.values = [[alloc.theme.label]];
             }
         });
         await context.sync();

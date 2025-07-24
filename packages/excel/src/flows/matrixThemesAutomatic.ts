@@ -2,6 +2,7 @@ import { multiCode } from 'pulse-common/themes';
 import { themeGenerationFlow } from './themeGenerationFlow';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function matrixThemesAutomaticFlow(
     context: Excel.RequestContext,
@@ -21,6 +22,7 @@ export async function matrixThemesAutomaticFlow(
         onProgress: (message) => {
             console.log(message);
         },
+        threshold: ALLOCATION_THRESHOLD,
     });
 
     await saveAllocationMatrixToSheet({

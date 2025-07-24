@@ -2,6 +2,7 @@ import { splitSimilarityMatrix } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { themeGenerationFlow } from './themeGenerationFlow';
 import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function similarityMatrixThemesAutomaticFlow(
     context: Excel.RequestContext,
@@ -24,6 +25,7 @@ export async function similarityMatrixThemesAutomaticFlow(
             console.log(message);
         },
         normalize: false,
+        threshold: ALLOCATION_THRESHOLD,
     });
 
     await saveAllocationMatrixToSheet({

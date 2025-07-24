@@ -134,7 +134,7 @@ export async function allocateThemes<T extends ShortTheme>(
         },
     );
 
-    const threshold = options?.threshold ?? 0.4;
+    const threshold = options?.threshold ?? 0.4; // TODO: auto threshold
 
     const best = topN(similarityResponse.matrix, 1, true).flat();
 

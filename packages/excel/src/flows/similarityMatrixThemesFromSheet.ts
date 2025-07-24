@@ -3,6 +3,7 @@ import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarit
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
 import { getThemesFromSheet } from './helpers/getThemesFromSheet';
+import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function similarityMatrixThemesFromSheetFlow(
     context: Excel.RequestContext,
@@ -16,8 +17,12 @@ export async function similarityMatrixThemesFromSheetFlow(
     );
     const startTime = Date.now();
 
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
     let header: string | undefined;
     let inputs = rawInputs;
     let positions = rawPositions;
@@ -44,6 +49,7 @@ export async function similarityMatrixThemesFromSheetFlow(
         onProgress: (message) => {
             console.log(message);
         },
+        threshold: ALLOCATION_THRESHOLD,
     });
 
     await saveAllocationMatrixToSheet({

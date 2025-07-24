@@ -2,6 +2,7 @@ import { getThemeSets, splitSimilarityMatrix } from 'pulse-common/themes';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function similarityMatrixThemesFromSetFlow(
     context: Excel.RequestContext,
@@ -12,8 +13,12 @@ export async function similarityMatrixThemesFromSetFlow(
     console.log('Allocating themes similarity matrix from set', themeSetName);
     const startTime = Date.now();
 
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
     let header: string | undefined;
     let inputs = rawInputs;
     let positions = rawPositions;
@@ -45,6 +50,7 @@ export async function similarityMatrixThemesFromSetFlow(
         onProgress: (message) => {
             console.log(message);
         },
+        threshold: ALLOCATION_THRESHOLD,
     });
 
     await saveAllocationMatrixToSheet({
