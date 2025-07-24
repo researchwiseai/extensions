@@ -9,8 +9,12 @@ export async function analyzeSentiment(
     hasHeader = false,
 ) {
     const startTime = Date.now();
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
 
     let header: string | undefined;
     let inputs = rawInputs;
@@ -54,7 +58,7 @@ export async function analyzeSentiment(
     outputSheet.getRange('A1:B1').values = [[headerLabel, 'Sentiment']];
     const target = outputSheet
         .getRange('A2')
-        .getResizedRange(rangeInfo.rowCount - 1, 0);
+        .getResizedRange(rangeInfo.rowCount - (hasHeader ? 2 : 1), 0);
     // Write values, skipping header row if present
     const valuesToWrite = hasHeader
         ? originalRange.values.slice(1)
