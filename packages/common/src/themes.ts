@@ -206,7 +206,7 @@ export async function multiCode(
     options?: AllocateThemesBinaryOptions,
 ): Promise<boolean[][]> {
     const matrix = await splitSimilarityMatrix(inputs, themes, options);
-    const threshold = autoThreshold(matrix);
+    const threshold = options?.threshold ?? autoThreshold(matrix);
     return matrix.map((row) => row.map((value) => value >= threshold));
 }
 

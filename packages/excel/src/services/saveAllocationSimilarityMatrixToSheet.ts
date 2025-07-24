@@ -44,6 +44,68 @@ export async function saveAllocationMatrixToSheet({
         ...row.map((v) => (typeof v === 'boolean' ? (v ? 1 : 0) : v)),
     ]);
 
+    const isBoolean = typeof matrix[0][0] === 'boolean';
+
+    // Range for the data (excluding header)
+    const dataRange = sheet.getRangeByIndexes(
+        1,
+        1,
+        dataRows.length,
+        headerRow.length - 1,
+    );
+
+    if (isBoolean) {
+        // 1s light green
+        const greenConFormat = dataRange.conditionalFormats.add(
+            Excel.ConditionalFormatType.cellValue,
+        );
+
+        greenConFormat.cellValue.rule = {
+            formula1: '=1',
+            operator: Excel.ConditionalCellValueOperator.equalTo,
+        };
+        greenConFormat.cellValue.format.fill.color = '#B9F6CA'; // light green, good contrast with black text
+
+        // 0s light red
+        const redConFormat = dataRange.conditionalFormats.add(
+            Excel.ConditionalFormatType.cellValue,
+        );
+        redConFormat.cellValue.rule = {
+            formula1: '=0',
+            operator: Excel.ConditionalCellValueOperator.equalTo,
+        };
+        redConFormat.cellValue.format.fill.color = '#FFCDD2'; // light red, good contrast with black text
+    } else {
+        const blanks = dataRange.conditionalFormats.add(
+            Excel.ConditionalFormatType.cellValue,
+        );
+        blanks.cellValue.rule = {
+            formula1: '0',
+            operator: Excel.ConditionalCellValueOperator.equalTo,
+        };
+        blanks.cellValue.format.fill.color = '#FFFFFF'; // white for blanks
+
+        // Color scale: 0 = light red, 0.6 = light green, 1 = medium green
+        const cf = dataRange.conditionalFormats.add(
+            Excel.ConditionalFormatType.colorScale,
+        );
+        cf.colorScale.criteria = {
+            minimum: {
+                type: Excel.ConditionalFormatColorCriterionType.lowestValue,
+                color: '#FFCDD2', // light red
+            },
+            midpoint: {
+                type: Excel.ConditionalFormatColorCriterionType.number,
+                formula: '0.6',
+                color: '#B9F6CA', // light green
+            },
+            maximum: {
+                type: Excel.ConditionalFormatColorCriterionType.highestValue,
+                color: '#69F0AE', // medium green
+            },
+        };
+    }
+
     // combine headers and data
     const values = [headerRow, ...dataRows];
 

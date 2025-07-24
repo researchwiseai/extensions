@@ -9,12 +9,8 @@ export async function allocateThemesAutomaticFlow(
     hasHeader = false,
 ) {
     const startTime = Date.now();
-    const { inputs, positions, sheet, themes, rangeInfo, header } = await themeGenerationFlow(
-        context,
-        range,
-        hasHeader,
-        startTime,
-    );
+    const { inputs, positions, sheet, themes, rangeInfo, header } =
+        await themeGenerationFlow(context, range, hasHeader, startTime);
 
     const allocations = await allocateThemesApi(inputs, themes, {
         fast: false,
@@ -31,6 +27,7 @@ export async function allocateThemesAutomaticFlow(
         context,
         rangeInfo,
         startTime,
+        hasHeader,
         header,
     );
 }

@@ -67,7 +67,7 @@ export async function analyzeSentiment(
 
     positions.forEach((pos, i) => {
         const sentiment = result.results[i].sentiment;
-        const rowIndex = pos.row - rangeInfo.rowIndex;
+        const rowIndex = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
         const cell = outputSheet.getCell(rowIndex, 1);
         cell.values = [[sentiment]];
     });

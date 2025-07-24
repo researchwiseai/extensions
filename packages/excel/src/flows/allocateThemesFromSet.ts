@@ -113,7 +113,7 @@ export async function writeAllocationsToSheet(
         const batch = positions.slice(i, i + batchSize);
         batch.forEach((pos, j) => {
             const alloc = allocations[i + j];
-            const rowIndex = pos.row - rangeInfo.rowIndex;
+            const rowIndex = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
             const cell = outputSheet.getCell(rowIndex, 1);
             cell.values = [[alloc.theme.label]];
             if (alloc.belowThreshold) {
