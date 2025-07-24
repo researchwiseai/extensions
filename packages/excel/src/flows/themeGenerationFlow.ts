@@ -12,8 +12,12 @@ export async function themeGenerationFlow(
     startTime?: number,
 ) {
     const start = startTime ?? Date.now();
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
 
     let header: string | undefined;
     let inputs = rawInputs;
@@ -104,12 +108,13 @@ export async function themeGenerationFlow(
         const feed = getFeed();
         const last = feed[feed.length - 1];
         if (last) {
-            const name = themesSheet.name;
             updateItem({
                 jobId: last.jobId,
                 onClick: () => {
                     Excel.run(async (context) => {
-                        context.workbook.worksheets.getItem(name).activate();
+                        context.workbook.worksheets
+                            .getItem(themesSheetName)
+                            .activate();
                         await context.sync();
                     });
                 },
@@ -117,6 +122,13 @@ export async function themeGenerationFlow(
         }
     }
 
-    return { inputs, positions, sheet, themes: result.themes, rangeInfo }; // Return the inputs and positions for further processing
+    return {
+        inputs,
+        positions,
+        sheet,
+        themes: result.themes,
+        rangeInfo,
+        header,
+    }; // Return the inputs and positions (and header) for further processing
     // by other flows
 }
