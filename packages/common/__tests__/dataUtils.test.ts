@@ -1,4 +1,9 @@
-import { extractInputsWithHeader, expandWithBlankRows } from '../src/dataUtils';
+import {
+  extractInputsWithHeader,
+  expandWithBlankRows,
+  themesToRows,
+  rowsToThemes,
+} from '../src/dataUtils';
 import type { Pos } from '../src/input';
 
 describe('extractInputsWithHeader', () => {
@@ -40,5 +45,31 @@ describe('expandWithBlankRows', () => {
     ];
     const result = expandWithBlankRows(inputs, positions);
     expect(result).toEqual(['a', '', 'b']);
+  });
+});
+
+describe('theme row mapping', () => {
+  it('converts themes to rows and back', () => {
+    const themes = [
+      {
+        label: 'L1',
+        shortLabel: 'S1',
+        description: 'D1',
+        representatives: ['r1a', 'r1b']
+      },
+      {
+        label: 'L2',
+        shortLabel: 'S2',
+        description: '',
+        representatives: []
+      }
+    ];
+    const rows = themesToRows(themes);
+    expect(rows).toEqual([
+      ['L1', 'S1', 'D1', 'r1a', 'r1b'],
+      ['L2', 'S2', '', '', '']
+    ]);
+    const roundTrip = rowsToThemes(rows);
+    expect(roundTrip).toEqual(themes);
   });
 });

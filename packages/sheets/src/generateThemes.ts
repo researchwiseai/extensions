@@ -1,5 +1,5 @@
 import {
-    extractInputs,
+    extractInputsWithHeader,
     sampleInputs,
     generateThemes,
     saveThemeSet,
@@ -20,7 +20,7 @@ export async function generateThemesFlow(dataRange: string) {
     }
     const values = dataRangeObj.getValues();
 
-    const { inputs, positions } = extractInputs(values, {
+    const { inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
     });
