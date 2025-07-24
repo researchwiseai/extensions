@@ -8,6 +8,13 @@ import { getOAuthService } from "./getOAuthService";
 import { showAllocationModeDialog } from "./showAllocationModeDialog";
 import { showInputRangeDialog } from "./showInputRangeDialog";
 import { generateThemesFlow } from "./generateThemes";
+import { splitIntoSentencesFlow } from './splitIntoSentences';
+import { splitIntoTokensFlow } from './splitIntoTokens';
+import { countWordsFlow } from './countWords';
+import { matrixThemesAutomatic } from './matrixThemesAutomatic';
+import { matrixThemesFromSet } from './matrixThemesFromSet';
+import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic';
+import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
 
 const mapStatusToStatusText = {
     200: 'OK',
@@ -102,6 +109,16 @@ export function onOpen() {
             .addItem('Allocate', 'clickAllocateThemes')
             .addItem('Manage', 'showManageThemesDialog');
         pulseMenu.addSubMenu(themesMenu);
+        const advancedMenu = ui
+            .createMenu('Advanced')
+            .addItem('Split Sentences', 'splitSentencesCurrent')
+            .addItem('Split Tokens', 'splitTokensCurrent')
+            .addItem('Count Words', 'countWordsCurrent')
+            .addItem('Matrix Allocate', 'matrixThemesAutomaticCurrent')
+            .addItem('Matrix From Set', 'matrixThemesFromSetPrompt')
+            .addItem('Similarity Matrix', 'similarityMatrixThemesAutomaticCurrent')
+            .addItem('Similarity From Set', 'similarityMatrixThemesFromSetPrompt');
+        pulseMenu.addSubMenu(advancedMenu);
         pulseMenu.addSeparator();
     }
     // Always include settings
@@ -128,6 +145,50 @@ export function clickAllocateThemes() {
  */
 export function clickAnalyzeSentiment() {
     showInputRangeDialog('sentiment');
+}
+
+export function splitSentencesCurrent() {
+    const range = getActiveRangeA1Notation();
+    splitIntoSentencesFlow(range);
+}
+
+export function splitTokensCurrent() {
+    const range = getActiveRangeA1Notation();
+    splitIntoTokensFlow(range);
+}
+
+export function countWordsCurrent() {
+    const range = getActiveRangeA1Notation();
+    countWordsFlow(range);
+}
+
+export function matrixThemesAutomaticCurrent() {
+    const range = getActiveRangeA1Notation();
+    matrixThemesAutomatic(range);
+}
+
+export function matrixThemesFromSetPrompt() {
+    const ui = SpreadsheetApp.getUi();
+    const resp = ui.prompt('Theme set name');
+    if (resp.getSelectedButton() === ui.Button.OK) {
+        matrixThemesFromSet(getActiveRangeA1Notation(), resp.getResponseText());
+    }
+}
+
+export function similarityMatrixThemesAutomaticCurrent() {
+    const range = getActiveRangeA1Notation();
+    similarityMatrixThemesAutomatic(range);
+}
+
+export function similarityMatrixThemesFromSetPrompt() {
+    const ui = SpreadsheetApp.getUi();
+    const resp = ui.prompt('Theme set name');
+    if (resp.getSelectedButton() === ui.Button.OK) {
+        similarityMatrixThemesFromSet(
+            getActiveRangeA1Notation(),
+            resp.getResponseText(),
+        );
+    }
 }
 
 /**
@@ -303,3 +364,10 @@ export { generateThemesFlow } from './generateThemes'
 export { getOAuthService } from './getOAuthService'
 export { saveThemeSet } from 'pulse-common'
 export { updateMenu } from './updateMenu'
+export { splitIntoSentencesFlow } from './splitIntoSentences'
+export { splitIntoTokensFlow } from './splitIntoTokens'
+export { countWordsFlow } from './countWords'
+export { matrixThemesAutomatic } from './matrixThemesAutomatic'
+export { matrixThemesFromSet } from './matrixThemesFromSet'
+export { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic'
+export { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet'
