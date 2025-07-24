@@ -1,7 +1,7 @@
 import { multiCode } from 'pulse-common/themes';
 import { themeGenerationFlow } from './themeGenerationFlow';
 import { saveAllocationMatrixToSheet } from '../services/saveAllocationSimilarityMatrixToSheet';
-import { expandInputsWithBlankRows } from '../services/expandInputsWithBlankRows';
+import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function matrixThemesAutomaticFlow(
@@ -15,7 +15,7 @@ export async function matrixThemesAutomaticFlow(
         range,
         hasHeader,
     );
-    const expanded = expandInputsWithBlankRows(inputs, positions);
+    const expanded = expandWithBlankRows(inputs, positions);
 
     const matrix = await multiCode(expanded, themes, {
         fast: false,
