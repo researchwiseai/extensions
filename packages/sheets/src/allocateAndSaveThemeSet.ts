@@ -1,5 +1,7 @@
 import { allocateThemes, extractInputs } from 'pulse-common';
 import { writeAllocationsToSheet } from './writeAllocationsToSheet';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 /**
  * Processes custom themes after the user submits ranges via dialog.
@@ -83,10 +85,24 @@ export async function allocateAndSaveThemeSet(ranges: {
         await allocateThemes(inputs, themes, {
             fast: false,
             onProgress: (message: string) => {
-                ss.toast(message, 'Pulse');
+                feedToast(message);
             }
         }),
         dataSheet,
         positions,
     );
+
+    feedToast('Theme allocation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(dataSheet);
+            },
+            sheetName: dataSheet.getName(),
+        });
+    }
 }

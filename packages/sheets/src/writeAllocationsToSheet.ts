@@ -1,5 +1,7 @@
 import { ShortTheme } from 'pulse-common';
 import { mapResults } from 'pulse-common/output';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 /**
  * Calls the similarity endpoint to assign each input to the closest theme.
  */
@@ -16,5 +18,17 @@ export function writeAllocationsToSheet(allocations: {
         sheet.getRange(pos.row, pos.col + 1).setValue(theme.label);
     });
 
-    ss.toast('Theme allocation complete', 'Pulse');
+    feedToast('Theme allocation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(sheet);
+            },
+            sheetName: sheet.getName(),
+        });
+    }
 }

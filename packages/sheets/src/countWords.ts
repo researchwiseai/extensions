@@ -1,5 +1,7 @@
 import { extractInputs } from 'pulse-common/input';
 import { maybeActivateSheet } from './maybeActivateSheet';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export function countWordsFlow(dataRange: string) {
     const ui = SpreadsheetApp.getUi();
@@ -45,6 +47,18 @@ export function countWordsFlow(dataRange: string) {
         output.getRange(rowIdx, 2).setValue(counts[idx]);
     });
 
-    ss.toast('Word count complete', 'Pulse');
+    feedToast('Word count complete');
     maybeActivateSheet(output, startTime);
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(output);
+            },
+            sheetName: output.getName(),
+        });
+    }
 }

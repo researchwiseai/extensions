@@ -1,5 +1,7 @@
 import { analyzeSentiment } from 'pulse-common/api';
 import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 /**
  * Analyze sentiment of selected text in the active sheet.
@@ -19,8 +21,7 @@ export async function analyzeSentimentFlow(
 ) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    // Notify user
-    ss.toast('Starting sentiment analysis...', 'Pulse');
+    feedToast('Starting sentiment analysis...');
 
     // Parse the passed range (sheet!A1Notation)
     const parts = dataRange.split('!');
@@ -56,7 +57,7 @@ export async function analyzeSentimentFlow(
     const data = await analyzeSentiment(inputs, {
         fast: useFast,
         onProgress: (message) => {
-            ss.toast(message, 'Pulse');
+            feedToast(message);
         },
     })
 
@@ -68,6 +69,18 @@ export async function analyzeSentimentFlow(
         .getRange(startRow, col, expanded.length, 1)
         .setValues(expanded.map((s) => [s]));
 
-    ss.toast('Sentiment analysis complete', 'Pulse');
+    feedToast('Sentiment analysis complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(dataSheet);
+            },
+            sheetName: dataSheet.getName(),
+        });
+    }
 
 }
