@@ -2,6 +2,8 @@ import { splitSimilarityMatrix, ShortTheme } from 'pulse-common/themes';
 import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { generateThemesFlow } from './generateThemes';
 import { maybeActivateSheet } from './maybeActivateSheet';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export async function similarityMatrixThemesAutomatic(
     dataRange: string,
@@ -10,15 +12,29 @@ export async function similarityMatrixThemesAutomatic(
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const startTime = Date.now();
     const { inputs, positions, themes } = await generateThemesFlow(dataRange, hasHeader);
-    ss.toast('Theme generation complete. Building matrix...', 'Pulse');
+    feedToast('Theme generation complete. Building matrix...');
     const expanded = expandWithBlankRows(inputs, positions);
     const matrix = await splitSimilarityMatrix(expanded, themes as ShortTheme[], {
         fast: false,
         normalize: false,
-        onProgress: (m) => ss.toast(m, 'Pulse'),
+        onProgress: (m) => feedToast(m),
     });
     const sheet = writeMatrix(matrix, expanded, themes);
     maybeActivateSheet(sheet, startTime);
+
+    feedToast('Similarity matrix complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(sheet);
+            },
+            sheetName: sheet.getName(),
+        });
+    }
 }
 
 function writeMatrix(

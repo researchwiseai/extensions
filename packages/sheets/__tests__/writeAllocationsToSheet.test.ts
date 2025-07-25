@@ -1,5 +1,7 @@
 import type { ShortTheme } from 'pulse-common';
 
+jest.mock('../src/feedToast', () => ({ feedToast: jest.fn() }));
+
 let writeAllocationsToSheet: typeof import('../src/writeAllocationsToSheet').writeAllocationsToSheet;
 
 const setValueMock = jest.fn();

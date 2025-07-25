@@ -3,6 +3,8 @@ import { extractInputsWithHeader } from 'pulse-common/dataUtils';
 import { sampleInputs } from 'pulse-common/input';
 import { saveThemeSet } from 'pulse-common/themes';
 import { writeThemes } from './writeThemes';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export async function generateThemesFlow(
     dataRange: string,
@@ -11,7 +13,7 @@ export async function generateThemesFlow(
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const startTime = Date.now();
-    ss.toast('Starting theme generation...', 'Pulse');
+    feedToast('Starting theme generation...');
 
     let dataRangeObj: GoogleAppsScript.Spreadsheet.Range;
     try {
@@ -59,7 +61,7 @@ export async function generateThemesFlow(
             ? `The column header is: ${header}`
             : undefined,
         onProgress: (message) => {
-            ss.toast(message, 'Pulse');
+            feedToast(message);
         },
     });
 
@@ -69,9 +71,21 @@ export async function generateThemesFlow(
         'yyyy-MM-dd HH:mm:ss',
     );
     saveThemeSet(timestamp, themesResponse.themes);
-    await writeThemes(themesResponse.themes, startTime);
+    const sheet = await writeThemes(themesResponse.themes, startTime);
 
-    ss.toast('Theme generation complete', 'Pulse');
+    feedToast('Theme generation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(sheet);
+            },
+            sheetName: sheet.getName(),
+        });
+    }
 
     return {
         themes: themesResponse.themes,

@@ -1,6 +1,8 @@
 import { allocateThemes } from 'pulse-common/api';
 import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { generateThemesFlow } from './generateThemes';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 /**
  * Automatically generates themes and allocates themes to data.
@@ -23,14 +25,14 @@ export async function allocateThemesAutomatic(
     } = await generateThemesFlow(dataRange, hasHeader);
 
 
-    ss.toast('Theme generation complete. Starting allocation work', 'Pulse');
+    feedToast('Theme generation complete. Starting allocation work');
 
     const dataSheet = dataRangeObj.getSheet();
 
     const allocations = await allocateThemes(usedInputs, themes, {
         fast: false,
         onProgress: (message: string) => {
-            ss.toast(message, 'Pulse');
+            feedToast(message);
         },
     });
 
@@ -44,4 +46,17 @@ export async function allocateThemesAutomatic(
         .getRange(startRow, col, expanded.length, 1)
         .setValues(expanded.map((l) => [l]));
 
+    feedToast('Theme allocation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(dataSheet);
+            },
+            sheetName: dataSheet.getName(),
+        });
+    }
 }

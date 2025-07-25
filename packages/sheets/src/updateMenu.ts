@@ -26,6 +26,7 @@ export function updateMenu() {
         pulseMenu.addSubMenu(adv);
         pulseMenu.addSeparator();
     }
+    pulseMenu.addItem('Feed', 'showFeedSidebar');
     pulseMenu.addItem('Settings', 'showSettingsSidebar');
     pulseMenu.addToUi();
 }

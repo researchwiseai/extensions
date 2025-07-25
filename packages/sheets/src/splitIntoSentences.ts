@@ -1,5 +1,7 @@
 import { extractInputs } from 'pulse-common/input';
 import { maybeActivateSheet } from './maybeActivateSheet';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 export function splitIntoSentencesFlow(dataRange: string) {
     const ui = SpreadsheetApp.getUi();
@@ -56,6 +58,18 @@ export function splitIntoSentencesFlow(dataRange: string) {
         });
     });
 
-    ss.toast('Sentence split complete', 'Pulse');
+    feedToast('Sentence split complete');
     maybeActivateSheet(output, startTime);
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(output);
+            },
+            sheetName: output.getName(),
+        });
+    }
 }

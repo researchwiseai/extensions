@@ -1,6 +1,8 @@
 import { multiCode, getThemeSets, ShortTheme } from 'pulse-common/themes';
 import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
 import { maybeActivateSheet } from './maybeActivateSheet';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 const THRESHOLD = 0.4;
 
@@ -38,11 +40,25 @@ export async function matrixThemesFromSet(
     const matrix = await multiCode(expanded, set.themes as ShortTheme[], {
         fast: false,
         threshold: THRESHOLD,
-        onProgress: (m) => ss.toast(m, 'Pulse'),
+        onProgress: (m) => feedToast(m),
     });
 
     const sheet = writeMatrix(matrix, expanded, set.themes, header);
     maybeActivateSheet(sheet, startTime);
+
+    feedToast('Matrix generation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(sheet);
+            },
+            sheetName: sheet.getName(),
+        });
+    }
 }
 
 function writeMatrix(

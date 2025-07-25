@@ -1,6 +1,8 @@
 import { allocateThemes } from 'pulse-common/api';
 import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
 import { getThemeSets } from 'pulse-common/themes';
+import { feedToast } from './feedToast';
+import { getFeed, updateItem } from 'pulse-common/jobs';
 
 /**
  * Allocate themes from an existing saved set.
@@ -45,7 +47,7 @@ export async function allocateThemesFromSet(
     const allocations = await allocateThemes(inputs, themes, {
         fast: false,
         onProgress: (message: string) => {
-            ss.toast(message, 'Pulse');
+            feedToast(message);
         },
     });
 
@@ -58,4 +60,18 @@ export async function allocateThemesFromSet(
     dataSheet
         .getRange(startRow, col, expanded.length, 1)
         .setValues(expanded.map((l) => [l]));
+
+    feedToast('Theme allocation complete');
+
+    const feed = getFeed();
+    const last = feed[feed.length - 1];
+    if (last) {
+        updateItem({
+            jobId: last.jobId,
+            onClick: () => {
+                SpreadsheetApp.setActiveSheet(dataSheet);
+            },
+            sheetName: dataSheet.getName(),
+        });
+    }
 }

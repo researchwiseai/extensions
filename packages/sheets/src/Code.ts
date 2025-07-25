@@ -15,6 +15,7 @@ import { matrixThemesAutomatic } from './matrixThemesAutomatic';
 import { matrixThemesFromSet } from './matrixThemesFromSet';
 import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic';
 import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
+import { getFeed, getItem } from 'pulse-common/jobs';
 
 const mapStatusToStatusText = {
     200: 'OK',
@@ -122,6 +123,7 @@ export function onOpen() {
         pulseMenu.addSeparator();
     }
     // Always include settings
+    pulseMenu.addItem('Feed', 'showFeedSidebar');
     pulseMenu.addItem('Settings', 'showSettingsSidebar');
     pulseMenu.addToUi();
 }
@@ -302,6 +304,20 @@ export function showSettingsSidebar() {
     template.webBase = WEB_BASE;
     const html = template.evaluate().setTitle('Pulse');
     SpreadsheetApp.getUi().showSidebar(html);
+}
+
+export function showFeedSidebar() {
+    const html = HtmlService.createHtmlOutputFromFile('Feed').setTitle('Pulse');
+    SpreadsheetApp.getUi().showSidebar(html);
+}
+
+export function getFeedItems() {
+    return getFeed().map((item) => ({ ...item, onClick: Boolean(item.onClick) }));
+}
+
+export function runFeedOnClick(jobId: string) {
+    const item = getItem(jobId);
+    item?.onClick?.();
 }
 /**
  * Retrieves stored user email and authorization status.
