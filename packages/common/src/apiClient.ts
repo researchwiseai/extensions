@@ -2,6 +2,14 @@ import fetchOriginal from 'cross-fetch';
 import { PromisePool } from '@supercharge/promise-pool';
 import { createBatches, sampleInputs } from './input';
 import * as Jobs from './jobs';
+
+// Toggle verbose logging
+const DEBUG_LOG = false;
+const debugLog = (...args: any[]) => {
+    if (DEBUG_LOG) {
+        console.log(...args);
+    }
+};
 // Abstracted fetch for cross-platform support (injectable for Apps Script)
 export interface FetchOptions {
     method?: 'post' | 'get' | 'put' | 'delete' | 'patch';
@@ -153,7 +161,7 @@ async function postWithJob(
         // Poll until done
         while (true) {
             loopCount++;
-            console.log(`Polling job status: ${jobId} (attempt ${loopCount})`);
+            debugLog(`Polling job status: ${jobId} (attempt ${loopCount})`);
             if (loopCount % 2 === 0) {
                 options.onProgress?.(
                     options.taskName
@@ -313,7 +321,7 @@ export async function generateThemes(
     inputs: string[],
     options?: GenerateThemesOptions,
 ): Promise<{ themes: Theme[] }> {
-    console.log('Generating themes for inputs:', inputs);
+    debugLog('Generating themes for inputs:', inputs);
 
     const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
 
@@ -330,7 +338,7 @@ export async function generateThemes(
         onProgress: options?.onProgress,
         taskName: 'Theme generation',
     });
-    console.log('Generated themes:', data);
+    debugLog('Generated themes:', data);
     if (Array.isArray(data.themes)) {
         return { themes: data.themes };
     }
@@ -471,7 +479,6 @@ export async function batchSimilarity(
         );
     }
 
-    debugger;
     for (let i = 0; i < results.length; i++) {
         const res = results[i];
         if (typeof res !== 'symbol') {
