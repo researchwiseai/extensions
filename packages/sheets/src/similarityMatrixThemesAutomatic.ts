@@ -1,12 +1,14 @@
 import { splitSimilarityMatrix, ShortTheme } from 'pulse-common/themes';
 import { expandWithBlankRows } from 'pulse-common/dataUtils';
 import { generateThemesFlow } from './generateThemes';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
 export async function similarityMatrixThemesAutomatic(
     dataRange: string,
     hasHeader = false,
 ) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const startTime = Date.now();
     const { inputs, positions, themes } = await generateThemesFlow(dataRange, hasHeader);
     ss.toast('Theme generation complete. Building matrix...', 'Pulse');
     const expanded = expandWithBlankRows(inputs, positions);
@@ -15,10 +17,15 @@ export async function similarityMatrixThemesAutomatic(
         normalize: false,
         onProgress: (m) => ss.toast(m, 'Pulse'),
     });
-    writeMatrix(matrix, expanded, themes);
+    const sheet = writeMatrix(matrix, expanded, themes);
+    maybeActivateSheet(sheet, startTime);
 }
 
-function writeMatrix(matrix: number[][], inputs: string[], themes: ShortTheme[]) {
+function writeMatrix(
+    matrix: number[][],
+    inputs: string[],
+    themes: ShortTheme[],
+): GoogleAppsScript.Spreadsheet.Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.insertSheet(`Similarity_${Date.now()}`);
     const header = ['Text', ...themes.map((t) => t.label)];
@@ -27,4 +34,5 @@ function writeMatrix(matrix: number[][], inputs: string[], themes: ShortTheme[])
     if (rows.length > 0) {
         sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
     }
+    return sheet;
 }

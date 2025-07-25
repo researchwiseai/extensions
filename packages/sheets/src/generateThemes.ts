@@ -10,6 +10,7 @@ export async function generateThemesFlow(
 ) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const startTime = Date.now();
     ss.toast('Starting theme generation...', 'Pulse');
 
     let dataRangeObj: GoogleAppsScript.Spreadsheet.Range;
@@ -68,7 +69,7 @@ export async function generateThemesFlow(
         'yyyy-MM-dd HH:mm:ss',
     );
     saveThemeSet(timestamp, themesResponse.themes);
-    await writeThemes(themesResponse.themes);
+    await writeThemes(themesResponse.themes, startTime);
 
     ss.toast('Theme generation complete', 'Pulse');
 

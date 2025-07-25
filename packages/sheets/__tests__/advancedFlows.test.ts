@@ -44,10 +44,14 @@ const ssMock = {
     insertSheet: jest.fn(() => newSheetMock),
     toast: jest.fn(),
 };
+const setActiveSheetMock = jest.fn();
+const sleepMock = jest.fn();
 (global as any).SpreadsheetApp = {
     getActiveSpreadsheet: () => ssMock,
     getUi: () => ({ alert: jest.fn(), prompt: () => ({ getSelectedButton: () => ({}) }) }),
+    setActiveSheet: setActiveSheetMock,
 };
+(global as any).Utilities = { sleep: sleepMock };
 
 beforeAll(async () => {
     const mod1 = await import('../src/splitIntoSentences');
@@ -68,6 +72,8 @@ beforeAll(async () => {
 
 afterEach(() => {
     jest.clearAllMocks();
+    setActiveSheetMock.mockClear();
+    sleepMock.mockClear();
 });
 
 test('splitIntoSentencesFlow creates new sheet', () => {
@@ -75,6 +81,7 @@ test('splitIntoSentencesFlow creates new sheet', () => {
     splitIntoSentencesFlow('Sheet1!A1:A2');
     expect(ssMock.insertSheet).toHaveBeenCalled();
     expect(setValuesMock).toHaveBeenCalledWith([["Text", "Sentence 1", "Sentence 2"]]);
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('splitIntoTokensFlow creates new sheet', () => {
@@ -82,6 +89,7 @@ test('splitIntoTokensFlow creates new sheet', () => {
     splitIntoTokensFlow('Sheet1!A1:A2');
     expect(ssMock.insertSheet).toHaveBeenCalled();
     expect(setValuesMock).toHaveBeenCalledWith([["Text", "Token 1", "Token 2"]]);
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('countWordsFlow writes counts', () => {
@@ -89,6 +97,7 @@ test('countWordsFlow writes counts', () => {
     countWordsFlow('Sheet1!A1:A2');
     expect(ssMock.insertSheet).toHaveBeenCalled();
     expect(setValuesMock).toHaveBeenCalledWith([["Text", "Word Count"]]);
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('matrixThemesAutomatic calls multiCode', async () => {
@@ -103,6 +112,7 @@ test('matrixThemesAutomatic calls multiCode', async () => {
 
     expect(multiCode).toHaveBeenCalled();
     expect(ssMock.insertSheet).toHaveBeenCalled();
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('matrixThemesFromSet loads theme set', async () => {
@@ -114,6 +124,7 @@ test('matrixThemesFromSet loads theme set', async () => {
 
     expect(getThemeSets).toHaveBeenCalled();
     expect(multiCode).toHaveBeenCalled();
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('similarityMatrixThemesAutomatic calls splitSimilarityMatrix', async () => {
@@ -128,6 +139,7 @@ test('similarityMatrixThemesAutomatic calls splitSimilarityMatrix', async () => 
 
     expect(splitSimilarityMatrix).toHaveBeenCalled();
     expect(ssMock.insertSheet).toHaveBeenCalled();
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('similarityMatrixThemesFromSet uses theme set', async () => {
@@ -139,4 +151,5 @@ test('similarityMatrixThemesFromSet uses theme set', async () => {
 
     expect(getThemeSets).toHaveBeenCalled();
     expect(splitSimilarityMatrix).toHaveBeenCalled();
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
