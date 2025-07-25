@@ -9,7 +9,8 @@
     "bootstrap": "bun install",
     "build": "bun run --filter '*' build",
     "test": "bun run --filter '*' test",
-    "lint": "bun run --filter '*' lint"
+    "lint": "bun run --filter '*' lint",
+    "typecheck": "bun run --filter=pulse-common typecheck"
   },
   "devDependencies": {
     "generator-office": "^3.0.1",

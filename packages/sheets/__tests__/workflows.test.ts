@@ -15,6 +15,7 @@ let analyzeSentimentFlow: typeof import('../src/analyzeSentiment').analyzeSentim
 let allocateThemesFromSet: typeof import('../src/allocateThemesFromSet').allocateThemesFromSet;
 
 const setValuesMock = jest.fn();
+const setValueMock = jest.fn();
 const rangeMock = {
     getValues: jest.fn(),
     getRow: jest.fn(() => 1),
@@ -26,18 +27,26 @@ const sheetMock = {
         if (typeof a === 'string') {
             return rangeMock;
         }
-        return { setValues: setValuesMock };
+        return { setValues: setValuesMock, setValue: setValueMock };
     }),
 };
 rangeMock.getSheet.mockReturnValue(sheetMock);
+const newSheetMock = {
+    getRange: jest.fn(() => ({ setValues: setValuesMock, setValue: setValueMock })),
+    getName: jest.fn(() => 'Sentiment_123'),
+};
 const ssMock = {
     getSheetByName: jest.fn(() => sheetMock),
+    insertSheet: jest.fn(() => newSheetMock),
     toast: jest.fn(),
 };
+const setActiveSheetMock = jest.fn();
 (global as any).SpreadsheetApp = {
     getActiveSpreadsheet: () => ssMock,
     getUi: () => ({ alert: jest.fn() }),
+    setActiveSheet: setActiveSheetMock,
 };
+(global as any).Utilities = { sleep: jest.fn() };
 
 beforeAll(async () => {
     const mod1 = await import('../src/analyzeSentiment');
@@ -50,7 +59,7 @@ afterEach(() => {
     jest.clearAllMocks();
 });
 
-test('analyzeSentimentFlow maps results to rows', async () => {
+test('analyzeSentimentFlow writes results to new sheet', async () => {
     rangeMock.getValues.mockReturnValue([
         ['Header'],
         ['good'],
@@ -64,11 +73,12 @@ test('analyzeSentimentFlow maps results to rows', async () => {
     await analyzeSentimentFlow('Sheet1!A1:A4', true);
 
     expect(analyzeSentiment).toHaveBeenCalledWith(['good', 'bad'], expect.any(Object));
+    expect(ssMock.insertSheet).toHaveBeenCalled();
+    expect(newSheetMock.getRange).toHaveBeenCalledWith(1, 1, 1, 2);
     expect(setValuesMock).toHaveBeenCalledWith([
-        ['pos'],
-        [''],
-        ['neg'],
+        ['Header', 'Sentiment'],
     ]);
+    expect(setActiveSheetMock).toHaveBeenCalledWith(newSheetMock);
 });
 
 test('allocateThemesFromSet maps allocations to rows', async () => {

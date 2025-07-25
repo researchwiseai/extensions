@@ -1,7 +1,8 @@
 import { analyzeSentiment } from 'pulse-common/api';
-import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import { extractInputsWithHeader } from 'pulse-common/dataUtils';
 import { feedToast } from './feedToast';
 import { getFeed, updateItem } from 'pulse-common/jobs';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
 /**
  * Analyze sentiment of selected text in the active sheet.
@@ -39,9 +40,10 @@ export async function analyzeSentimentFlow(
         ui.alert(`Invalid range notation "${rangeNotation}".`);
         return;
     }
+    const startTime = Date.now();
     const values = dataRangeObj.getValues();
 
-    const { inputs, positions } = extractInputsWithHeader(values, {
+    const { header, inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
         hasHeader,
@@ -54,20 +56,37 @@ export async function analyzeSentimentFlow(
     }
 
     const useFast = inputs.length < 200;
+
+    if (!useFast) {
+        const html = HtmlService.createHtmlOutputFromFile('Feed').setTitle('Pulse');
+        SpreadsheetApp.getUi().showSidebar(html);
+    }
+
     const data = await analyzeSentiment(inputs, {
         fast: useFast,
         onProgress: (message) => {
             feedToast(message);
         },
-    })
+    });
 
     const sentiments = data.results.map((r) => r.sentiment);
-    const expanded = expandWithBlankRows(sentiments, positions);
-    const startRow = Math.min(...positions.map((p) => p.row));
-    const col = dataRangeObj.getColumn() + 1;
-    dataSheet
-        .getRange(startRow, col, expanded.length, 1)
-        .setValues(expanded.map((s) => [s]));
+
+    const outputSheet = ss.insertSheet(`Sentiment_${Date.now()}`);
+
+    const headerLabel = hasHeader && header ? header : 'Text';
+    outputSheet.getRange(1, 1, 1, 2).setValues([[headerLabel, 'Sentiment']]);
+
+    const valuesToWrite = (hasHeader ? values.slice(1) : values).map((r) => [r[0]]);
+    if (valuesToWrite.length > 0) {
+        outputSheet.getRange(2, 1, valuesToWrite.length, 1).setValues(valuesToWrite);
+    }
+
+    positions.forEach((pos, idx) => {
+        const rowIdx = pos.row - dataRangeObj.getRow() - (hasHeader ? 1 : 0);
+        outputSheet.getRange(rowIdx + 2, 2).setValue(sentiments[idx]);
+    });
+
+    maybeActivateSheet(outputSheet, startTime);
 
     feedToast('Sentiment analysis complete');
 
@@ -77,9 +96,9 @@ export async function analyzeSentimentFlow(
         updateItem({
             jobId: last.jobId,
             onClick: () => {
-                SpreadsheetApp.setActiveSheet(dataSheet);
+                SpreadsheetApp.setActiveSheet(outputSheet);
             },
-            sheetName: dataSheet.getName(),
+            sheetName: outputSheet.getName(),
         });
     }
 

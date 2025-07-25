@@ -14,6 +14,10 @@ This repository contains multiple packages managed with **Bun workspaces**. Foll
   ```bash
   bun run lint
   ```
+- **Type check all packages**:
+  ```bash
+  bun run typecheck
+  ```
 - **Run tests**:
   ```bash
   bun run test
@@ -34,6 +38,6 @@ This repository contains multiple packages managed with **Bun workspaces**. Foll
 ## Contribution rules
 - Use Bun for all installs and script execution.
 - Do **not** commit `dist/`, `node_modules/`, or `.git/` directories.
-- Ensure linting, tests, and builds succeed before opening a pull request.
+- Ensure linting, type checks, tests, and builds succeed before opening a pull request.
 
 
