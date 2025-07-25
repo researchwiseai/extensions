@@ -17,6 +17,14 @@ import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomat
 import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
 import { getFeed, getItem } from 'pulse-common/jobs';
 
+// Toggle verbose logging within the add-on
+const DEBUG_LOG = false;
+function debugLog(...args: any[]) {
+    if (DEBUG_LOG) {
+        console.log(...args);
+    }
+}
+
 const mapStatusToStatusText = {
     200: 'OK',
     201: 'Created',
@@ -62,8 +70,8 @@ configureStorage({
 })
 
 configureFetch(async (url: string, options: FetchOptions) => {
-    console.log('Fetching URL:', url);
-    console.log('Options:', options);
+    debugLog('Fetching URL:', url);
+    debugLog('Options:', options);
 
     const response = await UrlFetchApp.fetch(url, {
         payload: options.body,
@@ -76,7 +84,7 @@ configureFetch(async (url: string, options: FetchOptions) => {
         muteHttpExceptions: true,
     });
 
-    console.log('Response:', response.getResponseCode());
+    debugLog('Response:', response.getResponseCode());
 
     return {
         ok: response.getResponseCode() === 200,
@@ -226,7 +234,7 @@ export function themeGenerationRouting(
     mode: 'generation' | 'allocation',
     hasHeader = false,
 ) {
-    console.log('submitSelectedInputRangeForGeneration', dataRange, mode);
+    debugLog('submitSelectedInputRangeForGeneration', dataRange, mode);
     if (mode === 'generation') {
         generateThemesFlow(dataRange, hasHeader);
     } else {
