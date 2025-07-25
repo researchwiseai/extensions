@@ -14,6 +14,7 @@
     "format": "prettier --write \"src/**/*.{ts,html,json}\""
   },
   "devDependencies": {
+    "@google/clasp": "^3.0.6-alpha",
     "@types/google-apps-script": "^1.0.0",
     "@types/google-apps-script-oauth2": "^38.0.4",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
