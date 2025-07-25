@@ -43,6 +43,10 @@ export async function analyzeSentimentFlow(
     const startTime = Date.now();
     const values = dataRangeObj.getValues();
 
+    Logger.log(
+        `Analyzing sentiment for range: ${dataRangeObj.getA1Notation()} in sheet: ${sheetName}`,
+    );
+
     const { header, inputs, positions } = extractInputsWithHeader(values, {
         rowOffset: dataRangeObj.getRow(),
         colOffset: dataRangeObj.getColumn(),
@@ -50,17 +54,30 @@ export async function analyzeSentimentFlow(
     });
     // Determine sheet and values for data range
 
+    Logger.log(
+        `Extracted inputs: ${inputs.length}, positions: ${positions.length}`,
+    );
+
     if (inputs.length === 0) {
-        ui.alert('No text found in selected data range for sentiment analysis.');
+        ui.alert(
+            'No text found in selected data range for sentiment analysis.',
+        );
         return;
     }
 
     const useFast = inputs.length < 200;
 
+    Logger.log(`Using ${useFast ? 'fast' : 'full'} sentiment analysis mode`);
+
     if (!useFast) {
-        const html = HtmlService.createHtmlOutputFromFile('Feed').setTitle('Pulse');
+        Logger.log(`Opening sidebar for full sentiment analysis...`);
+
+        const html =
+            HtmlService.createHtmlOutputFromFile('Feed').setTitle('Pulse');
         SpreadsheetApp.getUi().showSidebar(html);
     }
+
+    Logger.log(`Starting sentiment analysis for ${inputs.length} inputs...`);
 
     const data = await analyzeSentiment(inputs, {
         fast: useFast,
@@ -69,6 +86,8 @@ export async function analyzeSentimentFlow(
         },
     });
 
+    Logger.log(`Sentiment analysis completed: ${data.results.length} results`);
+
     const sentiments = data.results.map((r) => r.sentiment);
 
     const outputSheet = ss.insertSheet(`Sentiment_${Date.now()}`);
@@ -76,9 +95,13 @@ export async function analyzeSentimentFlow(
     const headerLabel = hasHeader && header ? header : 'Text';
     outputSheet.getRange(1, 1, 1, 2).setValues([[headerLabel, 'Sentiment']]);
 
-    const valuesToWrite = (hasHeader ? values.slice(1) : values).map((r) => [r[0]]);
+    const valuesToWrite = (hasHeader ? values.slice(1) : values).map((r) => [
+        r[0],
+    ]);
     if (valuesToWrite.length > 0) {
-        outputSheet.getRange(2, 1, valuesToWrite.length, 1).setValues(valuesToWrite);
+        outputSheet
+            .getRange(2, 1, valuesToWrite.length, 1)
+            .setValues(valuesToWrite);
     }
 
     positions.forEach((pos, idx) => {
@@ -101,5 +124,4 @@ export async function analyzeSentimentFlow(
             sheetName: outputSheet.getName(),
         });
     }
-
 }

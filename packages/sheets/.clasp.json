@@ -2,6 +2,7 @@
   "scriptId": "109n2vtt1GEz7ykRsby0K-IF0khCmroypshpUtAvIMx3K9TeBbSO74-rP",
   "rootDir": "dist",
   "parentId": "1I1s2aeyGZymZw75L3hN9_F-wXrG-y4x46IUf8nwAlgQ",
+  "projectId": "375020695529",
   "scriptExtensions": [
     ".js"
   ],
@@ -11,6 +12,5 @@
   "jsonExtensions": [
     ".json"
   ],
-  "filePushOrder": [],
-  "skipSubdirectories": false
+  "filePushOrder": []
 }
