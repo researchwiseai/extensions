@@ -1,7 +1,8 @@
-import { Theme } from "pulse-common";
-import { themesToRows } from "pulse-common/dataUtils";
+import { Theme } from 'pulse-common';
+import { themesToRows } from 'pulse-common/dataUtils';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
-export function writeThemes(themes: Theme[]) {
+export function writeThemes(themes: Theme[], startTime?: number): GoogleAppsScript.Spreadsheet.Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     // Log full themes info to 'Themes' worksheet
     let outputSheet = ss.getSheetByName('Themes');
@@ -22,4 +23,8 @@ export function writeThemes(themes: Theme[]) {
     if (rows.length > 0) {
         outputSheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
     }
+    if (typeof startTime === 'number') {
+        maybeActivateSheet(outputSheet, startTime);
+    }
+    return outputSheet;
 }

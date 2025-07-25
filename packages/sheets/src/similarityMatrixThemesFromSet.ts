@@ -1,5 +1,6 @@
 import { splitSimilarityMatrix, getThemeSets, ShortTheme } from 'pulse-common/themes';
 import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
 export async function similarityMatrixThemesFromSet(
     dataRange: string,
@@ -8,6 +9,7 @@ export async function similarityMatrixThemesFromSet(
 ) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const startTime = Date.now();
 
     let rangeObj: GoogleAppsScript.Spreadsheet.Range;
     try {
@@ -37,7 +39,8 @@ export async function similarityMatrixThemesFromSet(
         onProgress: (m) => ss.toast(m, 'Pulse'),
     });
 
-    writeMatrix(matrix, expanded, set.themes, header);
+    const sheet = writeMatrix(matrix, expanded, set.themes, header);
+    maybeActivateSheet(sheet, startTime);
 }
 
 function writeMatrix(
@@ -45,7 +48,7 @@ function writeMatrix(
     inputs: string[],
     themes: ShortTheme[],
     header?: string,
-) {
+): GoogleAppsScript.Spreadsheet.Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.insertSheet(`Similarity_${Date.now()}`);
     const headerRow = [header ?? 'Text', ...themes.map((t) => t.label)];
@@ -54,4 +57,5 @@ function writeMatrix(
     if (rows.length > 0) {
         sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
     }
+    return sheet;
 }

@@ -1,5 +1,6 @@
 import { multiCode, getThemeSets, ShortTheme } from 'pulse-common/themes';
 import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
 const THRESHOLD = 0.4;
 
@@ -10,6 +11,7 @@ export async function matrixThemesFromSet(
 ) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const startTime = Date.now();
 
     let rangeObj: GoogleAppsScript.Spreadsheet.Range;
     try {
@@ -39,15 +41,16 @@ export async function matrixThemesFromSet(
         onProgress: (m) => ss.toast(m, 'Pulse'),
     });
 
-    writeMatrix(matrix, expanded, set.themes, header);
+    const sheet = writeMatrix(matrix, expanded, set.themes, header);
+    maybeActivateSheet(sheet, startTime);
 }
 
 function writeMatrix(
-    matrix: (number|boolean)[][],
+    matrix: (number | boolean)[][],
     inputs: string[],
     themes: ShortTheme[],
     header?: string,
-) {
+): GoogleAppsScript.Spreadsheet.Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.insertSheet(`Allocation_${Date.now()}`);
     const headerRow = [header ?? 'Text', ...themes.map((t) => t.label)];
@@ -56,4 +59,5 @@ function writeMatrix(
     if (rows.length > 0) {
         sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
     }
+    return sheet;
 }

@@ -1,8 +1,10 @@
 import { extractInputs } from 'pulse-common/input';
+import { maybeActivateSheet } from './maybeActivateSheet';
 
 export function splitIntoSentencesFlow(dataRange: string) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const startTime = Date.now();
 
     const parts = dataRange.split('!');
     const sheetName = parts[0];
@@ -55,4 +57,5 @@ export function splitIntoSentencesFlow(dataRange: string) {
     });
 
     ss.toast('Sentence split complete', 'Pulse');
+    maybeActivateSheet(output, startTime);
 }
