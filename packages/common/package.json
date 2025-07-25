@@ -18,7 +18,8 @@
         "./storage": "./src/storage.ts",
         "./themes": "./src/themes.ts",
         "./dataUtils": "./src/dataUtils.ts",
-        "./output": "./src/output.ts"
+        "./output": "./src/output.ts",
+        "./saveThemesToSheet": "./src/saveThemesToSheet.ts"
     },
     "scripts": {
         "build": "tsc -b",

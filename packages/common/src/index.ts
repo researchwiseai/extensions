@@ -12,3 +12,4 @@ export * from './pkce.js';
 export * from './org.js';
 export * from './storage.js';
 export * from './dataUtils.js';
+export * from './saveThemesToSheet.js';

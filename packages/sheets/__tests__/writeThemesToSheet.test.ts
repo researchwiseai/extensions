@@ -24,7 +24,7 @@ afterEach(() => {
   jest.clearAllMocks();
 });
 
-test('inserts sheet and writes headers and rows', () => {
+test('inserts sheet and writes headers and rows', async () => {
   const themes: Theme[] = [
     {
       label: 'L',
@@ -34,7 +34,7 @@ test('inserts sheet and writes headers and rows', () => {
     },
   ];
 
-  writeThemesToSheet(themes);
+  await writeThemesToSheet(themes);
 
   expect(ssMock.insertSheet).toHaveBeenCalledWith('Themes');
   expect(sheetMock.clear).not.toHaveBeenCalled();
@@ -48,10 +48,10 @@ test('inserts sheet and writes headers and rows', () => {
   ]);
 });
 
-test('clears existing sheet and clears target when no rows', () => {
+test('clears existing sheet and clears target when no rows', async () => {
   ssMock.getSheetByName.mockReturnValue(sheetMock);
 
-  writeThemesToSheet([]);
+  await writeThemesToSheet([]);
 
   expect(ssMock.insertSheet).not.toHaveBeenCalled();
   expect(sheetMock.clear).toHaveBeenCalled();
