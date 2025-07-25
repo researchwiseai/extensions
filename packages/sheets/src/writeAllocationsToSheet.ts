@@ -1,4 +1,5 @@
-import { ShortTheme, Theme } from "pulse-common";
+import { ShortTheme } from 'pulse-common';
+import { mapResults } from 'pulse-common/output';
 /**
  * Calls the similarity endpoint to assign each input to the closest theme.
  */
@@ -11,8 +12,8 @@ export function writeAllocationsToSheet(allocations: {
 
     const themes = allocations.map((a) => a.theme);
 
-    positions.forEach((pos, i) => {
-        sheet.getRange(pos.row, pos.col + 1).setValue(themes[i].label);
+    mapResults(themes, positions, (pos, theme) => {
+        sheet.getRange(pos.row, pos.col + 1).setValue(theme.label);
     });
 
     ss.toast('Theme allocation complete', 'Pulse');
