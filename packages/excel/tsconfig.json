@@ -4,6 +4,7 @@
         "baseUrl": ".",
         "esModuleInterop": true,
         "experimentalDecorators": true,
+        "module": "NodeNext",
         "moduleResolution": "nodenext",
         "jsx": "react-jsx",
         "noEmitOnError": true,

@@ -25,6 +25,7 @@
         "build": "tsc -b",
         "test": "bun test",
         "lint": "eslint src --ext .ts",
+        "typecheck": "tsc --noEmit",
         "prepublishOnly": "bun run build"
     },
     "devDependencies": {
