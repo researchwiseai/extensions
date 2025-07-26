@@ -11,19 +11,18 @@ export function updateMenu() {
         const themesMenu = ui
             .createMenu('Themes')
             .addItem('Generate', 'clickGenerateThemes')
-            .addItem('Allocate', 'clickAllocateThemes')
-            .addItem('Manage', 'showManageThemesDialog');
+            .addItem('Single Code', 'clickAllocateThemes')
+            .addItem('Multi Code', 'clickMatrixThemes')
+            .addItem('Similarity Scores', 'clickSimilarityScores')
+            .addSeparator()
+            .addItem('Theme Sets', 'showManageThemesDialog');
         pulseMenu.addSubMenu(themesMenu);
-        const adv = ui
-            .createMenu('Advanced')
+        const textTools = ui
+            .createMenu('Text Tools')
             .addItem('Split Sentences', 'splitSentencesCurrent')
             .addItem('Split Tokens', 'splitTokensCurrent')
-            .addItem('Count Words', 'countWordsCurrent')
-            .addItem('Matrix Allocate', 'matrixThemesAutomaticCurrent')
-            .addItem('Matrix From Set', 'matrixThemesFromSetPrompt')
-            .addItem('Similarity Matrix', 'similarityMatrixThemesAutomaticCurrent')
-            .addItem('Similarity From Set', 'similarityMatrixThemesFromSetPrompt');
-        pulseMenu.addSubMenu(adv);
+            .addItem('Count Words', 'countWordsCurrent');
+        pulseMenu.addSubMenu(textTools);
         pulseMenu.addSeparator();
     }
     pulseMenu.addItem('Feed', 'showFeedSidebar');
