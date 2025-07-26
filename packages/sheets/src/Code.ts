@@ -13,8 +13,11 @@ import { splitIntoTokensFlow } from './splitIntoTokens';
 import { countWordsFlow } from './countWords';
 import { matrixThemesAutomatic } from './matrixThemesAutomatic';
 import { matrixThemesFromSet } from './matrixThemesFromSet';
+import { matrixThemesFromSheet } from './matrixThemesFromSheet';
 import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic';
 import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
+import { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet';
+import { allocateThemesFromSheet } from './allocateThemesFromSheet';
 import { getFeed, getItem } from 'pulse-common/jobs';
 
 // Toggle verbose logging within the add-on
@@ -115,19 +118,18 @@ export function onOpen() {
         const themesMenu = ui
             .createMenu('Themes')
             .addItem('Generate', 'clickGenerateThemes')
-            .addItem('Allocate', 'clickAllocateThemes')
-            .addItem('Manage', 'showManageThemesDialog');
+            .addItem('Single Code', 'clickAllocateThemes')
+            .addItem('Multi Code', 'clickMatrixThemes')
+            .addItem('Similarity Scores', 'clickSimilarityScores')
+            .addSeparator()
+            .addItem('Theme Sets', 'showManageThemesDialog');
         pulseMenu.addSubMenu(themesMenu);
-        const advancedMenu = ui
-            .createMenu('Advanced')
+        const textTools = ui
+            .createMenu('Text Tools')
             .addItem('Split Sentences', 'splitSentencesCurrent')
             .addItem('Split Tokens', 'splitTokensCurrent')
-            .addItem('Count Words', 'countWordsCurrent')
-            .addItem('Matrix Allocate', 'matrixThemesAutomaticCurrent')
-            .addItem('Matrix From Set', 'matrixThemesFromSetPrompt')
-            .addItem('Similarity Matrix', 'similarityMatrixThemesAutomaticCurrent')
-            .addItem('Similarity From Set', 'similarityMatrixThemesFromSetPrompt');
-        pulseMenu.addSubMenu(advancedMenu);
+            .addItem('Count Words', 'countWordsCurrent');
+        pulseMenu.addSubMenu(textTools);
         pulseMenu.addSeparator();
     }
     // Always include settings
@@ -147,6 +149,14 @@ export function clickGenerateThemes() {
  */
 export function clickAllocateThemes() {
     showInputRangeDialog("allocation");
+}
+
+export function clickMatrixThemes() {
+    showInputRangeDialog('matrix');
+}
+
+export function clickSimilarityScores() {
+    showInputRangeDialog('similarity');
 }
 /**
  * Prompts the user to select the input range for sentiment analysis.
@@ -255,6 +265,20 @@ export function submitSelectedInputRangeForGeneration(
     return debouncedThemeGenerationRouting(dataRange, mode, hasHeader);
 }
 
+export function submitSelectedInputRangeForMatrix(
+    dataRange: string,
+    hasHeader = false,
+) {
+    matrixThemesWithRange(dataRange, hasHeader);
+}
+
+export function submitSelectedInputRangeForSimilarity(
+    dataRange: string,
+    hasHeader = false,
+) {
+    similarityMatrixWithRange(dataRange, hasHeader);
+}
+
 /**
  * Callback after input range is selected; opens dialog to choose allocation mode.
  * 
@@ -266,7 +290,21 @@ export function allocateThemesWithRange(
     dataRange: string,
     hasHeader = false,
 ) {
-    showAllocationModeDialog(dataRange, hasHeader);
+    showAllocationModeDialog(dataRange, hasHeader, 'allocate');
+}
+
+export function matrixThemesWithRange(
+    dataRange: string,
+    hasHeader = false,
+) {
+    showAllocationModeDialog(dataRange, hasHeader, 'matrix');
+}
+
+export function similarityMatrixWithRange(
+    dataRange: string,
+    hasHeader = false,
+) {
+    showAllocationModeDialog(dataRange, hasHeader, 'similarity');
 }
 /**
  * Save a manually created theme set.
@@ -393,5 +431,8 @@ export { splitIntoTokensFlow } from './splitIntoTokens'
 export { countWordsFlow } from './countWords'
 export { matrixThemesAutomatic } from './matrixThemesAutomatic'
 export { matrixThemesFromSet } from './matrixThemesFromSet'
+export { matrixThemesFromSheet } from './matrixThemesFromSheet'
 export { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic'
 export { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet'
+export { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet'
+export { allocateThemesFromSheet } from './allocateThemesFromSheet'

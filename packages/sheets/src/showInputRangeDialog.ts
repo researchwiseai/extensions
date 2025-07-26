@@ -7,7 +7,9 @@ import { getActiveRangeA1Notation } from './Code';
  * Opens a dialog to confirm or change the input data range.
  * @param mode 'allocation', 'generation', or 'sentiment'
  */
-export function showInputRangeDialog(mode: 'allocation' | 'generation' | 'sentiment') {
+export function showInputRangeDialog(
+    mode: 'allocation' | 'generation' | 'sentiment' | 'matrix' | 'similarity',
+) {
     const ui = SpreadsheetApp.getUi();
     const template = HtmlService.createTemplateFromFile('InputRangeDialog');
     template.dataRange = getActiveRangeA1Notation();

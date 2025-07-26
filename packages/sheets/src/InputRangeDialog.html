@@ -54,12 +54,24 @@
               M.toast({ html: 'Error: ' + err.message });
             })
             .analyzeSentimentFlow(dataRange, hasHeader);
-        } else {
+        } else if (mode === 'generation' || mode === 'allocation') {
           google.script.run
             .withFailureHandler(function (err) {
               M.toast({ html: 'Error: ' + err.message });
             })
             .submitSelectedInputRangeForGeneration(dataRange, mode, hasHeader);
+        } else if (mode === 'matrix') {
+          google.script.run
+            .withFailureHandler(function (err) {
+              M.toast({ html: 'Error: ' + err.message });
+            })
+            .submitSelectedInputRangeForMatrix(dataRange, hasHeader);
+        } else if (mode === 'similarity') {
+          google.script.run
+            .withFailureHandler(function (err) {
+              M.toast({ html: 'Error: ' + err.message });
+            })
+            .submitSelectedInputRangeForSimilarity(dataRange, hasHeader);
         }
         google.script.host.close();
       }

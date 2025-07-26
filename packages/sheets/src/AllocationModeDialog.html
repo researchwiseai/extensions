@@ -17,6 +17,7 @@
     </head>
     <body class="container">
         <input id="dataRange" type="hidden" value="<?= dataRange ?>" />
+        <input id="flow" type="hidden" value="<?= flow ?>" />
         <p>
             <label>
                 <input type="checkbox" id="hasHeader" <?= hasHeader ? 'checked' : '' ?> />
@@ -27,26 +28,38 @@
             <p>
                 <label>
                     <input name="mode" type="radio" value="auto" checked />
-                    <span>Automatically Generate (one-off)</span>
+                    <span>Generate new themes automatically</span>
                 </label>
             </p>
-            <? for (var i = 0; i < themeSetNames.length; i++) { ?>
             <p>
                 <label>
-                    <input
-                        name="mode"
-                        type="radio"
-                        value="<?= themeSetNames[i] ?>"
-                    />
-                    <span>Use Theme Set "<?= themeSetNames[i] ?>"</span>
+                    <input name="mode" type="radio" value="set" />
+                    <span>Use existing theme set:</span>
                 </label>
+                <div class="input-field">
+                    <select id="setSelect" disabled>
+                        <? for (var i = 0; i < themeSetNames.length; i++) { ?>
+                            <option value="<?= themeSetNames[i] ?>">
+                                <?= themeSetNames[i] ?>
+                            </option>
+                        <? } ?>
+                    </select>
+                </div>
             </p>
-            <? } ?>
             <p>
                 <label>
-                    <input name="mode" type="radio" value="new" />
-                    <span>Create &amp; Save New Theme Set</span>
+                    <input name="mode" type="radio" value="sheet" />
+                    <span>Read theme set from sheet:</span>
                 </label>
+                <div class="input-field">
+                    <select id="sheetSelect" disabled>
+                        <? for (var i = 0; i < sheetNames.length; i++) { ?>
+                            <option value="<?= sheetNames[i] ?>">
+                                <?= sheetNames[i] ?>
+                            </option>
+                        <? } ?>
+                    </select>
+                </div>
             </p>
         </form>
         <div class="row">
@@ -68,21 +81,68 @@
         <script>
             document.addEventListener('DOMContentLoaded', function () {
                 M.AutoInit();
+                const setSelect = document.getElementById('setSelect');
+                const sheetSelect = document.getElementById('sheetSelect');
+                const modeSet = document.querySelector('input[value="set"]');
+                const modeSheet = document.querySelector('input[value="sheet"]');
+                modeSet.addEventListener('change', () => {
+                    setSelect.disabled = !modeSet.checked;
+                    sheetSelect.disabled = true;
+                });
+                modeSheet.addEventListener('change', () => {
+                    sheetSelect.disabled = !modeSheet.checked;
+                    setSelect.disabled = true;
+                });
+                document.querySelector('input[value="auto"]').addEventListener('change', () => {
+                    setSelect.disabled = true;
+                    sheetSelect.disabled = true;
+                });
             });
             function submitMode() {
                 const form = document.getElementById('modeForm');
                 const mode = form.mode.value;
                 const dr = document.getElementById('dataRange').value;
                 const hasHeader = document.getElementById('hasHeader').checked;
-                // Start the allocation job and close the dialog immediately
-                if (mode === 'new') {
-                    const name = prompt('Name for this Theme Set?');
-                    if (!name) return;
-                    google.script.run.showRangeDialog(dr, name);
-                } else if (mode === 'auto') {
-                    google.script.run.allocateThemesAutomatic(dr, hasHeader);
+                const flow = document.getElementById('flow').value;
+
+                let fn;
+                if (mode === 'auto') {
+                    if (flow === 'allocate') {
+                        fn = google.script.run.allocateThemesAutomatic;
+                    } else if (flow === 'matrix') {
+                        fn = google.script.run.matrixThemesAutomatic;
+                    } else {
+                        fn = google.script.run.similarityMatrixThemesAutomatic;
+                    }
+                    fn(dr, hasHeader);
+                } else if (mode === 'set') {
+                    const setName = document.getElementById('setSelect').value;
+                    if (!setName) {
+                        M.toast({ html: 'Please select a theme set' });
+                        return;
+                    }
+                    if (flow === 'allocate') {
+                        fn = google.script.run.allocateThemesFromSet;
+                    } else if (flow === 'matrix') {
+                        fn = google.script.run.matrixThemesFromSet;
+                    } else {
+                        fn = google.script.run.similarityMatrixThemesFromSet;
+                    }
+                    fn(dr, setName, hasHeader);
                 } else {
-                    google.script.run.allocateThemesFromSet(dr, mode, hasHeader);
+                    const sheetName = document.getElementById('sheetSelect').value;
+                    if (!sheetName) {
+                        M.toast({ html: 'Please select a sheet' });
+                        return;
+                    }
+                    if (flow === 'allocate') {
+                        fn = google.script.run.allocateThemesFromSheet;
+                    } else if (flow === 'matrix') {
+                        fn = google.script.run.matrixThemesFromSheet;
+                    } else {
+                        fn = google.script.run.similarityMatrixThemesFromSheet;
+                    }
+                    fn(dr, sheetName, hasHeader);
                 }
                 google.script.host.close();
             }
