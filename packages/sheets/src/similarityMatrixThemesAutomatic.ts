@@ -11,14 +11,21 @@ export async function similarityMatrixThemesAutomatic(
 ) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const startTime = Date.now();
-    const { inputs, positions, themes } = await generateThemesFlow(dataRange, hasHeader);
+    const { inputs, positions, themes } = await generateThemesFlow(
+        dataRange,
+        hasHeader,
+    );
     feedToast('Theme generation complete. Building matrix...');
     const expanded = expandWithBlankRows(inputs, positions);
-    const matrix = await splitSimilarityMatrix(expanded, themes as ShortTheme[], {
-        fast: false,
-        normalize: false,
-        onProgress: (m) => feedToast(m),
-    });
+    const matrix = await splitSimilarityMatrix(
+        expanded,
+        themes as ShortTheme[],
+        {
+            fast: false,
+            normalize: false,
+            onProgress: (m) => feedToast(m),
+        },
+    );
     const sheet = writeMatrix(matrix, expanded, themes);
     maybeActivateSheet(sheet, startTime);
 

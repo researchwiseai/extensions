@@ -88,14 +88,20 @@
                 modeSet.addEventListener('change', () => {
                     setSelect.disabled = !modeSet.checked;
                     sheetSelect.disabled = true;
+                    M.FormSelect.init(setSelect);
+                    M.FormSelect.init(sheetSelect);
                 });
                 modeSheet.addEventListener('change', () => {
                     sheetSelect.disabled = !modeSheet.checked;
                     setSelect.disabled = true;
+                    M.FormSelect.init(setSelect);
+                    M.FormSelect.init(sheetSelect);
                 });
                 document.querySelector('input[value="auto"]').addEventListener('change', () => {
                     setSelect.disabled = true;
                     sheetSelect.disabled = true;
+                    M.FormSelect.init(setSelect);
+                    M.FormSelect.init(sheetSelect);
                 });
             });
             function submitMode() {

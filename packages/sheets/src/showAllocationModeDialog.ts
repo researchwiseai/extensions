@@ -19,9 +19,12 @@ export async function showAllocationModeDialog(
     template.themeSetNames = themeSet.map(function (s) {
         return s.name;
     });
-    const sheetNames = SpreadsheetApp.getActiveSpreadsheet()
-        .getSheets()
-        .map((s) => s.getName());
+    let sheetNames: string[] = [];
+    if (typeof SpreadsheetApp.getActiveSpreadsheet === 'function') {
+        sheetNames = SpreadsheetApp.getActiveSpreadsheet()
+            .getSheets()
+            .map((s) => s.getName());
+    }
     template.sheetNames = sheetNames;
     const html = template.evaluate().setWidth(400).setHeight(200);
     ui.showModelessDialog(html, 'Theme Allocation Mode');

@@ -1,5 +1,8 @@
 import { multiCode, getThemeSets, ShortTheme } from 'pulse-common/themes';
-import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import {
+    extractInputsWithHeader,
+    expandWithBlankRows,
+} from 'pulse-common/dataUtils';
 import { maybeActivateSheet } from './maybeActivateSheet';
 import { feedToast } from './feedToast';
 import { getFeed, updateItem } from 'pulse-common/jobs';

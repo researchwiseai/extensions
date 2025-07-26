@@ -1,80 +1,90 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <base target="_top" />
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
-      rel="stylesheet"
-    />
-  </head>
-  <body class="container">
-    <input id="mode" type="hidden" value="<?= mode ?>" />
-    <div class="input-field">
-        <input
-            id="dataRange"
-            type="text"
-            onfocus="pickRange()"
-            value="<?= dataRange ?>"
+    <head>
+        <base target="_top" />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+            rel="stylesheet"
         />
-        <label for="dataRange">Input Range (A1 notation)</label>
-    </div>
-    <p>
-        <label>
-            <input type="checkbox" id="hasHeader" />
-            <span>First row is header</span>
-        </label>
-    </p>
-    <button class="btn waves-effect waves-light" onclick="submitRange()">
-      OK
-    </button>
-    <button class="btn-flat" onclick="google.script.host.close()">
-      Cancel
-    </button>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        M.AutoInit();
-      });
-      function pickRange() {
-        google.script.run
-          .withSuccessHandler(function (a1Notation) {
-            const input = document.getElementById('dataRange');
-            input.value = a1Notation;
-            M.updateTextFields();
-          })
-          .getActiveRangeA1Notation();
-      }
-      function submitRange() {
-        const dataRange = document.getElementById('dataRange').value;
-        const mode = document.getElementById('mode').value;
-        const hasHeader = document.getElementById('hasHeader').checked;
-        if (mode === 'sentiment') {
-          google.script.run
-            .withFailureHandler(function (err) {
-              M.toast({ html: 'Error: ' + err.message });
-            })
-            .analyzeSentimentFlow(dataRange, hasHeader);
-        } else if (mode === 'generation' || mode === 'allocation') {
-          google.script.run
-            .withFailureHandler(function (err) {
-              M.toast({ html: 'Error: ' + err.message });
-            })
-            .submitSelectedInputRangeForGeneration(dataRange, mode, hasHeader);
-        } else if (mode === 'matrix') {
-          google.script.run
-            .withFailureHandler(function (err) {
-              M.toast({ html: 'Error: ' + err.message });
-            })
-            .submitSelectedInputRangeForMatrix(dataRange, hasHeader);
-        } else if (mode === 'similarity') {
-          google.script.run
-            .withFailureHandler(function (err) {
-              M.toast({ html: 'Error: ' + err.message });
-            })
-            .submitSelectedInputRangeForSimilarity(dataRange, hasHeader);
-        }
-        google.script.host.close();
-      }
-    </script>
-  </body>
+    </head>
+    <body class="container">
+        <input id="mode" type="hidden" value="<?= mode ?>" />
+        <div class="input-field">
+            <input
+                id="dataRange"
+                type="text"
+                onfocus="pickRange()"
+                value="<?= dataRange ?>"
+            />
+            <label for="dataRange">Input Range (A1 notation)</label>
+        </div>
+        <p>
+            <label>
+                <input type="checkbox" id="hasHeader" />
+                <span>First row is header</span>
+            </label>
+        </p>
+        <button class="btn waves-effect waves-light" onclick="submitRange()">
+            OK
+        </button>
+        <button class="btn-flat" onclick="google.script.host.close()">
+            Cancel
+        </button>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                M.AutoInit();
+            });
+            function pickRange() {
+                google.script.run
+                    .withSuccessHandler(function (a1Notation) {
+                        const input = document.getElementById('dataRange');
+                        input.value = a1Notation;
+                        M.updateTextFields();
+                    })
+                    .getActiveRangeA1Notation();
+            }
+            function submitRange() {
+                const dataRange = document.getElementById('dataRange').value;
+                const mode = document.getElementById('mode').value;
+                const hasHeader = document.getElementById('hasHeader').checked;
+                if (mode === 'sentiment') {
+                    google.script.run
+                        .withFailureHandler(function (err) {
+                            M.toast({ html: 'Error: ' + err.message });
+                        })
+                        .analyzeSentimentFlow(dataRange, hasHeader);
+                } else if (mode === 'generation' || mode === 'allocation') {
+                    google.script.run
+                        .withFailureHandler(function (err) {
+                            M.toast({ html: 'Error: ' + err.message });
+                        })
+                        .submitSelectedInputRangeForGeneration(
+                            dataRange,
+                            mode,
+                            hasHeader,
+                        );
+                } else if (mode === 'matrix') {
+                    google.script.run
+                        .withFailureHandler(function (err) {
+                            M.toast({ html: 'Error: ' + err.message });
+                        })
+                        .submitSelectedInputRangeForMatrix(
+                            dataRange,
+                            hasHeader,
+                        );
+                } else if (mode === 'similarity') {
+                    google.script.run
+                        .withFailureHandler(function (err) {
+                            M.toast({ html: 'Error: ' + err.message });
+                        })
+                        .submitSelectedInputRangeForSimilarity(
+                            dataRange,
+                            hasHeader,
+                        );
+                }
+                google.script.host.close();
+            }
+        </script>
+    </body>
 </html>

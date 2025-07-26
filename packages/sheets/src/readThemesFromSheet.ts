@@ -1,4 +1,6 @@
-export function readThemesFromSheet(sheetName: string): { label: string; representatives: string[] }[] {
+export function readThemesFromSheet(
+    sheetName: string,
+): { label: string; representatives: string[] }[] {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) {

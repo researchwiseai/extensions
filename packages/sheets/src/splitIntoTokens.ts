@@ -51,14 +51,24 @@ export function splitIntoTokensFlow(dataRange: string) {
         header.push(`Token ${i + 1}`);
     }
     output.getRange(1, 1, 1, header.length).setValues([header]);
-    output.getRange(2, 1, values.length, 1).setValues(values.map((r) => [r[0]]));
+    output
+        .getRange(2, 1, values.length, 1)
+        .setValues(values.map((r) => [r[0]]));
 
-    positions.forEach((pos, idx) => {
-        const rowIdx = pos.row - rangeObj.getRow() + 2;
-        tokens[idx].forEach((token, j) => {
-            output.getRange(rowIdx, j + 2).setValue(token);
+    const outputValues: (string | null)[][] = Array(values.length)
+        .fill(null)
+        .map(() => Array(max).fill(null));
+
+    positions.forEach((pos, i) => {
+        const rowIndex = pos.row - rangeObj.getRow();
+        tokens[i].forEach((token, j) => {
+            outputValues[rowIndex][j] = token;
         });
     });
+
+    if (outputValues.length > 0) {
+        output.getRange(2, 2, outputValues.length, max).setValues(outputValues);
+    }
 
     feedToast('Token split complete');
     maybeActivateSheet(output, startTime);

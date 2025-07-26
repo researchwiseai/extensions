@@ -86,7 +86,7 @@ export async function allocateAndSaveThemeSet(ranges: {
             fast: false,
             onProgress: (message: string) => {
                 feedToast(message);
-            }
+            },
         }),
         dataSheet,
         positions,

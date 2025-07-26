@@ -6,10 +6,14 @@ import { getFeed, updateItem } from 'pulse-common/jobs';
  * Calls the similarity endpoint to assign each input to the closest theme.
  */
 
-export function writeAllocationsToSheet(allocations: {
-    theme: ShortTheme;
-    score: number;
-}[], sheet, positions: { row: number; col: number }[]) {
+export function writeAllocationsToSheet(
+    allocations: {
+        theme: ShortTheme;
+        score: number;
+    }[],
+    sheet,
+    positions: { row: number; col: number }[],
+) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     const themes = allocations.map((a) => a.theme);

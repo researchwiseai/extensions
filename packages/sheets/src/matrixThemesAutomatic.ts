@@ -13,7 +13,10 @@ export async function matrixThemesAutomatic(
 ) {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const startTime = Date.now();
-    const { inputs, positions, themes } = await generateThemesFlow(dataRange, hasHeader);
+    const { inputs, positions, themes } = await generateThemesFlow(
+        dataRange,
+        hasHeader,
+    );
     feedToast('Theme generation complete. Building matrix...');
     const expanded = expandWithBlankRows(inputs, positions);
     const matrix = await multiCode(expanded, themes as ShortTheme[], {

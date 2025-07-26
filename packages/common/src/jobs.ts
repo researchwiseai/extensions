@@ -12,6 +12,17 @@ export interface FeedItem {
 
 const feedItems = new Map<string, FeedItem>();
 
+// ID generator for new jobs; defaults to crypto.randomUUID.
+let jobIdGenerator: () => string = () => crypto.randomUUID();
+
+/**
+ * Configure custom job ID generator.
+ * @param fn Function that returns a unique job ID string.
+ */
+export function configureJobIdGenerator(fn: () => string) {
+    jobIdGenerator = fn;
+}
+
 export function clear() {
     feedItems.clear();
 }
@@ -32,7 +43,7 @@ export function createItem({
     onClick?: () => void;
 }): FeedItem {
     if (!jobId) {
-        jobId = crypto.randomUUID();
+        jobId = jobIdGenerator();
     }
 
     const item: FeedItem = {

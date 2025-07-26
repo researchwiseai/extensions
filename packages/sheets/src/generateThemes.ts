@@ -6,10 +6,7 @@ import { writeThemes } from './writeThemes';
 import { feedToast } from './feedToast';
 import { getFeed, updateItem } from 'pulse-common/jobs';
 
-export async function generateThemesFlow(
-    dataRange: string,
-    hasHeader = false,
-) {
+export async function generateThemesFlow(dataRange: string, hasHeader = false) {
     const ui = SpreadsheetApp.getUi();
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const startTime = Date.now();
@@ -57,9 +54,8 @@ export async function generateThemesFlow(
     console.log('usedInputs', usedInputs);
     const themesResponse = await generateThemes(usedInputs, {
         fast: false,
-        context: hasHeader && header
-            ? `The column header is: ${header}`
-            : undefined,
+        context:
+            hasHeader && header ? `The column header is: ${header}` : undefined,
         onProgress: (message) => {
             feedToast(message);
         },
@@ -145,4 +141,3 @@ export async function generateThemesFlow(
 //                 '%) for theme generation.',
 //         );
 //     }
-

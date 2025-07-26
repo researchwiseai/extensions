@@ -36,11 +36,15 @@ export function countWordsFlow(dataRange: string) {
         ui.alert('No text found in selected data range.');
         return;
     }
-    const counts = inputs.map((t) => (String(t).trim().split(/\s+/).filter(Boolean).length));
+    const counts = inputs.map(
+        (t) => String(t).trim().split(/\s+/).filter(Boolean).length,
+    );
 
     const output = ss.insertSheet(`WordCount_${Date.now()}`);
-    output.getRange(1, 1, 1, 2).setValues([[ 'Text', 'Word Count' ]]);
-    output.getRange(2, 1, values.length, 1).setValues(values.map((r) => [r[0]]));
+    output.getRange(1, 1, 1, 2).setValues([['Text', 'Word Count']]);
+    output
+        .getRange(2, 1, values.length, 1)
+        .setValues(values.map((r) => [r[0]]));
 
     positions.forEach((pos, idx) => {
         const rowIdx = pos.row - rangeObj.getRow() + 2;

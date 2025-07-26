@@ -1,7 +1,7 @@
 // Script properties for API and authentication configuration
 export const SCRIPT_PROPS = PropertiesService.getScriptProperties();
 // Base URL for API endpoints (from script property), e.g. "https://dev.core.researchwiseai.com"
-export const API_BASE = SCRIPT_PROPS.getProperty('API_BASE') + '/pulse/v1';
+export const API_BASE = SCRIPT_PROPS.getProperty('API_BASE');
 // Web base URL (used for organization registration link), e.g. "https://dev.researchwiseai.com"
 export const WEB_BASE = SCRIPT_PROPS.getProperty('WEB_BASE');
 // OAuth2 domain, e.g. "wise-dev.eu.auth0.com"

@@ -1,5 +1,12 @@
-import { splitSimilarityMatrix, getThemeSets, ShortTheme } from 'pulse-common/themes';
-import { extractInputsWithHeader, expandWithBlankRows } from 'pulse-common/dataUtils';
+import {
+    splitSimilarityMatrix,
+    getThemeSets,
+    ShortTheme,
+} from 'pulse-common/themes';
+import {
+    extractInputsWithHeader,
+    expandWithBlankRows,
+} from 'pulse-common/dataUtils';
 import { maybeActivateSheet } from './maybeActivateSheet';
 import { feedToast } from './feedToast';
 import { getFeed, updateItem } from 'pulse-common/jobs';
@@ -35,11 +42,15 @@ export async function similarityMatrixThemesFromSet(
     }
 
     const expanded = expandWithBlankRows(inputs, positions);
-    const matrix = await splitSimilarityMatrix(expanded, set.themes as ShortTheme[], {
-        fast: false,
-        normalize: false,
-        onProgress: (m) => feedToast(m),
-    });
+    const matrix = await splitSimilarityMatrix(
+        expanded,
+        set.themes as ShortTheme[],
+        {
+            fast: false,
+            normalize: false,
+            onProgress: (m) => feedToast(m),
+        },
+    );
 
     const sheet = writeMatrix(matrix, expanded, set.themes, header);
     maybeActivateSheet(sheet, startTime);

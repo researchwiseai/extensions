@@ -2,7 +2,10 @@ import { Theme } from 'pulse-common';
 import { themesToRows } from 'pulse-common/dataUtils';
 import { maybeActivateSheet } from './maybeActivateSheet';
 
-export function writeThemes(themes: Theme[], startTime?: number): GoogleAppsScript.Spreadsheet.Sheet {
+export function writeThemes(
+    themes: Theme[],
+    startTime?: number,
+): GoogleAppsScript.Spreadsheet.Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     // Log full themes info to 'Themes' worksheet
     let outputSheet = ss.getSheetByName('Themes');

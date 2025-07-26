@@ -39,7 +39,9 @@ export function splitIntoSentencesFlow(dataRange: string) {
     // @ts-ignore
     const segmenter = new Intl.Segmenter('en', { granularity: 'sentence' });
     const sentences: string[][] = inputs.map((input) =>
-        Array.from(segmenter.segment(input ?? '')).map((s) => s.segment.trim()).filter(Boolean),
+        Array.from(segmenter.segment(input ?? ''))
+            .map((s) => s.segment.trim())
+            .filter(Boolean),
     );
     const max = Math.max(...sentences.map((s) => s.length));
 
@@ -49,7 +51,9 @@ export function splitIntoSentencesFlow(dataRange: string) {
         header.push(`Sentence ${i + 1}`);
     }
     output.getRange(1, 1, 1, header.length).setValues([header]);
-    output.getRange(2, 1, values.length, 1).setValues(values.map((r) => [r[0]]));
+    output
+        .getRange(2, 1, values.length, 1)
+        .setValues(values.map((r) => [r[0]]));
 
     positions.forEach((pos, idx) => {
         const rowIdx = pos.row - rangeObj.getRow() + 2;

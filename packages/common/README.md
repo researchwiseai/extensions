@@ -75,7 +75,7 @@ configureAuth(createAuth0Provider({
 - `storage` – simple key/value interface used by the add-ins.
 - `dataUtils` – conversions between sheet rows and theme objects.
 - `saveThemesToSheet` – helper to create a "Themes" sheet.
-- `jobs` – in-memory job feed for progress updates.
+- `jobs` – in-memory job feed for progress updates; configure the ID generator using `configureJobIdGenerator` (default is `crypto.randomUUID()`).
 - `org` – look up organization IDs by email.
 - `similarity` – helpers for similarity matrices.
 
@@ -99,4 +99,3 @@ configureFetch(gasFetch);
 ```
 
 The rest of the API is the same; see the modules above for details.
-

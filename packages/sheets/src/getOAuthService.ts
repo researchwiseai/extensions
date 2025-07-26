@@ -11,7 +11,9 @@ export function getOAuthService(): GoogleAppsScriptOAuth2.OAuth2Service {
     const props = PropertiesService.getUserProperties();
     const orgId = props.getProperty('ORG_ID');
     if (!orgId) {
-        return { hasAccess: () => false } as GoogleAppsScriptOAuth2.OAuth2Service;
+        return {
+            hasAccess: () => false,
+        } as GoogleAppsScriptOAuth2.OAuth2Service;
     }
     const email = props.getProperty('USER_EMAIL');
     const auth0OrgId = orgId.split('/').pop();

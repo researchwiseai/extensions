@@ -1,13 +1,23 @@
 /// <reference types="google-apps-script" />
 
-import { configureClient, configureFetch, configureSleep, configureStorage, FetchOptions, getThemeSets, saveThemeSet, renameThemeSet, deleteThemeSet } from "pulse-common";
-import { isAuthorized, getAccessToken } from "./auth";
-import { WEB_BASE, API_BASE } from "./config";
+import {
+    configureClient,
+    configureFetch,
+    configureSleep,
+    configureStorage,
+    FetchOptions,
+    getThemeSets,
+    saveThemeSet,
+    renameThemeSet,
+    deleteThemeSet,
+} from 'pulse-common';
+import { isAuthorized, getAccessToken } from './auth';
+import { WEB_BASE, API_BASE } from './config';
 import { configureAuth } from 'pulse-common/auth';
-import { getOAuthService } from "./getOAuthService";
-import { showAllocationModeDialog } from "./showAllocationModeDialog";
-import { showInputRangeDialog } from "./showInputRangeDialog";
-import { generateThemesFlow } from "./generateThemes";
+import { getOAuthService } from './getOAuthService';
+import { showAllocationModeDialog } from './showAllocationModeDialog';
+import { showInputRangeDialog } from './showInputRangeDialog';
+import { generateThemesFlow } from './generateThemes';
 import { splitIntoSentencesFlow } from './splitIntoSentences';
 import { splitIntoTokensFlow } from './splitIntoTokens';
 import { countWordsFlow } from './countWords';
@@ -18,10 +28,10 @@ import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomat
 import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
 import { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet';
 import { allocateThemesFromSheet } from './allocateThemesFromSheet';
-import { getFeed, getItem } from 'pulse-common/jobs';
+import { getFeed, getItem, configureJobIdGenerator } from 'pulse-common/jobs';
 
 // Toggle verbose logging within the add-on
-const DEBUG_LOG = false;
+const DEBUG_LOG = true;
 function debugLog(...args: any[]) {
     if (DEBUG_LOG) {
         console.log(...args);
@@ -51,7 +61,7 @@ configureClient({
     getAccessToken,
 });
 
-configureSleep(async (ms) => Utilities.sleep(ms))
+configureSleep(async (ms) => Utilities.sleep(ms));
 
 configureStorage({
     delete: async (key: string) => {
@@ -69,20 +79,25 @@ configureStorage({
     set: async (key: string, value: any) => {
         const props = PropertiesService.getUserProperties();
         props.setProperty(key, JSON.stringify(value));
-    }
-})
+    },
+});
 
-configureFetch(async (url: string, options: FetchOptions) => {
+// Configure job ID generator for Apps Script environment (Crypto not available)
+configureJobIdGenerator(() => Utilities.getUuid());
+
+configureFetch(async (url: string, options?: FetchOptions) => {
     debugLog('Fetching URL:', url);
     debugLog('Options:', options);
 
     const response = await UrlFetchApp.fetch(url, {
-        payload: options.body,
-        method: options.method,
-        contentType: options.contentType,
+        payload: options?.body,
+        method: options?.method,
+        contentType: options?.contentType,
         headers: {
-            ...options.headers,
-            ...(options.contentType ? { 'Content-Type': options.contentType } : {}),
+            ...options?.headers,
+            ...(options?.contentType
+                ? { 'Content-Type': options.contentType }
+                : {}),
         },
         muteHttpExceptions: true,
     });
@@ -92,7 +107,9 @@ configureFetch(async (url: string, options: FetchOptions) => {
     return {
         ok: response.getResponseCode() === 200,
         status: response.getResponseCode(),
-        statusText: mapStatusToStatusText[response.getResponseCode()] || `Unknown Status: ${response.getResponseCode()}`,
+        statusText:
+            mapStatusToStatusText[response.getResponseCode()] ||
+            `Unknown Status: ${response.getResponseCode()}`,
         text: async () => response.getContentText(),
         json: async () => {
             const content = response.getContentText();
@@ -101,9 +118,9 @@ configureFetch(async (url: string, options: FetchOptions) => {
             } catch (e) {
                 throw new Error(`Failed to parse JSON response: ${content}`);
             }
-        }
-    }
-})
+        },
+    };
+});
 
 /**
  * Runs when the add-on is opened or installed: builds menu based on login state.
@@ -138,17 +155,17 @@ export function onOpen() {
     pulseMenu.addToUi();
 }
 export function clickGenerateThemes() {
-    showInputRangeDialog("generation");
+    showInputRangeDialog('generation');
 }
 
 /**
  * Prompts the user to select the input range for theme allocation.
- * 
+ *
  * Called by FE
- * 
+ *
  */
 export function clickAllocateThemes() {
-    showInputRangeDialog("allocation");
+    showInputRangeDialog('allocation');
 }
 
 export function clickMatrixThemes() {
@@ -217,25 +234,25 @@ export function similarityMatrixThemesFromSetPrompt() {
  */
 export function debounceByArgs<F extends (...args: any[]) => any>(
     fn: F,
-    waitMs: number
+    waitMs: number,
 ): (...args: Parameters<F>) => ReturnType<F> | void {
-    const lastCalled = new Map<string, number>()
+    const lastCalled = new Map<string, number>();
     return (...args: Parameters<F>) => {
-        const key = JSON.stringify(args)
-        const now = Date.now()
-        const prev = lastCalled.get(key) ?? 0
+        const key = JSON.stringify(args);
+        const now = Date.now();
+        const prev = lastCalled.get(key) ?? 0;
         if (now - prev >= waitMs) {
-            lastCalled.set(key, now)
-            return fn(...args)
+            lastCalled.set(key, now);
+            return fn(...args);
         }
-    }
+    };
 }
 
 /**
  * Generates themes for the selected input range.
- * 
+ *
  * Called by FE
- * 
+ *
  * @param {string} dataRange A1 notation of the data range to allocate.
  * @param {string} mode Allocation mode: 'generation' or 'allocation'
  */
@@ -254,7 +271,7 @@ export function themeGenerationRouting(
 
 const debouncedThemeGenerationRouting = debounceByArgs(
     themeGenerationRouting,
-    20000
+    20000,
 );
 
 export function submitSelectedInputRangeForGeneration(
@@ -281,22 +298,16 @@ export function submitSelectedInputRangeForSimilarity(
 
 /**
  * Callback after input range is selected; opens dialog to choose allocation mode.
- * 
+ *
  * Called by FE
- * 
+ *
  * @param {string} dataRange A1 notation of the data range to allocate.
  */
-export function allocateThemesWithRange(
-    dataRange: string,
-    hasHeader = false,
-) {
+export function allocateThemesWithRange(dataRange: string, hasHeader = false) {
     showAllocationModeDialog(dataRange, hasHeader, 'allocate');
 }
 
-export function matrixThemesWithRange(
-    dataRange: string,
-    hasHeader = false,
-) {
+export function matrixThemesWithRange(dataRange: string, hasHeader = false) {
     showAllocationModeDialog(dataRange, hasHeader, 'matrix');
 }
 
@@ -308,13 +319,16 @@ export function similarityMatrixWithRange(
 }
 /**
  * Save a manually created theme set.
- * 
+ *
  * Called by FE
- * 
+ *
  * @param {{name: string, themes: Array<{label: string, rep1: string, rep2: string}>}} data
  * @return {{success: boolean}}
  */
-export async function saveManualThemeSet(data: { name: string; themes: Array<{ label: string; rep1: string; rep2: string; }>; }) {
+export async function saveManualThemeSet(data: {
+    name: string;
+    themes: Array<{ label: string; rep1: string; rep2: string }>;
+}) {
     const themes = data.themes.map(function (th) {
         return {
             label: th.label,
@@ -331,7 +345,7 @@ export async function saveManualThemeSet(data: { name: string; themes: Array<{ l
 }
 /**
  * Runs when the add-on is installed.
- * 
+ *
  * Hook
  */
 export function onInstall() {
@@ -340,9 +354,9 @@ export function onInstall() {
 
 /**
  * Opens the settings sidebar.
- * 
+ *
  * // Called by FE
- * 
+ *
  */
 export function showSettingsSidebar() {
     // Pass webBase to the HTML template for registration links
@@ -358,7 +372,10 @@ export function showFeedSidebar() {
 }
 
 export function getFeedItems() {
-    return getFeed().map((item) => ({ ...item, onClick: Boolean(item.onClick) }));
+    return getFeed().map((item) => ({
+        ...item,
+        onClick: Boolean(item.onClick),
+    }));
 }
 
 export function runFeedOnClick(jobId: string) {
@@ -367,12 +384,12 @@ export function runFeedOnClick(jobId: string) {
 }
 /**
  * Retrieves stored user email and authorization status.
- * 
+ *
  * // Called by FE
- * 
+ *
  * @return {{email: string, isAuthorized: boolean}}
  */
-export function getSettings(): { email: string; isAuthorized: boolean; } {
+export function getSettings(): { email: string; isAuthorized: boolean } {
     const props = PropertiesService.getUserProperties();
     return {
         email: props.getProperty('USER_EMAIL') || '',
@@ -384,7 +401,7 @@ export function getSettings(): { email: string; isAuthorized: boolean; } {
  * Shows a modeless dialog to collect custom theme ranges.
  * @param {string} dataRange A1 notation of the data range to allocate.
  */
-export function showRangeDialog(dataRange: string,  name:string) {
+export function showRangeDialog(dataRange: string, name: string) {
     const template = HtmlService.createTemplateFromFile('RangeDialog');
     template.dataRange = dataRange;
     template.name = name;
@@ -411,28 +428,24 @@ export function getActiveRangeA1Notation(): string {
     return `${sheet.getName()}!${range.getA1Notation()}`;
 }
 
-export {
-    renameThemeSet,
-    deleteThemeSet,
-    getThemeSets,
-}
+export { renameThemeSet, deleteThemeSet, getThemeSets };
 
-export * from './auth'
-export { allocateThemesFromSet } from './allocateThemesFromSet'
-export { allocateAndSaveThemeSet } from './allocateAndSaveThemeSet'
-export { allocateThemesAutomatic } from './allocateThemesAutomatic'
-export { analyzeSentimentFlow } from './analyzeSentiment'
-export { generateThemesFlow } from './generateThemes'
-export { getOAuthService } from './getOAuthService'
-export { saveThemeSet } from 'pulse-common'
-export { updateMenu } from './updateMenu'
-export { splitIntoSentencesFlow } from './splitIntoSentences'
-export { splitIntoTokensFlow } from './splitIntoTokens'
-export { countWordsFlow } from './countWords'
-export { matrixThemesAutomatic } from './matrixThemesAutomatic'
-export { matrixThemesFromSet } from './matrixThemesFromSet'
-export { matrixThemesFromSheet } from './matrixThemesFromSheet'
-export { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic'
-export { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet'
-export { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet'
-export { allocateThemesFromSheet } from './allocateThemesFromSheet'
+export * from './auth';
+export { allocateThemesFromSet } from './allocateThemesFromSet';
+export { allocateAndSaveThemeSet } from './allocateAndSaveThemeSet';
+export { allocateThemesAutomatic } from './allocateThemesAutomatic';
+export { analyzeSentimentFlow } from './analyzeSentiment';
+export { generateThemesFlow } from './generateThemes';
+export { getOAuthService } from './getOAuthService';
+export { saveThemeSet } from 'pulse-common';
+export { updateMenu } from './updateMenu';
+export { splitIntoSentencesFlow } from './splitIntoSentences';
+export { splitIntoTokensFlow } from './splitIntoTokens';
+export { countWordsFlow } from './countWords';
+export { matrixThemesAutomatic } from './matrixThemesAutomatic';
+export { matrixThemesFromSet } from './matrixThemesFromSet';
+export { matrixThemesFromSheet } from './matrixThemesFromSheet';
+export { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic';
+export { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
+export { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet';
+export { allocateThemesFromSheet } from './allocateThemesFromSheet';

@@ -6,7 +6,10 @@ import {
     getAccessToken,
     signOut as commonSignOut,
 } from 'pulse-common/auth';
-import { findOrganization as commonFindOrganization, OrgLookupResult } from 'pulse-common/org';
+import {
+    findOrganization as commonFindOrganization,
+    OrgLookupResult,
+} from 'pulse-common/org';
 
 // Thin Apps Script implementation of the AuthProvider interface
 class AppsScriptAuthProvider implements AuthProvider {
@@ -33,18 +36,20 @@ configureAuth(new AppsScriptAuthProvider());
  * @param {object} request
  * @return {HtmlOutput}
  */
-export function authCallback(request: object): GoogleAppsScript.HTML.HtmlOutput {
-  const service = getOAuthService();
-  const authorized = service.handleCallback(request);
-  if (authorized) {
-    return HtmlService.createHtmlOutput(
-      'Success! You may close this dialog.'
-    );
-  } else {
-    return HtmlService.createHtmlOutput(
-      'Denied. You may close this dialog.'
-    );
-  }
+export function authCallback(
+    request: object,
+): GoogleAppsScript.HTML.HtmlOutput {
+    const service = getOAuthService();
+    const authorized = service.handleCallback(request);
+    if (authorized) {
+        return HtmlService.createHtmlOutput(
+            'Success! You may close this dialog.',
+        );
+    } else {
+        return HtmlService.createHtmlOutput(
+            'Denied. You may close this dialog.',
+        );
+    }
 }
 
 /**
@@ -83,14 +88,16 @@ export function disconnect(): { success: boolean } {
  * @param email The user's email address.
  * @returns OrgLookupResult indicating success, orgId, or notFound.
  */
-export async function findOrganization(email: string): Promise<OrgLookupResult> {
-  const props = PropertiesService.getUserProperties();
-  const result = await commonFindOrganization(ORG_LOOKUP_URL, email);
-  if (result.success && result.orgId) {
-    props.setProperty('USER_EMAIL', email);
-    props.setProperty('ORG_ID', result.orgId);
-  }
-  return result;
+export async function findOrganization(
+    email: string,
+): Promise<OrgLookupResult> {
+    const props = PropertiesService.getUserProperties();
+    const result = await commonFindOrganization(ORG_LOOKUP_URL, email);
+    if (result.success && result.orgId) {
+        props.setProperty('USER_EMAIL', email);
+        props.setProperty('ORG_ID', result.orgId);
+    }
+    return result;
 }
 
 // Re-export token retrieval for consumers
