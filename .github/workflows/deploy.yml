@@ -1,53 +1,55 @@
 name: Deploy Add-ons
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+    contents: read
+    pages: write
+    id-token: write
 
 on:
-  workflow_dispatch:
-  push:
+    workflow_dispatch:
+    push:
 
 jobs:
-  deploy-sheets:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - name: Install dependencies
-        run: bun install
-      - uses: daikikatsuragawa/clasp-action@v1.1.0
-        name: Clasp Action
-        with:
-          command: deploy
-          accessToken: ${{ secrets.CLASP_ACCESS_TOKEN }}
-          scriptId: ${{ secrets.CLASP_SCRIPT_ID }}
-          clientId: ${{ secrets.CLASP_CLIENT_ID }}
-          clientSecret: ${{ secrets.CLASP_CLIENT_SECRET }}
-          idToken: ${{ secrets.CLASP_ID_TOKEN }}
-          refreshToken: ${{ secrets.CLASP_REFRESH_TOKEN }}
-          rootDir: packages/sheets
-          deployId: AKfycbwNwsg8eOA-XHGYv-Ox46rm2mlLrnrwhXq1hH5YXdYxyhLLy3EWaAUAJzVQGF_GxseD-A
-  deploy-excel:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - uses: actions/checkout@v3
-      - uses: oven-sh/setup-bun@v2
-      - name: Install dependencies
-        run: bun install
-      - name: Build Excel Add-in
-        working-directory: packages/excel
-        run: bun run build
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-      - name: Upload Pages Artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: packages/excel/dist
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+    deploy-sheets:
+        runs-on: ubuntu-latest
+        environment: Sheets
+        steps:
+            - uses: actions/checkout@v4
+            - uses: oven-sh/setup-bun@v2
+            - name: Install dependencies
+              run: bun install
+            - uses: daikikatsuragawa/clasp-action@v1.1.0
+              name: Clasp Action
+              with:
+                  command: deploy
+                  accessToken: ${{ secrets.CLASP_ACCESS_TOKEN }}
+                  scriptId: ${{ vars.CLASP_SCRIPT_ID }}
+                  clientId: ${{ vars.CLASP_CLIENT_ID }}
+                  clientSecret: ${{ secrets.CLASP_CLIENT_SECRET }}
+                  idToken: ${{ secrets.CLASP_ID_TOKEN }}
+                  refreshToken: ${{ secrets.CLASP_REFRESH_TOKEN }}
+                  rootDir: packages/sheets
+                  deployId: AKfycbwNwsg8eOA-XHGYv-Ox46rm2mlLrnrwhXq1hH5YXdYxyhLLy3EWaAUAJzVQGF_GxseD-A
+    deploy-excel:
+        runs-on: ubuntu-latest
+        environment: Excel
+        permissions:
+            contents: read
+            pages: write
+            id-token: write
+        steps:
+            - uses: actions/checkout@v3
+            - uses: oven-sh/setup-bun@v2
+            - name: Install dependencies
+              run: bun install
+            - name: Build Excel Add-in
+              working-directory: packages/excel
+              run: bun run build
+            - name: Configure Pages
+              uses: actions/configure-pages@v5
+            - name: Upload Pages Artifact
+              uses: actions/upload-pages-artifact@v3
+              with:
+                  path: packages/excel/dist
+            - name: Deploy to GitHub Pages
+              uses: actions/deploy-pages@v4
