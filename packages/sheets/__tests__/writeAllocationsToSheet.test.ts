@@ -38,5 +38,7 @@ test('writes labels to specified cells and toasts', () => {
   expect(sheetMock.getRange).toHaveBeenCalledWith(3, 3);
   expect(setValueMock).toHaveBeenNthCalledWith(1, 'A');
   expect(setValueMock).toHaveBeenNthCalledWith(2, 'B');
-  expect(toastMock).toHaveBeenCalledWith('Theme allocation complete', 'Pulse');
+  // We have moved from toasts to feed updates for job progress
+  // writeAllocationsToSheet calls feedToast internally, not ss.toast
+  expect((await import('../src/feedToast')).feedToast).toHaveBeenCalledWith('Theme allocation complete');
 });

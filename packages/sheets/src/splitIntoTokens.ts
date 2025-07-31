@@ -36,7 +36,6 @@ export function splitIntoTokensFlow(dataRange: string) {
         ui.alert('No text found in selected data range.');
         return;
     }
-    // @ts-ignore
     const segmenter = new Intl.Segmenter('en', { granularity: 'word' });
     const tokens: string[][] = inputs.map((input) =>
         Array.from(segmenter.segment(input ?? ''))

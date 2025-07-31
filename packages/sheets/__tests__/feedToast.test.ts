@@ -26,7 +26,6 @@ afterEach(() => {
 
 test('updates feed with last item', () => {
   feedToast('hello');
-  const toast = (SpreadsheetApp.getActiveSpreadsheet() as any).toast;
-  expect(toast).toHaveBeenCalledWith('hello', 'Pulse');
+  // We no longer show a Spreadsheet toast; feed is updated instead
   expect(updateItem).toHaveBeenCalledWith({ jobId: '1', message: 'hello' });
 });

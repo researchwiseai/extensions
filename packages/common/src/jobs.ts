@@ -11,6 +11,24 @@ export interface FeedItem {
 }
 
 const feedItems = new Map<string, FeedItem>();
+const PROP_KEY = 'PULSE_FEED_ITEMS';
+let docProps: GoogleAppsScript.Properties.Properties | null = null;
+// Initialize/from DocumentProperties if available
+(function initFeed() {
+    if (typeof PropertiesService !== 'undefined' &&
+        PropertiesService.getDocumentProperties) {
+        docProps = PropertiesService.getDocumentProperties();
+        const stored = docProps.getProperty(PROP_KEY);
+        if (stored) {
+            try {
+                const arr: Omit<FeedItem, 'onClick'>[] = JSON.parse(stored);
+                arr.forEach((it) => feedItems.set(it.jobId, it as FeedItem));
+            } catch (e) {
+                /** ignore invalid stored feed */
+            }
+        }
+    }
+})();
 
 // ID generator for new jobs; defaults to crypto.randomUUID.
 let jobIdGenerator: () => string = () => crypto.randomUUID();
@@ -25,6 +43,9 @@ export function configureJobIdGenerator(fn: () => string) {
 
 export function clear() {
     feedItems.clear();
+    if (docProps) {
+        docProps.deleteProperty(PROP_KEY);
+    }
 }
 
 export function createItem({
@@ -57,6 +78,10 @@ export function createItem({
         onClick,
     };
     feedItems.set(jobId, item);
+    if (docProps) {
+        const arr = Array.from(feedItems.values()).map(({ onClick, ...rest }) => rest);
+        docProps.setProperty(PROP_KEY, JSON.stringify(arr));
+    }
     return item;
 }
 
@@ -108,6 +133,10 @@ export function updateItem({
     item.updatedAt = Date.now();
 
     feedItems.set(jobId, item);
+    if (docProps) {
+        const arr = Array.from(feedItems.values()).map(({ onClick, ...rest }) => rest);
+        docProps.setProperty(PROP_KEY, JSON.stringify(arr));
+    }
     return item;
 }
 
