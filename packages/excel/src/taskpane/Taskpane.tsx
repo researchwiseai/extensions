@@ -1,3 +1,4 @@
+/* global Office, sessionStorage */
 import { useEffect, useState } from 'react';
 import './taskpane.css';
 import { createRoot } from 'react-dom/client';
@@ -12,6 +13,9 @@ import { configureClient } from 'pulse-common/api';
 import { Unauthenticated } from './Unauthenticated';
 import * as Ribbon from '../services/ribbon';
 import { initializeLocalStorage } from '../services/localStorage';
+
+let initialized = false;
+let pendingView: View | null = null;
 
 function checkForLogin(success?: () => void, failure?: () => void) {
     const token = sessionStorage.getItem('pkce_token');
@@ -131,11 +135,22 @@ Office.onReady().then(() => {
 
     const container = document.getElementById('taskpane-root')!;
     createRoot(container).render(<Taskpane api={taskpaneApi} />);
+    initialized = true;
+    document.getElementById('loading-screen')?.remove();
+    if (pendingView) {
+        taskpaneApi.goToView(pendingView);
+        Office.addin.showAsTaskpane();
+        pendingView = null;
+    }
 });
 
 export function openSettingsHandler(event?: unknown) {
-    taskpaneApi.goToView('settings');
     Office.addin.showAsTaskpane();
+    if (!initialized) {
+        pendingView = 'settings';
+    } else {
+        taskpaneApi.goToView('settings');
+    }
     if (canComplete(event)) {
         setTimeout(() => event.completed(), 50);
     }
@@ -155,8 +170,12 @@ function canComplete(event: unknown): event is CanComplete {
 }
 
 export function openFeedHandler(event?: unknown) {
-    taskpaneApi.goToView('feed');
     Office.addin.showAsTaskpane();
+    if (!initialized) {
+        pendingView = 'feed';
+    } else {
+        taskpaneApi.goToView('feed');
+    }
     if (canComplete(event)) {
         setTimeout(() => event.completed(), 50);
     }
