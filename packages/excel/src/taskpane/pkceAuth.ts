@@ -1,3 +1,4 @@
+/* global Office, sessionStorage */
 import { AuthProvider, configureAuth } from 'pulse-common/auth';
 
 import {
