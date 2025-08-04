@@ -6,10 +6,7 @@ import {
     getAccessToken,
     signOut as commonSignOut,
 } from 'pulse-common/auth';
-import {
-    findOrganization as commonFindOrganization,
-    OrgLookupResult,
-} from 'pulse-common/org';
+import { findOrganization, OrgLookupResult } from 'pulse-common/org';
 
 // Thin Apps Script implementation of the AuthProvider interface
 class AppsScriptAuthProvider implements AuthProvider {
@@ -88,11 +85,11 @@ export function disconnect(): { success: boolean } {
  * @param email The user's email address.
  * @returns OrgLookupResult indicating success, orgId, or notFound.
  */
-export async function findOrganization(
+export async function findOrganizationForSheets(
     email: string,
 ): Promise<OrgLookupResult> {
     const props = PropertiesService.getUserProperties();
-    const result = await commonFindOrganization(ORG_LOOKUP_URL, email);
+    const result = await findOrganization(ORG_LOOKUP_URL, email);
     if (result.success && result.orgId) {
         props.setProperty('USER_EMAIL', email);
         props.setProperty('ORG_ID', result.orgId);

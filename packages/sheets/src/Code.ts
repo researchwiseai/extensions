@@ -13,8 +13,6 @@ import {
 } from 'pulse-common';
 import { isAuthorized, getAccessToken } from './auth';
 import { WEB_BASE, API_BASE } from './config';
-import { configureAuth } from 'pulse-common/auth';
-import { getOAuthService } from './getOAuthService';
 import { showAllocationModeDialog } from './showAllocationModeDialog';
 import { showInputRangeDialog } from './showInputRangeDialog';
 import { generateThemesFlow } from './generateThemes';
@@ -23,11 +21,8 @@ import { splitIntoTokensFlow } from './splitIntoTokens';
 import { countWordsFlow } from './countWords';
 import { matrixThemesAutomatic } from './matrixThemesAutomatic';
 import { matrixThemesFromSet } from './matrixThemesFromSet';
-import { matrixThemesFromSheet } from './matrixThemesFromSheet';
 import { similarityMatrixThemesAutomatic } from './similarityMatrixThemesAutomatic';
 import { similarityMatrixThemesFromSet } from './similarityMatrixThemesFromSet';
-import { similarityMatrixThemesFromSheet } from './similarityMatrixThemesFromSheet';
-import { allocateThemesFromSheet } from './allocateThemesFromSheet';
 import { getFeed, getItem, configureJobIdGenerator } from 'pulse-common/jobs';
 
 // Toggle verbose logging within the add-on
