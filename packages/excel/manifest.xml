@@ -293,7 +293,7 @@
                                     <bt:Image size="80"
                                               resid="Icon.80x80" />
                                 </Icon>
-                                <Control xsi:type="Button"
+                                <!-- <Control xsi:type="Button"
                                          id="FeedButton">
                                     <Label resid="FeedButton.Label" />
                                     <Supertip>
@@ -311,7 +311,7 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>openFeedHandler</FunctionName>
                                     </Action>
-                                </Control>
+                                </Control> -->
                                 <Control xsi:type="Button"
                                          id="HomePulseStartButton">
                                     <!-- <OverriddenByRibbonApi>true</OverriddenByRibbonApi> -->
@@ -328,8 +328,9 @@
                                         <bt:Image size="80"
                                                   resid="Icon.80x80" />
                                     </Icon>
-                                    <Action xsi:type="ExecuteFunction">
-                                        <FunctionName>openSettingsHandler</FunctionName>
+                                    <Action xsi:type="ShowTaskpane">
+                                        <TaskpaneId>ButtonId1</TaskpaneId>
+                                        <SourceLocation resid="SharedRuntime.Url" />
                                     </Action>
                                 </Control>
                             </Group>

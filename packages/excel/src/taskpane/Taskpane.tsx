@@ -73,11 +73,8 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
 
     return (
         <>
-            {view === 'feed' ? (
-                <Feed api={api} />
-            ) : (
-                <Settings api={api} setEmail={setEmail} />
-            )}
+            <Settings api={api} setEmail={setEmail} />
+            <Feed api={api} />
         </>
     );
 }

@@ -39,7 +39,6 @@ export function Feed({ api }: Props) {
         return () => clearInterval(interval);
     }, []);
 
-
     const getStatusColor = (status: FeedItem['status']) => {
         switch (status) {
             case 'completed':
@@ -56,8 +55,8 @@ export function Feed({ api }: Props) {
     };
 
     return (
-        <div className="bg-[#f3f2f1] h-full">
-            <div className="p-5 w-full">
+        <div className="bg-[#f3f2f1]">
+            <div className="w-full">
                 <h2 className="ms-font-su">Feed</h2>
                 <div className="space-y-4">
                     {feed.map((item) => {
