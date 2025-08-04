@@ -145,15 +145,18 @@ Office.onReady().then(() => {
 });
 
 export function openSettingsHandler(event?: unknown) {
-    Office.addin.showAsTaskpane();
-    if (!initialized) {
-        pendingView = 'settings';
-    } else {
-        taskpaneApi.goToView('settings');
-    }
-    if (canComplete(event)) {
-        setTimeout(() => event.completed(), 50);
-    }
+    Office.onReady().then(() => {
+        Office.addin.showAsTaskpane().then(() => {
+            if (!initialized) {
+                pendingView = 'settings';
+            } else {
+                taskpaneApi.goToView('settings');
+            }
+            if (canComplete(event)) {
+                setTimeout(() => event.completed(), 50);
+            }
+        });
+    });
 }
 Office.actions.associate('openSettingsHandler', openSettingsHandler);
 
