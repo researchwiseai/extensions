@@ -5,6 +5,7 @@ import {
     DefaultButton,
     PrimaryButton,
     IconButton,
+    Label,
 } from '@fluentui/react';
 import { ShortTheme, ThemeSet } from 'pulse-common/themes';
 import { Theme } from 'pulse-common/api';
@@ -22,7 +23,9 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
 }) => {
     const [name, setName] = useState(initialData?.name || '');
     const [themes, setThemes] = useState<ShortTheme[]>(
-        initialData?.themes || [{ label: '', representatives: ['', ''] }],
+        initialData?.themes?.length
+            ? initialData.themes
+            : [{ label: '', representatives: ['', ''] }],
     );
 
     const handleNameChange = (_: any, newValue?: string) => {
@@ -30,20 +33,21 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
     };
 
     const handleThemeChange =
-        (index: number, field: keyof Theme, fieldIndex?: number) =>
+        (themeIndex: number, field: keyof ShortTheme, repIndex?: number) =>
         (_: any, newValue?: string) => {
-            const updated = [...themes];
-            if (
-                typeof fieldIndex === 'number' &&
-                Array.isArray(updated[index][field])
-            ) {
-                const fieldArr = [...updated[index][field]];
-                fieldArr[fieldIndex] = newValue || '';
-                updated[index] = { ...updated[index], [field]: fieldArr };
-            } else {
-                updated[index] = { ...updated[index], [field]: newValue || '' };
+            const updatedThemes = [...themes];
+            const themeToUpdate = { ...updatedThemes[themeIndex] };
+
+            if (field === 'representatives' && typeof repIndex === 'number') {
+                const newReps = [...themeToUpdate.representatives];
+                newReps[repIndex] = newValue || '';
+                themeToUpdate.representatives = newReps;
+            } else if (field === 'label') {
+                themeToUpdate.label = newValue || '';
             }
-            setThemes(updated);
+
+            updatedThemes[themeIndex] = themeToUpdate;
+            setThemes(updatedThemes);
         };
 
     const addTheme = () => {
@@ -54,6 +58,24 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
         const updated = [...themes];
         updated.splice(index, 1);
         setThemes(updated);
+    };
+
+    const addRepresentative = (themeIndex: number) => {
+        const updatedThemes = [...themes];
+        const theme = updatedThemes[themeIndex];
+        if (theme.representatives.length < 10) {
+            theme.representatives.push('');
+            setThemes(updatedThemes);
+        }
+    };
+
+    const removeRepresentative = (themeIndex: number, repIndex: number) => {
+        const updatedThemes = [...themes];
+        const theme = updatedThemes[themeIndex];
+        if (theme.representatives.length > 2) {
+            theme.representatives.splice(repIndex, 1);
+            setThemes(updatedThemes);
+        }
     };
 
     const handleSubmit = () => {
@@ -68,41 +90,72 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                 onChange={handleNameChange}
                 required
             />
-            <Stack tokens={{ childrenGap: 8 }}>
-                {themes.map((theme, index) => (
+            <Stack tokens={{ childrenGap: 24 }}>
+                {themes.map((theme, themeIndex) => (
                     <Stack
-                        horizontal
+                        key={themeIndex}
                         tokens={{ childrenGap: 8 }}
-                        verticalAlign="end"
-                        key={index}
+                        styles={{
+                            root: {
+                                border: '1px solid #ccc',
+                                padding: 12,
+                                position: 'relative',
+                            },
+                        }}
                     >
-                        <TextField
-                            label="Label"
-                            value={theme.label}
-                            onChange={handleThemeChange(index, 'label')}
-                        />
-                        <TextField
-                            label="Example 1"
-                            value={theme.representatives[0]}
-                            onChange={handleThemeChange(
-                                index,
-                                'representatives',
-                                0,
-                            )}
-                        />
-                        <TextField
-                            label="Example 2"
-                            value={theme.representatives[1]}
-                            onChange={handleThemeChange(
-                                index,
-                                'representatives',
-                                1,
-                            )}
-                        />
                         <IconButton
                             iconProps={{ iconName: 'Delete' }}
                             ariaLabel="Remove theme"
-                            onClick={() => removeTheme(index)}
+                            onClick={() => removeTheme(themeIndex)}
+                            styles={{
+                                root: {
+                                    position: 'absolute',
+                                    top: 0,
+                                    right: 0,
+                                },
+                            }}
+                        />
+                        <TextField
+                            label="Theme Label"
+                            value={theme.label}
+                            onChange={handleThemeChange(themeIndex, 'label')}
+                        />
+                        <Label>Examples</Label>
+                        {theme.representatives.map((rep, repIndex) => (
+                            <Stack
+                                horizontal
+                                key={repIndex}
+                                tokens={{ childrenGap: 8 }}
+                                verticalAlign="end"
+                            >
+                                <Stack.Item grow>
+                                    <TextField
+                                        label={`Example ${repIndex + 1}`}
+                                        value={rep}
+                                        onChange={handleThemeChange(
+                                            themeIndex,
+                                            'representatives',
+                                            repIndex,
+                                        )}
+                                    />
+                                </Stack.Item>
+                                <IconButton
+                                    iconProps={{ iconName: 'Delete' }}
+                                    ariaLabel="Remove example"
+                                    onClick={() =>
+                                        removeRepresentative(
+                                            themeIndex,
+                                            repIndex,
+                                        )
+                                    }
+                                    disabled={theme.representatives.length <= 2}
+                                />
+                            </Stack>
+                        ))}
+                        <DefaultButton
+                            text="Add Example"
+                            onClick={() => addRepresentative(themeIndex)}
+                            disabled={theme.representatives.length >= 10}
                         />
                     </Stack>
                 ))}

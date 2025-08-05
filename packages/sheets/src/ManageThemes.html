@@ -104,8 +104,16 @@
                     <thead>
                         <tr>
                             <th>Label</th>
-                            <th>Example 1</th>
-                            <th>Example 2</th>
+                            <th>Representative 1</th>
+                            <th>Representative 2</th>
+                            <th>Representative 3</th>
+                            <th>Representative 4</th>
+                            <th>Representative 5</th>
+                            <th>Representative 6</th>
+                            <th>Representative 7</th>
+                            <th>Representative 8</th>
+                            <th>Representative 9</th>
+                            <th>Representative 10</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -206,11 +214,12 @@
             function addRow() {
               var tbody = document.getElementById('themesBody');
               var tr = document.createElement('tr');
-              tr.innerHTML =
-                '<td><input type="text" class="label-input" required></td>' +
-                '<td><input type="text" class="rep1-input" required></td>' +
-                '<td><input type="text" class="rep2-input" required></td>' +
-                '<td><a href="#" onclick="this.closest(\'tr\').remove();return false;" title="Remove"><i class="material-icons">close</i></a></td>';
+              var html = '<td><input type="text" class="label-input" required></td>';
+              for (var i = 1; i <= 10; i++) {
+                html += '<td><input type="text" class="rep' + i + '-input"' + (i <= 2 ? ' required' : '') + '></td>';
+              }
+              html += '<td><a href="#" onclick="this.closest(\'tr\').remove();return false;" title="Remove"><i class="material-icons">close</i></a></td>';
+              tr.innerHTML = html;
               tbody.appendChild(tr);
             }
             function submitNew() {
@@ -220,10 +229,12 @@
               var themes = [];
               rows.forEach(function(r) {
                 var lbl = r.querySelector('.label-input').value.trim();
-                var ex1 = r.querySelector('.rep1-input').value.trim();
-                var ex2 = r.querySelector('.rep2-input').value.trim();
-                if (lbl && ex1 && ex2) {
-                  themes.push({label: lbl, rep1: ex1, rep2: ex2});
+                var theme = { label: lbl };
+                for (var i = 1; i <= 10; i++) {
+                  theme['rep' + i] = r.querySelector('.rep' + i + '-input').value.trim();
+                }
+                if (lbl && theme.rep1 && theme.rep2) {
+                  themes.push(theme);
                 }
               });
               if (themes.length === 0) { M.toast({html: 'Add at least one complete theme.'}); return; }

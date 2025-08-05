@@ -69,12 +69,16 @@ import type { Theme } from './apiClient';
  * Convert an array of Theme objects to a 2D row representation.
  */
 export function themesToRows(themes: Theme[]): string[][] {
-    return themes.map((t) => [
-        t.label ?? '',
-        t.shortLabel ?? '',
-        t.description ?? '',
-        ...(t.representatives ?? []),
-    ]);
+    return themes.map((t) => {
+        const reps = t.representatives ?? [];
+        const padded = reps.concat(Array(Math.max(0, 10 - reps.length)).fill('')).slice(0, 10);
+        return [
+            t.label ?? '',
+            t.shortLabel ?? '',
+            t.description ?? '',
+            ...padded,
+        ];
+    });
 }
 
 /**
@@ -83,7 +87,8 @@ export function themesToRows(themes: Theme[]): string[][] {
 export function rowsToThemes(rows: string[][]): Theme[] {
     return rows
         .map((row) => {
-            const reps = [row[3], row[4]]
+            const reps = row
+                .slice(3, 13)
                 .filter((r) => r != null && r !== '')
                 .map((r) => String(r));
             return {

@@ -24,18 +24,18 @@ export async function writeThemesToSheet(
             }
         },
         write(s, range, values) {
-            if (range === 'A1:E1') {
-                s.getRange(1, 1, 1, 5).setValues(values);
-            } else if (range.startsWith('A2:E')) {
-                const end = Number(range.slice(4));
-                const rows = end - 1;
-                const target = s.getRange(2, 1, rows, 5);
-                if (values.length > 0) {
-                    target.setValues(values);
-                } else {
-                    target.clear();
-                }
+        if (range === 'A1:M1') {
+            s.getRange(1, 1, 1, 13).setValues(values);
+        } else if (range.startsWith('A2:M')) {
+            const end = Number(range.slice(4));
+            const rows = end - 1;
+            const target = s.getRange(2, 1, rows, 13);
+            if (values.length > 0) {
+                target.setValues(values);
+            } else {
+                target.clear();
             }
+        }
         },
     });
 

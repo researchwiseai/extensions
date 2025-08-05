@@ -38,13 +38,27 @@ test('inserts sheet and writes headers and rows', async () => {
 
   expect(ssMock.insertSheet).toHaveBeenCalledWith('Themes');
   expect(sheetMock.clear).not.toHaveBeenCalled();
-  expect(sheetMock.getRange).toHaveBeenCalledWith(1, 1, 1, 5);
+  expect(sheetMock.getRange).toHaveBeenCalledWith(1, 1, 1, 13);
   expect(headerRangeMock.setValues).toHaveBeenCalledWith([
-    ['Label', 'Short Label', 'Description', 'Representative 1', 'Representative 2'],
+    [
+      'Label',
+      'Short Label',
+      'Description',
+      'Representative 1',
+      'Representative 2',
+      'Representative 3',
+      'Representative 4',
+      'Representative 5',
+      'Representative 6',
+      'Representative 7',
+      'Representative 8',
+      'Representative 9',
+      'Representative 10',
+    ],
   ]);
-  expect(sheetMock.getRange).toHaveBeenCalledWith(2, 1, 1, 5);
+  expect(sheetMock.getRange).toHaveBeenCalledWith(2, 1, 1, 13);
   expect(dataRangeMock.setValues).toHaveBeenCalledWith([
-    ['L', 'SL', 'D', 'r1', 'r2'],
+    ['L', 'SL', 'D', 'r1', 'r2', '', '', '', '', '', '', '', ''],
   ]);
 });
 

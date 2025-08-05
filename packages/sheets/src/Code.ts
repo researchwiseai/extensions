@@ -322,12 +322,16 @@ export function similarityMatrixWithRange(
  */
 export async function saveManualThemeSet(data: {
     name: string;
-    themes: Array<{ label: string; rep1: string; rep2: string }>;
+    themes: Array<{ label: string; rep1: string; rep2: string; rep3?: string; rep4?: string; rep5?: string; rep6?: string; rep7?: string; rep8?: string; rep9?: string; rep10?: string }>;
 }) {
     const themes = data.themes.map(function (th) {
+        const reps = [];
+        for (let i = 1; i <= 10; i++) {
+            reps.push((th['rep' + i] as string) || '');
+        }
         return {
             label: th.label,
-            representatives: [th.rep1 || '', th.rep2 || ''],
+            representatives: reps,
         };
     });
     try {

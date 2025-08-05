@@ -33,7 +33,7 @@ info:
           • `shortLabel` - a concise (2-4 word) name for dashboards or charts.
           • `label` - a slightly longer descriptive title.
           • `description` - 1-2 sentences summarising the common idea captured by the theme.
-          • `representatives` - exactly two representative input strings for each theme.
+          • `representatives` - two to ten representative input strings for each theme.
 
         Callers may optionally specify `minThemes`, `maxThemes`, and a free-text
         `context` string to steer clustering (e.g., "focus on UX issues").
@@ -460,9 +460,9 @@ components:
                     type: string
                 representatives:
                     type: array
-                    description: Two representative input strings for the theme.
+                    description: Two to ten representative input strings for the theme.
                     minItems: 2
-                    maxItems: 2
+                    maxItems: 10
                     items:
                         type: string
             required: [shortLabel, label, description, representatives]

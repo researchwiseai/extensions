@@ -66,8 +66,36 @@ describe('theme row mapping', () => {
     ];
     const rows = themesToRows(themes);
     expect(rows).toEqual([
-      ['L1', 'S1', 'D1', 'r1a', 'r1b'],
-      ['L2', 'S2', '', '', '']
+      [
+        'L1',
+        'S1',
+        'D1',
+        'r1a',
+        'r1b',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ],
+      [
+        'L2',
+        'S2',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        '',
+        ''
+      ]
     ]);
     const roundTrip = rowsToThemes(rows);
     expect(roundTrip).toEqual(themes);
