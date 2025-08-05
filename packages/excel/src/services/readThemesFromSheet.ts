@@ -8,8 +8,7 @@ import { ShortTheme, Theme } from 'pulse-common';
  * - A: Label
  * - B: Short Label
  * - C: Description
- * - D: Representative 1
- * - E: Representative 2
+ * - D onwards: Representatives (from 2 to 10)
  *
  * It skips the header row and constructs an array of partial Theme objects.
  * If the sheet does not exist or is empty, it throws an error.
@@ -44,14 +43,14 @@ export async function readThemesFromSheet(
                 throw new Error(`Sheet "${sheetName}" has no data rows.`);
             }
 
-            // Check all rows and all five columns for strings
+            // Check all rows for at least 5 columns with string data for the main fields
             const allRowsValid = dataRows.every(
                 (row) =>
                     typeof row[0] === 'string' &&
                     typeof row[1] === 'string' &&
                     typeof row[2] === 'string' &&
                     typeof row[3] === 'string' &&
-                    (typeof row[4] === 'string' || row[4] == null),
+                    typeof row[4] === 'string',
             );
 
             if (!allRowsValid) {
@@ -70,8 +69,9 @@ export async function readThemesFromSheet(
 
             const themes: Theme[] = dataRows
                 .map((row) => {
-                    // Representatives are in columns D and E (indices 3 and 4)
-                    const representatives = [row[3], row[4]]
+                    // Representatives start from column D (index 3)
+                    const representatives = row
+                        .slice(3)
                         .filter((rep) => rep && String(rep).trim())
                         .map((rep) => String(rep).trim());
 

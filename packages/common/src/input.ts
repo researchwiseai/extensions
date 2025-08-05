@@ -53,7 +53,26 @@ export function sampleInputs<T>(arr: T[], max: number): T[] {
         const j = Math.floor(Math.random() * (i + 1));
         [copy[i], copy[j]] = [copy[j], copy[i]];
     }
-    return copy.slice(0, max);
+
+    const meanLengthInChars =
+        copy.reduce((sum, item) => sum + String(item).length, 0) / copy.length;
+    const stddevLengthInChars = Math.sqrt(
+        copy.reduce(
+            (sum, item) =>
+                sum + Math.pow(String(item).length - meanLengthInChars, 2),
+            0,
+        ) / copy.length,
+    );
+
+    return copy
+        .filter((item) => {
+            const length = String(item).length;
+            return (
+                length >= meanLengthInChars - stddevLengthInChars &&
+                length <= meanLengthInChars + stddevLengthInChars
+            );
+        })
+        .slice(0, max);
 }
 
 /**

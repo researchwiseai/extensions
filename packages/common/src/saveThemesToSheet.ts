@@ -5,7 +5,11 @@ export interface SaveThemesAdapter<SheetLike = any> {
     themes: Theme[];
     addSheet(name: string): SheetLike | Promise<SheetLike>;
     clearSheet(sheet: SheetLike): void | Promise<void>;
-    write(sheet: SheetLike, range: string, values: string[][]): void | Promise<void>;
+    write(
+        sheet: SheetLike,
+        range: string,
+        values: string[][],
+    ): void | Promise<void>;
 }
 
 export async function saveThemesToSheet<SheetLike>(
@@ -15,18 +19,21 @@ export async function saveThemesToSheet<SheetLike>(
     const sheet = await addSheet('Themes');
     await clearSheet(sheet);
 
+    const representativeHeaders = Array.from(
+        { length: 10 },
+        (_, i) => `Representative ${i + 1}`,
+    );
     const headers = [
         'Label',
         'Short Label',
         'Description',
-        'Representative 1',
-        'Representative 2',
+        ...representativeHeaders,
     ];
-    await write(sheet, 'A1:E1', [headers]);
+    await write(sheet, 'A1:M1', [headers]);
 
     const rows = themesToRows(themes);
     const end = rows.length + 1;
-    const range = `A2:E${end}`;
+    const range = `A2:M${end}`;
     await write(sheet, range, rows);
 
     return sheet;

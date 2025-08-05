@@ -151,7 +151,7 @@ export async function allocateThemes<T extends ShortTheme>(
 }
 
 function autoThreshold(matrix: number[][]) {
-    return 0.6;
+    return 0.5;
     // const maxMax = 0.707;
 
     // // Find the maximum per column and then minimum of those

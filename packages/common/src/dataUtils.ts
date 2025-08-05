@@ -73,8 +73,7 @@ export function themesToRows(themes: Theme[]): string[][] {
         t.label ?? '',
         t.shortLabel ?? '',
         t.description ?? '',
-        t.representatives[0] ?? '',
-        t.representatives[1] ?? '',
+        ...(t.representatives ?? []),
     ]);
 }
 
