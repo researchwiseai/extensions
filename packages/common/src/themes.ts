@@ -230,13 +230,18 @@ interface SplitSimilarityMatrixOptions extends AllocateThemeOptions {
 
 export async function splitSimilarityMatrix(
     inputs: string[],
-    themes: ShortTheme[],
+    themes: ShortTheme[] | Theme[],
     options?: SplitSimilarityMatrixOptions,
 ): Promise<number[][]> {
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) => t.representatives.join('\n')),
+        themes.map((t) =>
+            [
+                'description' in t ? t.description : t.label,
+                ...t.representatives,
+            ].join('\n'),
+        ),
         {
             ...options,
             split: {
