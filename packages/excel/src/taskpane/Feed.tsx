@@ -55,7 +55,7 @@ export function Feed({ api }: Props) {
     };
 
     return (
-        <div className="bg-[#f3f2f1]">
+        <div className="bg-[#f3f2f1] m-5">
             <div className="w-full">
                 <h2 className="ms-font-su">Feed</h2>
                 <div className="space-y-4">

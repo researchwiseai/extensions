@@ -25,8 +25,8 @@ export function Settings({ setEmail }: Props) {
     };
 
     return (
-        <div className="bg-[#f3f2f1] h-full">
-            <header className="flex flex-row justify-between mt-5 mb-10 mx-5">
+        <div className="bg-[#f3f2f1]">
+            <header className="flex flex-row justify-between m-5">
                 <div id="user-in">
                     <Text>{email}</Text>
                 </div>
