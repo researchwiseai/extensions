@@ -1,5 +1,6 @@
 import { compareSimilarity, Theme } from './apiClient';
 import { topN } from './similarity';
+import { splitTextIntoClauses } from './split';
 import { storage } from './storage';
 
 export type ShortTheme = Omit<Theme, 'description' | 'shortLabel'>;
@@ -111,24 +112,24 @@ interface AllocateThemeOptions {
  * @param themes The themes to allocate to
  * @returns A list of objects containing the theme and the score
  */
-export async function allocateThemes<T extends ShortTheme>(
+export async function allocateThemes<T extends ShortTheme | Theme>(
     inputs: string[],
     themes: T[],
     options?: AllocateThemeOptions,
 ): Promise<Array<{ theme: T; score: number; belowThreshold: boolean }>> {
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((theme) => theme.representatives.join('\n')),
+        themes.map((theme) =>
+            'shortLabel' in theme ? theme.shortLabel : theme.label,
+        ),
         {
             ...options,
             split: {
                 set_a: {
-                    unit: 'sentence',
-                    agg: 'max',
-                },
-                set_b: {
-                    unit: 'newline',
-                    agg: 'mean',
+                    unit: 'word',
+                    agg: 'top3',
+                    window_size: 4,
+                    stride_size: 1,
                 },
             },
         },
@@ -151,7 +152,7 @@ export async function allocateThemes<T extends ShortTheme>(
 }
 
 function autoThreshold(matrix: number[][]) {
-    return 0.5;
+    return 0.4;
     // const maxMax = 0.707;
 
     // // Find the maximum per column and then minimum of those
@@ -181,14 +182,24 @@ interface AllocateThemesBinaryOptions extends AllocateThemeOptions {
  */
 export async function allocateThemesBinary(
     inputs: string[],
-    themes: ShortTheme[],
+    themes: (ShortTheme | Theme)[],
     options?: AllocateThemesBinaryOptions,
 ): Promise<boolean[][]> {
     let { threshold, ...rest } = options ?? {};
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) => `${t.label}: - ${t.representatives.join(', ')}`),
-        rest,
+        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
+        {
+            ...rest,
+            split: {
+                set_a: {
+                    unit: 'word',
+                    agg: 'top3',
+                    window_size: 4,
+                    stride_size: 1,
+                },
+            },
+        },
     );
 
     if (threshold === undefined) {
@@ -212,12 +223,12 @@ export async function multiCode(
 
 export async function similarityMatrix(
     inputs: string[],
-    themes: ShortTheme[],
+    themes: (ShortTheme | Theme)[],
     options?: AllocateThemesBinaryOptions,
 ): Promise<number[][]> {
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) => `${t.label}: - ${t.representatives.join(', ')}`),
+        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
         options,
     );
 
@@ -236,17 +247,17 @@ export async function splitSimilarityMatrix(
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) =>
-            [
-                'description' in t ? t.description : t.label,
-                ...t.representatives,
-            ].join('\n'),
-        ),
+        // themes.map((t) => t.label),
+        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
         {
             ...options,
             split: {
-                set_a: { unit: 'sentence', agg: 'max' },
-                set_b: { unit: 'newline', agg: 'mean' },
+                set_a: {
+                    unit: 'word',
+                    agg: 'top3',
+                    window_size: 4,
+                    stride_size: 1,
+                },
             },
         },
     );

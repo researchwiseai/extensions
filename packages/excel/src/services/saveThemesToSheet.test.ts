@@ -11,10 +11,21 @@ const mockExcel = {
     },
 };
 
-// @ts-expect-error - Mocking the global Excel object
+// @ts-ignore - ensure global Excel matches mock interface
 global.Excel = mockExcel;
 
 describe('saveThemesToSheet', () => {
+    // Header includes Label, Short Label, Description, and up to 10 representative columns
+    const MAX_REPRESENTATIVES = 10;
+    const expectedHeaders = [
+        'Label',
+        'Short Label',
+        'Description',
+        ...Array.from({ length: MAX_REPRESENTATIVES }, (_, i) => `Representative ${i + 1}`),
+    ];
+    const lastCol = String.fromCharCode('A'.charCodeAt(0) + expectedHeaders.length - 1);
+    const headerRangeStr = `A1:${lastCol}1`;
+
     let mockContext: any;
     let mockWorksheet: any;
     let mockHeaderRange: any;
@@ -60,11 +71,9 @@ describe('saveThemesToSheet', () => {
         mockDataRange = { values: undefined, format: mockFormat };
         mockUsedRange = { clear: jest.fn() };
         mockWorksheet = {
-            getRange: jest
-                .fn()
-                .mockImplementation((address: string) =>
-                    address === 'A1:E1' ? mockHeaderRange : mockDataRange,
-                ),
+            getRange: jest.fn().mockImplementation((address: string) =>
+                address === headerRangeStr ? mockHeaderRange : mockDataRange,
+            ),
             getUsedRange: jest.fn().mockReturnValue(mockUsedRange),
         };
         mockContext = {
@@ -88,16 +97,9 @@ describe('saveThemesToSheet', () => {
         expect(mockUsedRange.clear).not.toHaveBeenCalled();
 
         // Verify header creation and formatting
-        expect(mockWorksheet.getRange).toHaveBeenCalledWith('A1:E1');
-        expect(mockHeaderRange.values).toEqual([
-            [
-                'Label',
-                'Short Label',
-                'Description',
-                'Representative 1',
-                'Representative 2',
-            ],
-        ]);
+        // Verify header creation and formatting
+        expect(mockWorksheet.getRange).toHaveBeenCalledWith(headerRangeStr);
+        expect(mockHeaderRange.values).toEqual([expectedHeaders]);
         expect(mockFormat.fill.color).toBe('#D9EAD3');
         expect(mockFormat.font.bold).toBe(true);
         expect(mockFormat.horizontalAlignment).toBe(
@@ -107,24 +109,21 @@ describe('saveThemesToSheet', () => {
         expect(mockBorderItem.style).toBe(Excel.BorderLineStyle.double);
 
         // Verify data population
-        const expectedDataRange = `A2:E${mockThemes.length + 1}`;
+        const expectedDataRange = `A2:${lastCol}${mockThemes.length + 1}`;
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(expectedDataRange);
-        expect(mockDataRange.values).toEqual([
-            [
-                'Customer Service Quality',
-                'Service',
-                'Feedback related to the quality of customer service.',
-                'Great support',
-                'Helpful staff',
-            ],
-            [
-                'Product Features',
-                'Features',
-                'Comments on specific product features.',
-                'Needs more options',
-                'Love the new update',
-            ],
-        ]);
+        // Build expected data rows padded to match header columns
+        const expectedDataRows = mockThemes.map((theme) => {
+            const row = [
+                theme.label,
+                theme.shortLabel,
+                theme.description,
+                ...theme.representatives,
+            ];
+            // pad remaining columns with empty strings
+            row.push(...Array(expectedHeaders.length - row.length).fill(''));
+            return row;
+        });
+        expect(mockDataRange.values).toEqual(expectedDataRows);
 
         // Verify autofit and sync calls
         expect(mockFormat.autofitColumns).toHaveBeenCalledTimes(2);
@@ -149,7 +148,7 @@ describe('saveThemesToSheet', () => {
         expect(mockUsedRange.clear).toHaveBeenCalled();
 
         // Verify data population (same as the first test)
-        const expectedDataRange = `A2:E${mockThemes.length + 1}`;
+        const expectedDataRange = `A2:${lastCol}${mockThemes.length + 1}`;
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(expectedDataRange);
         expect(mockDataRange.values).not.toBeNull();
 
@@ -164,19 +163,11 @@ describe('saveThemesToSheet', () => {
         );
 
         // Headers should still be written
-        expect(mockWorksheet.getRange).toHaveBeenCalledWith('A1:E1');
-        expect(mockHeaderRange.values).toEqual([
-            [
-                'Label',
-                'Short Label',
-                'Description',
-                'Representative 1',
-                'Representative 2',
-            ],
-        ]);
+        expect(mockWorksheet.getRange).toHaveBeenCalledWith(headerRangeStr);
+        expect(mockHeaderRange.values).toEqual([expectedHeaders]);
 
         // Data range should be called with an empty array
-        expect(mockWorksheet.getRange).toHaveBeenCalledWith('A2:E1');
+        expect(mockWorksheet.getRange).toHaveBeenCalledWith(`A2:${lastCol}1`);
         expect(mockDataRange.values).toEqual([]);
 
         expect(mockContext.sync).toHaveBeenCalledTimes(3);

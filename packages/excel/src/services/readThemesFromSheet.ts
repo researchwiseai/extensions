@@ -44,13 +44,13 @@ export async function readThemesFromSheet(
             }
 
             // Check all rows for at least 5 columns with string data for the main fields
+            // Validate main fields: Label, Short Label, Description, and first Representative
             const allRowsValid = dataRows.every(
                 (row) =>
                     typeof row[0] === 'string' &&
                     typeof row[1] === 'string' &&
                     typeof row[2] === 'string' &&
-                    typeof row[3] === 'string' &&
-                    typeof row[4] === 'string',
+                    typeof row[3] === 'string',
             );
 
             if (!allRowsValid) {

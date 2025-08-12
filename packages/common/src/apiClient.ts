@@ -350,15 +350,19 @@ export async function generateThemes(
  */
 export { allocateThemes } from './themes';
 
+type Unit = 'sentence' | 'newline' | 'word';
+type Agg = 'mean' | 'max' | 'top2' | 'top3';
+
+interface SetSplitOptions {
+    unit: Unit;
+    agg: Agg;
+    window_size?: number;
+    stride_size?: number;
+}
+
 type Split = {
-    set_a?: {
-        unit: 'sentence' | 'newline';
-        agg: 'mean' | 'max';
-    };
-    set_b?: {
-        unit: 'sentence' | 'newline';
-        agg: 'mean' | 'max';
-    };
+    set_a?: SetSplitOptions;
+    set_b?: SetSplitOptions;
 };
 
 interface CompareSimilarityOptions {

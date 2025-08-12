@@ -19,7 +19,8 @@
         "./themes": "./src/themes.ts",
         "./dataUtils": "./src/dataUtils.ts",
         "./output": "./src/output.ts",
-        "./saveThemesToSheet": "./src/saveThemesToSheet.ts"
+        "./saveThemesToSheet": "./src/saveThemesToSheet.ts",
+        "./split": "./src/split.ts"
     },
     "scripts": {
         "build": "tsc -b",

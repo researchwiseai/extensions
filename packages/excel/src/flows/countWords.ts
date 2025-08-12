@@ -10,12 +10,9 @@ export async function countWordsFlow(
     context: Excel.RequestContext,
     range: string,
 ): Promise<void> {
-    console.log('countWordsFlow', range);
     const startTime = Date.now();
-    const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { inputs, positions, sheet, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
 
     const nlp = winkNLP(model);
     const wordCounts: number[] = inputs.map((input) => {
@@ -36,7 +33,9 @@ export async function countWordsFlow(
     originalRange.load('values');
     await context.sync();
 
-    const outputSheet = context.workbook.worksheets.add(`WordCount_${Date.now()}`);
+    const outputSheet = context.workbook.worksheets.add(
+        `WordCount_${Date.now()}`,
+    );
     outputSheet.getRange('A1:B1').values = [['Text', 'Word Count']];
     const target = outputSheet
         .getRange('A2')

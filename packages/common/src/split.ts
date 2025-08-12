@@ -19,9 +19,6 @@
   - splitTextIntoClauses(text): string[]
 */
 
-import { getSheetInputsAndPositions } from 'src/services/getSheetInputsAndPositions';
-import { maybeActivateSheet } from 'src/services/maybeActivateSheet';
-
 // --- Utility regexes -------------------------------------------------------
 
 // Basic URL / email tokens to avoid accidental splits within them
@@ -472,77 +469,3 @@ export function splitTextIntoClauses(text: string): string[] {
 // Example usage (remove or adapt in app code):
 // const text = "I ran, and I jumped, but I didn’t fall. We bought apples, bananas, and pears.";
 // console.log(splitTextIntoClauses(text));
-
-/**
- * Split a range of text in Excel into clauses.
- */
-export async function splitToClausesFlow(
-    context: Excel.RequestContext,
-    range: string,
-): Promise<void> {
-    const startTime = Date.now();
-    const { inputs, positions, sheet, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
-
-    const clauses = inputs.map((input) => splitTextIntoClauses(input ?? ''));
-
-    const maxClauses = Math.max(...clauses.map((c) => c.length));
-
-    const result = Array.from({ length: maxClauses }, () =>
-        Array.from({ length: positions.length }, () => ''),
-    );
-
-    console.log('clauses', clauses);
-    console.log('result', result);
-
-    const originalRange = sheet.getRangeByIndexes(
-        rangeInfo.rowIndex,
-        rangeInfo.columnIndex,
-        rangeInfo.rowCount,
-        rangeInfo.columnCount,
-    );
-    originalRange.load('values');
-    await context.sync();
-
-    const outputSheet = context.workbook.worksheets.add(
-        `Clauses_${Date.now()}`,
-    );
-    const header = ['Text'];
-    for (let i = 0; i < maxClauses; i++) {
-        header.push(`Clause ${i + 1}`);
-    }
-    outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
-    const target = outputSheet
-        .getRange('A2')
-        .getResizedRange(rangeInfo.rowCount - 1, 0);
-    target.values = originalRange.values;
-
-    const batchSize = 1000;
-    let batch: { cell: Excel.Range; value: string }[] = [];
-
-    positions.forEach((pos, i) => {
-        const cls = clauses[i];
-        cls.forEach((c, j) => {
-            const rowIndex = pos.row - rangeInfo.rowIndex;
-            const cell = outputSheet.getCell(rowIndex, j + 1);
-            batch.push({ cell, value: c });
-
-            if (batch.length >= batchSize) {
-                batch.forEach(({ cell, value }) => {
-                    cell.values = [[value]];
-                });
-                batch = [];
-                context.sync();
-            }
-        });
-    });
-
-    if (batch.length > 0) {
-        batch.forEach(({ cell, value }) => {
-            cell.values = [[value]];
-        });
-        await context.sync();
-    }
-
-    await maybeActivateSheet(context, outputSheet, startTime);
-}

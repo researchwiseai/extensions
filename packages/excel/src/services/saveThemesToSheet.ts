@@ -31,7 +31,8 @@ export async function saveThemesToSheet({ context, themes }: Props) {
             const r = sheet.getRange(range);
             r.values = values;
             r.format.autofitColumns();
-            if (range === 'A1:E1') {
+            // Apply header formatting for any header row (row 1)
+            if (/^A1:[A-Z]+1$/.test(range)) {
                 r.format.fill.color = '#D9EAD3';
                 r.format.font.bold = true;
                 r.format.horizontalAlignment = Excel.HorizontalAlignment.center;
