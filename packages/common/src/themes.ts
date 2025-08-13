@@ -124,10 +124,10 @@ export async function allocateThemes<T extends ShortTheme | Theme>(
             ...options,
             split: {
                 set_a: {
-                    unit: 'word',
-                    agg: 'top3',
-                    window_size: 6,
-                    stride_size: 1,
+                    unit: 'sentence',
+                    agg: 'max',
+                    // window_size: 6,
+                    // stride_size: 1,
                 },
             },
         },
@@ -191,10 +191,10 @@ export async function allocateThemesBinary(
             ...rest,
             split: {
                 set_a: {
-                    unit: 'word',
-                    agg: 'top3',
-                    window_size: 6,
-                    stride_size: 1,
+                    unit: 'sentence',
+                    agg: 'max',
+                    // window_size: 6,
+                    // stride_size: 1,
                 },
             },
         },
@@ -250,10 +250,10 @@ export async function splitSimilarityMatrix(
             ...options,
             split: {
                 set_a: {
-                    unit: 'word',
-                    agg: 'top3',
-                    window_size: 6,
-                    stride_size: 1,
+                    unit: 'sentence',
+                    agg: 'max',
+                    // window_size: 6,
+                    // stride_size: 1,
                 },
             },
         },
