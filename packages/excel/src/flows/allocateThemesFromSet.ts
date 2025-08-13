@@ -8,6 +8,7 @@ import { maybeActivateSheet } from '../services/maybeActivateSheet';
 import { getFeed, updateItem } from 'pulse-common/jobs';
 import { Pos } from 'pulse-common';
 import { ALLOCATION_THRESHOLD } from './constants';
+import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting';
 
 export async function allocateThemesFromSetFlow(
     context: Excel.RequestContext,
@@ -124,6 +125,9 @@ export async function writeAllocationsToSheet(
         });
         await context.sync();
     }
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
 

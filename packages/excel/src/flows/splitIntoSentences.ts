@@ -1,5 +1,6 @@
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { maybeActivateSheet } from '../services/maybeActivateSheet';
+import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting';
 
 export async function splitIntoSentencesFlow(
     context: Excel.RequestContext,
@@ -79,6 +80,9 @@ export async function splitIntoSentencesFlow(
         });
         await context.sync();
     }
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
 }

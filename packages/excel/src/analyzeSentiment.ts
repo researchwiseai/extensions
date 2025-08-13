@@ -1,5 +1,6 @@
 import { analyzeSentiment as analyzeSentimentApi } from 'pulse-common/api';
 import { getSheetInputsAndPositions } from './services/getSheetInputsAndPositions';
+import { applyTextColumnFormatting } from './services/applyTextColumnFormatting';
 import { maybeActivateSheet } from './services/maybeActivateSheet';
 import { getFeed, updateItem } from 'pulse-common/jobs';
 
@@ -72,6 +73,9 @@ export async function analyzeSentiment(
         cell.values = [[sentiment]];
     });
     await context.sync();
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
 

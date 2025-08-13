@@ -1,5 +1,6 @@
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { maybeActivateSheet } from '../services/maybeActivateSheet';
+import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting';
 import winkNLP from 'wink-nlp';
 import model from 'wink-eng-lite-web-model';
 
@@ -66,6 +67,9 @@ export async function countWordsFlow(
         });
         await context.sync();
     }
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
 }

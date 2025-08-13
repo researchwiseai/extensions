@@ -1,6 +1,7 @@
 import type { Theme } from 'pulse-common/api';
 import type { ShortTheme } from 'pulse-common/themes';
 import { maybeActivateSheet } from './maybeActivateSheet';
+import { applyTextColumnFormatting } from './applyTextColumnFormatting';
 import { getFeed, updateItem } from 'pulse-common/jobs';
 
 interface Props {
@@ -132,6 +133,9 @@ export async function saveAllocationMatrixToSheet({
     row1.format.font.bold = true;
     row1.format.rowHeight = 30;
     row1.format.wrapText = true;
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(sheet, context, 'A');
 
     await maybeActivateSheet(context, sheet, startTime);
 

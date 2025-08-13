@@ -21,6 +21,7 @@
 
 import { getSheetInputsAndPositions } from 'src/services/getSheetInputsAndPositions';
 import { maybeActivateSheet } from 'src/services/maybeActivateSheet';
+import { applyTextColumnFormatting } from 'src/services/applyTextColumnFormatting';
 
 // --- Utility regexes -------------------------------------------------------
 
@@ -543,6 +544,9 @@ export async function splitToClausesFlow(
         });
         await context.sync();
     }
+
+    // Improve readability of the first column containing long text
+    await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
 }

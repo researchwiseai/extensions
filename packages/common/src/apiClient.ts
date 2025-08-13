@@ -400,11 +400,8 @@ export async function batchSimilarity(
     const batches: {
         set_a: string[];
         set_b: string[];
-        options: {
-            fast?: boolean;
-            split?: Split;
-            flattened?: boolean;
-        };
+        fast?: boolean;
+        split?: Split;
     }[] = [];
 
     if (shorter === 'setA') {
@@ -418,11 +415,8 @@ export async function batchSimilarity(
             batches.push({
                 set_a: setA,
                 set_b: batch,
-                options: {
-                    fast: false,
-                    split: options?.split,
-                    flattened: false,
-                },
+                fast: false,
+                split: options?.split,
             });
         });
     } else {
@@ -436,11 +430,8 @@ export async function batchSimilarity(
             batches.push({
                 set_a: batch,
                 set_b: setB,
-                options: {
-                    fast: false,
-                    split: options?.split,
-                    flattened: false,
-                },
+                fast: false,
+                split: options?.split,
             });
         });
     }
