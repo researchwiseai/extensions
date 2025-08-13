@@ -119,16 +119,14 @@ export async function allocateThemes<T extends ShortTheme | Theme>(
 ): Promise<Array<{ theme: T; score: number; belowThreshold: boolean }>> {
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((theme) =>
-            'shortLabel' in theme ? theme.shortLabel : theme.label,
-        ),
+        themes.map((theme) => theme.label),
         {
             ...options,
             split: {
                 set_a: {
                     unit: 'word',
                     agg: 'top3',
-                    window_size: 4,
+                    window_size: 6,
                     stride_size: 1,
                 },
             },
@@ -188,14 +186,14 @@ export async function allocateThemesBinary(
     let { threshold, ...rest } = options ?? {};
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
+        themes.map((t) => t.label),
         {
             ...rest,
             split: {
                 set_a: {
                     unit: 'word',
                     agg: 'top3',
-                    window_size: 4,
+                    window_size: 6,
                     stride_size: 1,
                 },
             },
@@ -228,7 +226,7 @@ export async function similarityMatrix(
 ): Promise<number[][]> {
     const similarityResponse = await compareSimilarity(
         inputs,
-        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
+        themes.map((t) => t.label),
         options,
     );
 
@@ -247,15 +245,14 @@ export async function splitSimilarityMatrix(
     // Similarity matrix for the segments and each theme
     const similarityResponse = await compareSimilarity(
         inputs,
-        // themes.map((t) => t.label),
-        themes.map((t) => ('shortLabel' in t ? t.shortLabel : t.label)),
+        themes.map((t) => t.label),
         {
             ...options,
             split: {
                 set_a: {
                     unit: 'word',
                     agg: 'top3',
-                    window_size: 4,
+                    window_size: 6,
                     stride_size: 1,
                 },
             },
