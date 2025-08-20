@@ -1,37 +1,449 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <title>Summary</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
-    pre { white-space: pre-wrap; word-break: break-word; background: #f8f8f8; padding: 10px; border-radius: 4px; }
-    .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
-  </style>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const params = new URLSearchParams(window.location.search);
-      const summary = params.get('summary') || '';
-      document.getElementById('summary').textContent = summary;
-      document.getElementById('copyBtn').addEventListener('click', async function() {
-        try { await navigator.clipboard.writeText(summary); } catch {}
-      });
-      document.getElementById('closeBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ closed: true }));
-      });
-    });
-  </script>
-</head>
-<body>
-  <h3>Summary</h3>
-  <pre id="summary"></pre>
-  <div class="row">
-    <button id="copyBtn">Copy</button>
-    <button id="closeBtn">Close</button>
-  </div>
-</body>
-</html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <!-- Markdown + sanitize libs -->
+        <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/dompurify/dist/purify.min.js"></script>
+        <!-- DOCX generator -->
+        <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+        <title>Summary</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                margin: 16px;
+            }
+            .content {
+                line-height: 1.5;
+            }
+            .content pre {
+                white-space: pre-wrap;
+                word-break: break-word;
+                background: #f8f8f8;
+                padding: 10px;
+                border-radius: 4px;
+            }
+            .content code {
+                background: #f2f2f2;
+                padding: 0 2px;
+                border-radius: 3px;
+            }
+            .content h1,
+            .content h2,
+            .content h3 {
+                margin: 1em 0 0.4em;
+            }
+            .content p {
+                margin: 0.6em 0;
+            }
+            .content ul,
+            .content ol {
+                margin: 0.6em 0 0.6em 1.2em;
+            }
+            .row {
+                display: flex;
+                justify-content: flex-end;
+                gap: 8px;
+                margin-top: 16px;
+            }
+        </style>
+        <script>
+            function renderMarkdown(md) {
+                if (!md) return '';
+                let dirty = '';
+                try {
+                    dirty = marked.parse(md);
+                } catch {
+                    dirty = '';
+                }
+                const clean = DOMPurify.sanitize(dirty, {
+                    USE_PROFILES: { html: true },
+                });
+                return clean;
+            }
 
+            async function toDocxBlob(innerHtml) {
+                const {
+                    Document,
+                    Packer,
+                    Paragraph,
+                    HeadingLevel,
+                    TextRun,
+                    AlignmentType,
+                    Numbering,
+                    LevelFormat,
+                    ExternalHyperlink,
+                } = window.docx || {};
+                if (!Document) {
+                    // Fallback to simple .doc
+                    const html = `<!DOCTYPE html><html><head><meta charset=\"UTF-8\"></head><body>${innerHtml}</body></html>`;
+                    return new Blob([html], { type: 'application/msword' });
+                }
+
+                function textRunsFromNode(node, opts = {}) {
+                    const runs = [];
+                    const isBold =
+                        opts.bold ||
+                        (node.nodeType === 1 &&
+                            (node.tagName === 'STRONG' ||
+                                node.tagName === 'B'));
+                    const isItal =
+                        opts.ital ||
+                        (node.nodeType === 1 &&
+                            (node.tagName === 'EM' || node.tagName === 'I'));
+                    const isCode =
+                        opts.code ||
+                        (node.nodeType === 1 && node.tagName === 'CODE');
+
+                    if (node.nodeType === Node.TEXT_NODE) {
+                        const text = node.nodeValue || '';
+                        if (text.length) {
+                            runs.push(
+                                new TextRun({
+                                    text,
+                                    bold: !!isBold,
+                                    italics: !!isItal,
+                                    font: isCode
+                                        ? { name: 'Consolas' }
+                                        : undefined,
+                                }),
+                            );
+                        }
+                        return runs;
+                    }
+                    if (node.nodeType !== 1) return runs;
+
+                    const tag = node.tagName;
+                    if (tag === 'BR') {
+                        runs.push(new TextRun({ break: 1 }));
+                        return runs;
+                    }
+                    // True hyperlink support
+                    if (tag === 'A') {
+                        const textContent = node.textContent || '';
+                        const href = node.getAttribute('href') || '';
+                        if (href) {
+                            runs.push(
+                                new ExternalHyperlink({
+                                    link: href,
+                                    children: [
+                                        new TextRun({
+                                            text: textContent || href,
+                                            bold: !!isBold,
+                                            italics: !!isItal,
+                                            style: 'Hyperlink',
+                                        }),
+                                    ],
+                                }),
+                            );
+                        } else {
+                            runs.push(
+                                new TextRun({
+                                    text: textContent,
+                                    bold: !!isBold,
+                                    italics: !!isItal,
+                                }),
+                            );
+                        }
+                        return runs;
+                    }
+                    // Recurse into children for inline containers
+                    const nextOpts = {
+                        bold: isBold,
+                        ital: isItal,
+                        code: isCode,
+                    };
+                    node.childNodes.forEach((child) => {
+                        runs.push(...textRunsFromNode(child, nextOpts));
+                    });
+                    return runs;
+                }
+
+                function paragraphsFromElement(el, paras = [], depth = 0) {
+                    const tag = el.tagName;
+                    if (
+                        tag === 'H1' ||
+                        tag === 'H2' ||
+                        tag === 'H3' ||
+                        tag === 'H4' ||
+                        tag === 'H5' ||
+                        tag === 'H6'
+                    ) {
+                        const level = {
+                            H1: HeadingLevel.HEADING_1,
+                            H2: HeadingLevel.HEADING_2,
+                            H3: HeadingLevel.HEADING_3,
+                            H4: HeadingLevel.HEADING_4,
+                            H5: HeadingLevel.HEADING_5,
+                            H6: HeadingLevel.HEADING_6,
+                        }[tag];
+                        paras.push(
+                            new Paragraph({
+                                heading: level,
+                                children: textRunsFromNode(el),
+                            }),
+                        );
+                        return paras;
+                    }
+                    if (tag === 'BLOCKQUOTE') {
+                        // Render as indented paragraph with left border
+                        paras.push(
+                            new Paragraph({
+                                children: textRunsFromNode(el),
+                                border: {
+                                    left: {
+                                        size: 6,
+                                        color: '808080',
+                                        space: 1,
+                                    },
+                                },
+                                indent: { left: 720 },
+                            }),
+                        );
+                        return paras;
+                    }
+                    if (tag === 'P') {
+                        paras.push(
+                            new Paragraph({ children: textRunsFromNode(el) }),
+                        );
+                        return paras;
+                    }
+                    if (tag === 'PRE') {
+                        const text = el.textContent || '';
+                        const lines = text.split(/\r?\n/);
+                        lines.forEach((line, idx) => {
+                            paras.push(
+                                new Paragraph({
+                                    children: [
+                                        new TextRun({
+                                            text: line,
+                                            font: { name: 'Consolas' },
+                                        }),
+                                    ],
+                                }),
+                            );
+                        });
+                        return paras;
+                    }
+                    if (tag === 'UL' || tag === 'OL') {
+                        const isOrdered = tag === 'OL';
+                        const ref = isOrdered ? 'numbered' : 'bullet';
+                        const level = Math.min(depth, 2);
+                        el.childNodes.forEach((li) => {
+                            if (li.nodeType === 1 && li.tagName === 'LI') {
+                                const inlineRuns = [];
+                                li.childNodes.forEach((child) => {
+                                    if (
+                                        child.nodeType === 1 &&
+                                        (child.tagName === 'UL' ||
+                                            child.tagName === 'OL')
+                                    ) {
+                                        // handled below as nested list
+                                    } else {
+                                        inlineRuns.push(
+                                            ...textRunsFromNode(child),
+                                        );
+                                    }
+                                });
+                                paras.push(
+                                    new Paragraph({
+                                        numbering: { reference: ref, level },
+                                        children: inlineRuns.length
+                                            ? inlineRuns
+                                            : [new TextRun('')],
+                                    }),
+                                );
+                                // Handle nested lists inside this LI
+                                li.childNodes.forEach((child) => {
+                                    if (
+                                        child.nodeType === 1 &&
+                                        (child.tagName === 'UL' ||
+                                            child.tagName === 'OL')
+                                    ) {
+                                        paragraphsFromElement(
+                                            child,
+                                            paras,
+                                            depth + 1,
+                                        );
+                                    }
+                                });
+                            }
+                        });
+                        return paras;
+                    }
+                    // Fallback: gather paragraphs from child elements
+                    el.childNodes.forEach((child) => {
+                        if (child.nodeType === 1)
+                            paragraphsFromElement(child, paras, depth);
+                    });
+                    return paras;
+                }
+
+                // Build paragraphs from supplied HTML
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = innerHtml;
+                const children = Array.from(wrapper.children);
+                const paras = [];
+                children.forEach((child) =>
+                    paragraphsFromElement(child, paras),
+                );
+
+                const doc = new Document({
+                    numbering: {
+                        config: [
+                            {
+                                reference: 'bullet',
+                                levels: [
+                                    {
+                                        level: 0,
+                                        format: LevelFormat.BULLET,
+                                        text: '•',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                    {
+                                        level: 1,
+                                        format: LevelFormat.BULLET,
+                                        text: '◦',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                    {
+                                        level: 2,
+                                        format: LevelFormat.BULLET,
+                                        text: '▪',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                ],
+                            },
+                            {
+                                reference: 'numbered',
+                                levels: [
+                                    {
+                                        level: 0,
+                                        format: LevelFormat.DECIMAL,
+                                        text: '%1.',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                    {
+                                        level: 1,
+                                        format: LevelFormat.DECIMAL,
+                                        text: '%1.%2.',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                    {
+                                        level: 2,
+                                        format: LevelFormat.DECIMAL,
+                                        text: '%1.%2.%3.',
+                                        alignment: AlignmentType.LEFT,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                    sections: [
+                        {
+                            properties: {},
+                            children: paras.length
+                                ? paras
+                                : [new Paragraph('')],
+                        },
+                    ],
+                });
+
+                const blob = await Packer.toBlob(doc);
+                return blob;
+            }
+            async function saveDocxFromHtml(
+                innerHtml,
+                filename = 'Summary.docx',
+            ) {
+                const blob = await toDocxBlob(innerHtml);
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 2000);
+            }
+
+            // Word Online integration removed; only local save is supported for now.
+
+            document.addEventListener('DOMContentLoaded', function () {
+                const params = new URLSearchParams(window.location.search);
+                const summary = params.get('summary') || '';
+
+                // Render markdown via marked + DOMPurify into the content container
+                const container = document.getElementById('summary');
+                container.innerHTML = renderMarkdown(summary);
+                // Ensure all anchors open safely
+                container.querySelectorAll('a').forEach((a) => {
+                    a.setAttribute('target', '_blank');
+                    a.setAttribute('rel', 'noopener noreferrer');
+                });
+                document
+                    .getElementById('copyBtn')
+                    .addEventListener('click', async function () {
+                        try {
+                            await navigator.clipboard.writeText(summary);
+                        } catch {}
+                    });
+                async function copyHtmlToClipboard(html, plain) {
+                    try {
+                        if (navigator.clipboard && window.ClipboardItem) {
+                            const item = new ClipboardItem({
+                                'text/html': new Blob([html], {
+                                    type: 'text/html',
+                                }),
+                                'text/plain': new Blob([plain], {
+                                    type: 'text/plain',
+                                }),
+                            });
+                            await navigator.clipboard.write([item]);
+                            return true;
+                        }
+                    } catch (e) {
+                        /* no-op */
+                    }
+                    // fallback to plain text
+                    try {
+                        await navigator.clipboard.writeText(plain);
+                        return true;
+                    } catch {}
+                    return false;
+                }
+
+                // Word Online integration removed – online helpers omitted
+
+                const wordBtn = document.getElementById('wordBtn');
+                wordBtn.textContent = 'Save as Word';
+                wordBtn.addEventListener('click', async function () {
+                    const target = document.getElementById('summary');
+                    const inner = `<div>${target.innerHTML}</div>`;
+                    await saveDocxFromHtml(inner);
+                });
+                document
+                    .getElementById('closeBtn')
+                    .addEventListener('click', function () {
+                        Office.context.ui.messageParent(
+                            JSON.stringify({ closed: true }),
+                        );
+                    });
+            });
+        </script>
+    </head>
+    <body>
+        <h3>Summary</h3>
+        <div id="summary" class="content prose"></div>
+        <div class="row">
+            <button id="copyBtn">Copy</button>
+            <button id="wordBtn">Save as Word</button>
+            <button id="closeBtn">Close</button>
+        </div>
+    </body>
+</html>

@@ -2,6 +2,8 @@ import { TaskpaneApi } from './api';
 // Import company logo via webpack asset module for correct path resolution
 import { DefaultButton, Text } from '@fluentui/react';
 import { signOut } from 'pulse-common/auth';
+import { useEffect, useState } from 'react';
+// Word Online integration removed; only local download is available.
 
 interface Props {
     api: TaskpaneApi;
@@ -10,8 +12,11 @@ interface Props {
 
 export function Settings({ setEmail }: Props) {
     const email = sessionStorage.getItem('user-email');
+    // Graph/Identity not used currently
 
     console.log('Settings component mounted', email);
+
+    useEffect(() => {}, []);
 
     const logout = async () => {
         try {
@@ -23,6 +28,8 @@ export function Settings({ setEmail }: Props) {
             setEmail(null);
         }
     };
+
+    // No-op placeholders retained for future Word Online integration
 
     return (
         <div className="bg-[#f3f2f1]">

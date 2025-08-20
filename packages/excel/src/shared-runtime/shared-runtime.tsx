@@ -269,7 +269,7 @@ function summarizeHandler(event: any) {
                 canComplete(event) && event.completed();
                 return;
             }
-            // If user indicated header, pre-fill the question with header cell text
+            // If user indicated header, seed a descriptive default question based on the header
             let defaultQuestion: string | undefined = undefined;
             if (hasHeader) {
                 try {
@@ -285,7 +285,10 @@ function summarizeHandler(event: any) {
                     );
                     headerCell.load('values');
                     await context.sync();
-                    defaultQuestion = String(headerCell.values[0][0] ?? '').trim();
+                    const headerText = String(headerCell.values[0][0] ?? '').trim();
+                    if (headerText) {
+                        defaultQuestion = `Given the column header "${headerText}", what does this data tell us? Please summarize the key insights, trends, and any notable outliers.`;
+                    }
                 } catch (e) {
                     console.warn('Could not load header cell for default question', e);
                 }

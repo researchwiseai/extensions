@@ -14,8 +14,12 @@ export async function summarizeFlow(
     }: { question: string | null; preset: SummarizePreset | null },
 ) {
     const startTime = Date.now();
-    const { sheet, inputs: rawInputs, positions: rawPositions, rangeInfo } =
-        await getSheetInputsAndPositions(context, range);
+    const {
+        sheet,
+        inputs: rawInputs,
+        positions: rawPositions,
+        rangeInfo,
+    } = await getSheetInputsAndPositions(context, range);
 
     let inputs = rawInputs;
     let positions = rawPositions;
@@ -27,7 +31,7 @@ export async function summarizeFlow(
 
     // Auto-enable fast mode for fewer than 200 non-blank inputs (after header removal),
     // mirroring sentiment behavior.
-    const useFast = inputs.length < 200;
+    const useFast = false;
 
     const { summary } = await summarizeApi(inputs, {
         fast: useFast,

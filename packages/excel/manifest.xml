@@ -106,20 +106,27 @@
                             <Group id="SummarizeGroup">
                                 <Label resid="SummarizeGroup.Label" />
                                 <Icon>
-                                    <bt:Image size="16" resid="Icon.16x16" />
-                                    <bt:Image size="32" resid="Icon.32x32" />
-                                    <bt:Image size="80" resid="Icon.80x80" />
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
                                 </Icon>
-                                <Control xsi:type="Button" id="SummarizeButton">
+                                <Control xsi:type="Button"
+                                         id="SummarizeButton">
                                     <Label resid="SummarizeButton.Label" />
                                     <Supertip>
                                         <Title resid="SummarizeButton.Label" />
                                         <Description resid="SummarizeButton.Tooltip" />
                                     </Supertip>
                                     <Icon>
-                                        <bt:Image size="16" resid="TextGrammarSettingsIcon.16x16" />
-                                        <bt:Image size="32" resid="TextGrammarSettingsIcon.32x32" />
-                                        <bt:Image size="80" resid="TextGrammarSettingsIcon.80x80" />
+                                        <bt:Image size="16"
+                                                  resid="SummarizeIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="SummarizeIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="SummarizeIcon.80x80" />
                                     </Icon>
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>summarizeHandler</FunctionName>
@@ -240,20 +247,27 @@
                             <Group id="ExtractorsGroup">
                                 <Label resid="ExtractorsGroup.Label" />
                                 <Icon>
-                                    <bt:Image size="16" resid="Icon.16x16" />
-                                    <bt:Image size="32" resid="Icon.32x32" />
-                                    <bt:Image size="80" resid="Icon.80x80" />
+                                    <bt:Image size="16"
+                                              resid="Icon.16x16" />
+                                    <bt:Image size="32"
+                                              resid="Icon.32x32" />
+                                    <bt:Image size="80"
+                                              resid="Icon.80x80" />
                                 </Icon>
-                                <Control xsi:type="Button" id="RunExtractionsButton">
+                                <Control xsi:type="Button"
+                                         id="RunExtractionsButton">
                                     <Label resid="RunExtractionsButton.Label" />
                                     <Supertip>
                                         <Title resid="RunExtractionsButton.Label" />
                                         <Description resid="RunExtractionsButton.Tooltip" />
                                     </Supertip>
                                     <Icon>
-                                        <bt:Image size="16" resid="GridDotsIcon.16x16" />
-                                        <bt:Image size="32" resid="GridDotsIcon.32x32" />
-                                        <bt:Image size="80" resid="GridDotsIcon.80x80" />
+                                        <bt:Image size="16"
+                                                  resid="ExtractNEIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="ExtractNEIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="ExtractNEIcon.80x80" />
                                     </Icon>
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>runExtractionsHandler</FunctionName>
@@ -461,6 +475,18 @@
                           DefaultValue="https://localhost:3000/assets/icons/book-coins-32.png" />
                 <bt:Image id="BookCoinsIcon.80x80"
                           DefaultValue="https://localhost:3000/assets/icons/book-coins-80.png" />
+                <bt:Image id="SummarizeIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/summarize-16.png" />
+                <bt:Image id="SummarizeIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/summarize-32.png" />
+                <bt:Image id="SummarizeIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/summarize-80.png" />
+                <bt:Image id="ExtractNEIcon.16x16"
+                          DefaultValue="https://localhost:3000/assets/icons/extract-ne-16.png" />
+                <bt:Image id="ExtractNEIcon.32x32"
+                          DefaultValue="https://localhost:3000/assets/icons/extract-ne-32.png" />
+                <bt:Image id="ExtractNEIcon.80x80"
+                          DefaultValue="https://localhost:3000/assets/icons/extract-ne-80.png" />
             </bt:Images>
             <bt:Urls>
                 <bt:Url id="SharedRuntime.Url"
@@ -523,7 +549,7 @@
                 <bt:String id="ExtractorsGroup.Label"
                            DefaultValue="Extractors" />
                 <bt:String id="RunExtractionsButton.Label"
-                           DefaultValue="Run Extractions" />
+                           DefaultValue="Extract Named Entities" />
             </bt:ShortStrings>
             <bt:LongStrings>
                 <bt:String id="GetStarted.Description"

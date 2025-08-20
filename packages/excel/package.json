@@ -35,6 +35,7 @@
         "@babel/preset-react": "^7.27.1",
         "@babel/preset-typescript": "^7.27.1",
         "@tailwindcss/postcss": "^4.1.5",
+        "@tailwindcss/typography": "^0.5.16",
         "@types/custom-functions-runtime": "^1.6.11",
         "@types/google-apps-script": "^1.0.97",
         "@types/jest": "^29.5.3",
