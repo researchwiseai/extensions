@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <title>Summarize Options</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
+    label { display: block; margin-top: 12px; font-weight: 600; }
+    textarea { width: 100%; min-height: 80px; padding: 6px; }
+    .presets { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 8px; }
+    .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  </style>
+  <script>
+    function sendAndClose(payload) {
+      Office.context.ui.messageParent(JSON.stringify(payload));
+    }
+    document.addEventListener('DOMContentLoaded', function () {
+      const q = document.getElementById('questions');
+      const params = new URLSearchParams(window.location.search);
+      const defQ = params.get('defaultQuestion');
+      if (defQ) { q.value = defQ; }
+      const cancel = document.getElementById('cancelBtn');
+      const ok = document.getElementById('okBtn');
+      cancel.addEventListener('click', function () {
+        sendAndClose({ question: null, preset: null });
+      });
+      ok.addEventListener('click', function () {
+        const preset = document.querySelector('input[name="preset"]:checked')?.value || 'concise';
+        sendAndClose({ question: q.value.trim(), preset });
+      });
+      q.focus();
+    });
+  </script>
+</head>
+<body>
+  <label for="questions">Question(s)</label>
+  <textarea id="questions" placeholder="e.g., What are the key takeaways and sentiment?&#10;You can add multiple questions on new lines."></textarea>
+
+  <label>Preset</label>
+  <div id="presets" class="presets"></div>
+
+  
+
+  <div class="row">
+    <button id="cancelBtn">Cancel</button>
+    <button id="okBtn">OK</button>
+  </div>
+</body>
+</html>

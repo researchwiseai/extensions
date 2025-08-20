@@ -1,6 +1,7 @@
 import fetchOriginal from 'cross-fetch';
 import { PromisePool } from '@supercharge/promise-pool';
 import { createBatches, sampleInputs } from './input';
+import type { SummarizePreset } from './summarize';
 import * as Jobs from './jobs';
 
 // Toggle verbose logging
@@ -275,6 +276,27 @@ export interface SimilarityResponse {
     matrix: number[][];
 }
 
+// -------------------- Summarization --------------------
+export interface SummarizeOptions {
+    /** When true, process synchronously if possible */
+    fast?: boolean;
+    /** Natural language question or prompt guiding the summary */
+    question?: string;
+    /** Optional server-side preset to influence behavior */
+    preset?: SummarizePreset;
+    /** Optional API version */
+    version?: string;
+    /** Progress callback for UI feeds */
+    onProgress?: (message: string) => void;
+}
+
+export interface SummarizeResponse {
+    /** Final textual summary for the provided inputs */
+    summary: string;
+    /** Optional request id for tracing */
+    requestId?: string;
+}
+
 /** Job status returned when polling asynchronous jobs */
 export interface JobStatus {
     status: string;
@@ -345,7 +367,8 @@ export async function extractElements(
         return {
             dictionary: data.dictionary as string[],
             results: data.results as string[][][],
-            requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+            requestId:
+                typeof data.requestId === 'string' ? data.requestId : undefined,
         };
     }
     throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
@@ -611,6 +634,48 @@ export async function compareSimilarity(
         }
         return result;
     }
+}
+
+/**
+ * Call the summarization endpoint.
+ * Accepts inputs and optional question/preset; supports fast/slow flows.
+ */
+export async function summarize(
+    inputs: string[],
+    options?: SummarizeOptions,
+): Promise<SummarizeResponse> {
+    const url = `${baseUrl}/v1/summaries`;
+    const body: Record<string, unknown> = {
+        inputs,
+        fast: options?.fast ?? false,
+    };
+    if (options?.question) body.question = options.question;
+    if (options?.preset) body.preset = options.preset;
+    if (options?.version) body.version = options.version;
+
+    const data = await postWithJob(url, body, {
+        onProgress: options?.onProgress,
+        taskName: 'Summarization',
+    });
+
+    // Normalize various potential response shapes into { summary: string }
+    const summaryCandidate =
+        (typeof data?.summary === 'string' && data.summary) ||
+        (typeof data?.result === 'string' && data.result) ||
+        (Array.isArray(data?.summaries) && data.summaries.join('\n\n')) ||
+        (Array.isArray(data?.results) && data.results.join('\n\n'));
+
+    if (typeof summaryCandidate === 'string' && summaryCandidate.length > 0) {
+        return {
+            summary: summaryCandidate,
+            requestId:
+                typeof data?.requestId === 'string'
+                    ? data.requestId
+                    : undefined,
+        };
+    }
+
+    throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
 /**

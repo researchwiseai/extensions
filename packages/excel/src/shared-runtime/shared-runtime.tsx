@@ -12,6 +12,9 @@ import { modalApi } from '../modal/api';
 import { getRelativeUrl } from '../services/relativeUrl';
 import { promptExtractionOptions } from '../services/promptExtractionOptions';
 import { extractElementsFromActiveWorksheet } from '../extractElements';
+import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
+import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
+import { summarizeFlow } from '../flows/summarizeFlow';
 
 function analyzeSentimentHandler(event: any) {
     Excel.run(async (context) => {
@@ -257,6 +260,57 @@ function canComplete(event: unknown): event is CanComplete {
         typeof (event as CanComplete).completed === 'function'
     );
 }
+
+function summarizeHandler(event: any) {
+    Excel.run(async (context) => {
+        try {
+            const { range: confirmed, hasHeader } = await confirmRange(context);
+            if (confirmed === null) {
+                canComplete(event) && event.completed();
+                return;
+            }
+            // If user indicated header, pre-fill the question with header cell text
+            let defaultQuestion: string | undefined = undefined;
+            if (hasHeader) {
+                try {
+                    const { sheet, rangeInfo } = await getSheetInputsAndPositions(
+                        context,
+                        confirmed,
+                    );
+                    const headerCell = sheet.getRangeByIndexes(
+                        rangeInfo.rowIndex,
+                        rangeInfo.columnIndex,
+                        1,
+                        1,
+                    );
+                    headerCell.load('values');
+                    await context.sync();
+                    defaultQuestion = String(headerCell.values[0][0] ?? '').trim();
+                } catch (e) {
+                    console.warn('Could not load header cell for default question', e);
+                }
+            }
+
+            const { question, preset } = await promptSummarizeOptions(
+                defaultQuestion,
+            );
+            canComplete(event) && event.completed();
+            if (!question || !preset) {
+                return; // cancelled or incomplete
+            }
+            openFeedHandler();
+            await summarizeFlow(context, confirmed, hasHeader, {
+                question,
+                preset,
+            });
+        } catch (e) {
+            console.error('Summarize error', e);
+        } finally {
+            canComplete(event) && event.completed();
+        }
+    }).catch((err) => console.error(err));
+}
+Office.actions.associate('summarizeHandler', summarizeHandler);
 
 let dialog: Promise<unknown> | null = null;
 

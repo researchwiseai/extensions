@@ -20,7 +20,8 @@
         "./dataUtils": "./src/dataUtils.ts",
         "./output": "./src/output.ts",
         "./saveThemesToSheet": "./src/saveThemesToSheet.ts",
-        "./split": "./src/split.ts"
+        "./split": "./src/split.ts",
+        "./summarize": "./src/summarize.ts"
     },
     "scripts": {
         "build": "tsc -b",

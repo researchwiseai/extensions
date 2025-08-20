@@ -103,6 +103,30 @@
                                     <Enabled>false</Enabled>
                                 </Control>
                             </Group>
+                            <Group id="SummarizeGroup">
+                                <Label resid="SummarizeGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16" resid="Icon.16x16" />
+                                    <bt:Image size="32" resid="Icon.32x32" />
+                                    <bt:Image size="80" resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button" id="SummarizeButton">
+                                    <Label resid="SummarizeButton.Label" />
+                                    <Supertip>
+                                        <Title resid="SummarizeButton.Label" />
+                                        <Description resid="SummarizeButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16" resid="TextGrammarSettingsIcon.16x16" />
+                                        <bt:Image size="32" resid="TextGrammarSettingsIcon.32x32" />
+                                        <bt:Image size="80" resid="TextGrammarSettingsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>summarizeHandler</FunctionName>
+                                    </Action>
+                                    <Enabled>false</Enabled>
+                                </Control>
+                            </Group>
                             <Group id="ThemesGroup">
                                 <Label resid="ThemesGroup.Label" />
                                 <Icon>
@@ -482,6 +506,10 @@
                            DefaultValue="Word Count" />
                 <bt:String id="ThemesGroup.Label"
                            DefaultValue="Themes" />
+                <bt:String id="SummarizeGroup.Label"
+                           DefaultValue="Summarize" />
+                <bt:String id="SummarizeButton.Label"
+                           DefaultValue="Summarize" />
                 <bt:String id="GenerateThemesButton.Label"
                            DefaultValue="Generate Themes" />
                 <bt:String id="AllocateThemesButton.Label"
@@ -526,6 +554,8 @@
                            DefaultValue="Create a new sheet with a binary table of inputs and themes" />
                 <bt:String id="SimMatrixThemesBtn.Tooltip"
                            DefaultValue="Create a new sheet with a similarity table of inputs and themes" />
+                <bt:String id="SummarizeButton.Tooltip"
+                           DefaultValue="Summarize selected text with a chosen preset" />
                 <bt:String id="ManageThemesButton.Tooltip"
                            DefaultValue="Create, edit and delete theme sets for allocation" />
                 <bt:String id="RunExtractionsButton.Tooltip"

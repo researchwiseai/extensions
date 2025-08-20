@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <title>Summary</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
+    pre { white-space: pre-wrap; word-break: break-word; background: #f8f8f8; padding: 10px; border-radius: 4px; }
+    .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const params = new URLSearchParams(window.location.search);
+      const summary = params.get('summary') || '';
+      document.getElementById('summary').textContent = summary;
+      document.getElementById('copyBtn').addEventListener('click', async function() {
+        try { await navigator.clipboard.writeText(summary); } catch {}
+      });
+      document.getElementById('closeBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(JSON.stringify({ closed: true }));
+      });
+    });
+  </script>
+</head>
+<body>
+  <h3>Summary</h3>
+  <pre id="summary"></pre>
+  <div class="row">
+    <button id="copyBtn">Copy</button>
+    <button id="closeBtn">Close</button>
+  </div>
+</body>
+</html>
+

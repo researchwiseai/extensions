@@ -14,6 +14,15 @@ export function enableRibbonButtons() {
                         ],
                     },
                     {
+                        id: 'SummarizeGroup',
+                        controls: [
+                            {
+                                id: 'SummarizeButton',
+                                enabled: true,
+                            },
+                        ],
+                    },
+                    {
                         id: 'ThemesGroup',
                         controls: [
                             {
@@ -51,6 +60,15 @@ export function disableRibbonButtons() {
                         controls: [
                             {
                                 id: 'AnalyzeSentimentButton',
+                                enabled: false,
+                            },
+                        ],
+                    },
+                    {
+                        id: 'SummarizeGroup',
+                        controls: [
+                            {
+                                id: 'SummarizeButton',
                                 enabled: false,
                             },
                         ],

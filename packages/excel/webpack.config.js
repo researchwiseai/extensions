@@ -33,6 +33,8 @@ module.exports = async (env, options) => {
             modal: './src/modal/Modal.tsx',
             commands: './src/commands/commands.ts',
             functions: './src/functions/functions.ts',
+            // Small script to populate summarize presets dynamically
+            summarizeDialog: './src/taskpane/summarizeDialog.ts',
         },
         output: {
             // Clean output and set public path for assets
@@ -144,6 +146,19 @@ module.exports = async (env, options) => {
             new HtmlWebpackPlugin({
                 filename: 'SelectRangeDialog.html',
                 template: './src/taskpane/SelectRangeDialog.html',
+                inject: false,
+            }),
+            // Dialog for summarize options
+            new HtmlWebpackPlugin({
+                filename: 'SummarizeOptionsDialog.html',
+                template: './src/taskpane/SummarizeOptionsDialog.html',
+                inject: true,
+                chunks: ['summarizeDialog'],
+            }),
+            // Dialog to display summary result
+            new HtmlWebpackPlugin({
+                filename: 'SummarizeResultDialog.html',
+                template: './src/taskpane/SummarizeResultDialog.html',
                 inject: false,
             }),
             // Dialog for extractions options (category + expansion)
