@@ -9,8 +9,9 @@
   <style>
     body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
     label { display: block; margin-top: 12px; font-weight: 600; }
-    textarea { width: 100%; min-height: 80px; padding: 6px; }
-    .presets { display: grid; grid-template-columns: 1fr; gap: 6px; margin-top: 8px; }
+    /* Ensure padding is included in width so the textarea truly spans the container */
+    textarea { width: 100%; min-height: 80px; padding: 6px; box-sizing: border-box; }
+    .presets { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 8px; }
     .row { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
   </style>
   <script>

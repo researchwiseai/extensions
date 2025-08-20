@@ -21,7 +21,8 @@ export function promptSummarizeOptions(
         function open() {
             Office.context.ui.displayDialogAsync(
                 url,
-                { height: 50, width: 35, displayInIframe: true },
+                // Increased size; 64x44 as requested
+                { height: 64, width: 44, displayInIframe: true },
                 (result) => {
                     if (result.status === Office.AsyncResultStatus.Failed) {
                         // Retry once if a dialog is still closing
