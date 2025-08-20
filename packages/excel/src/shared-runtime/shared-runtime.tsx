@@ -10,6 +10,8 @@ import { countWordsFlow } from '../flows/countWords';
 import { openFeedHandler } from '../taskpane/Taskpane';
 import { modalApi } from '../modal/api';
 import { getRelativeUrl } from '../services/relativeUrl';
+import { promptExtractionOptions } from '../services/promptExtractionOptions';
+import { extractElementsFromActiveWorksheet } from '../extractElements';
 
 function analyzeSentimentHandler(event: any) {
     Excel.run(async (context) => {
@@ -221,6 +223,28 @@ Office.actions.associate('countWordsHandler', countWordsHandler);
 
 function manageThemesHandler() {}
 Office.actions.associate('manageThemesHandler', manageThemesHandler);
+
+// Extractions handler: prompts for category and expansion, then runs extraction flow
+async function runExtractionsHandler(event: any) {
+    console.log('Run extractions handler');
+    try {
+        const { category, expand } = await promptExtractionOptions();
+        event.completed();
+        if (!category) {
+            console.log('User cancelled extractions dialog or empty category');
+            return;
+        }
+        openFeedHandler();
+        await extractElementsFromActiveWorksheet(category, !!expand);
+    } catch (e) {
+        console.error('Extractions dialog error', e);
+    } finally {
+        if (event && typeof event.completed === 'function') {
+            try { event.completed(); } catch {}
+        }
+    }
+}
+Office.actions.associate('runExtractionsHandler', runExtractionsHandler);
 
 interface CanComplete {
     completed: () => void;

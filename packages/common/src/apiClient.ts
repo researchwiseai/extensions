@@ -69,6 +69,7 @@ interface PostWithJobOptions {
     taskName?: string;
     batchNumber?: number;
     batchCount?: number;
+    headers?: Record<string, string>;
 }
 
 /**
@@ -99,6 +100,7 @@ async function postWithJob(
         headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
+            ...(options.headers ?? {}),
         },
         body: JSON.stringify(body),
         mode: 'cors',
@@ -280,10 +282,80 @@ export interface JobStatus {
     [key: string]: any;
 }
 
+// -------------------- Extractions --------------------
+export interface ExtractionsOptions {
+    /** Required category name for the extraction (e.g., "service", "product") */
+    category: string;
+    /** Required list of canonical terms to match */
+    dictionary: string[];
+    /** Optionally expand the dictionary before matching */
+    expandDictionary?: boolean;
+    /** Optional limit on the number of additions when expanding the dictionary */
+    expandDictionaryLimit?: number;
+    /** Optional model version (e.g., "original") */
+    version?: string;
+    /** When true, process synchronously; otherwise may return a job to poll */
+    fast?: boolean;
+    /** Progress callback for UI feeds */
+    onProgress?: (message: string) => void;
+}
+
+export interface ExtractionsResponse {
+    /** Final dictionary used for matching (after optional expansion) */
+    dictionary: string[];
+    /** Results per input: list of matches, each match is an array of strings */
+    results: string[][][];
+    requestId?: string;
+}
+
+/**
+ * Call the extractions endpoint.
+ * Extracts mentions from each input based on a required category and dictionary.
+ */
+export async function extractElements(
+    inputs: string[],
+    options: ExtractionsOptions,
+): Promise<ExtractionsResponse> {
+    const url = `${baseUrl}/v1/extractions`;
+    const body: Record<string, unknown> = {
+        inputs,
+        category: options.category,
+        dictionary: options.dictionary,
+        fast: options.fast ?? false,
+    };
+    if (typeof options.expandDictionary === 'boolean') {
+        body.expand_dictionary = options.expandDictionary;
+    }
+    if (typeof options.expandDictionaryLimit === 'number') {
+        body.expand_dictionary_limit = options.expandDictionaryLimit;
+    }
+    if (typeof options.version === 'string') {
+        body.version = options.version;
+    }
+
+    const data = await postWithJob(url, body, {
+        onProgress: options.onProgress,
+        taskName: 'Extractions',
+        headers: {
+            'x-pulse-debug': 'true',
+        },
+    });
+
+    if (data && Array.isArray(data.dictionary) && Array.isArray(data.results)) {
+        return {
+            dictionary: data.dictionary as string[],
+            results: data.results as string[][][],
+            requestId: typeof data.requestId === 'string' ? data.requestId : undefined,
+        };
+    }
+    throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+}
+
 interface AnalyzeSentimentOptions {
     fast?: boolean;
     ignoreCache?: boolean;
     onProgress?: (message: string) => void;
+    version?: string; // Optional version for API compatibility
 }
 
 /**
@@ -297,7 +369,12 @@ export async function analyzeSentiment(
     const url = `${baseUrl}/v1/sentiment`;
     const data = await postWithJob(
         url,
-        { fast: options?.fast, ignoreCache: options?.ignoreCache, inputs },
+        {
+            fast: options?.fast,
+            ignoreCache: options?.ignoreCache,
+            inputs,
+            version: options?.version,
+        },
         { taskName: 'Sentiment analysis', onProgress: options?.onProgress },
     );
     if (Array.isArray(data.results)) {

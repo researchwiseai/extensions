@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <title>Extraction Options</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
+    label { display:block; margin-top: 8px; }
+    input[type="text"] { width:100%; padding:4px; margin-top:4px; }
+    .actions { margin-top: 16px; text-align: right; }
+  </style>
+  </head>
+<body>
+  <div>
+    <label for="categoryInput">Category (e.g., product, service, brand)</label>
+    <input id="categoryInput" type="text" placeholder="Enter a category..." />
+  </div>
+  <div>
+    <label><input id="expandCheckbox" type="checkbox" checked /> Allow dictionary expansion</label>
+  </div>
+  <div class="actions">
+    <button id="cancelBtn" style="margin-right:8px;">Cancel</button>
+    <button id="okBtn">Run</button>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const categoryInput = document.getElementById('categoryInput');
+      const expandCheckbox = document.getElementById('expandCheckbox');
+      document.getElementById('okBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(
+          JSON.stringify({ category: categoryInput.value || null, expand: !!expandCheckbox.checked }),
+        );
+      });
+      document.getElementById('cancelBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(
+          JSON.stringify({ category: null, expand: !!expandCheckbox.checked }),
+        );
+      });
+      setTimeout(() => { categoryInput.focus(); }, 0);
+    });
+  </script>
+</body>
+</html>
+

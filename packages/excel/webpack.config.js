@@ -146,6 +146,12 @@ module.exports = async (env, options) => {
                 template: './src/taskpane/SelectRangeDialog.html',
                 inject: false,
             }),
+            // Dialog for extractions options (category + expansion)
+            new HtmlWebpackPlugin({
+                filename: 'ExtractionOptionsDialog.html',
+                template: './src/taskpane/ExtractionOptionsDialog.html',
+                inject: false,
+            }),
             // Dialog page for choosing allocation mode
             new HtmlWebpackPlugin({
                 filename: 'AllocationModeDialog.html',

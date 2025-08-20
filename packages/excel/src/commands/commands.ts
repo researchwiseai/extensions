@@ -6,6 +6,8 @@
 /* global Office, Excel */
 import { promptRange } from '../services/promptRange';
 import { analyzeSentiment as analyzeSentimentLogic } from '../analyzeSentiment';
+import { extractElementsFromActiveWorksheet } from '../extractElements';
+import { promptExtractionOptions } from '../services/promptExtractionOptions';
 
 /**
  * Handler for Analyze Sentiment ribbon button.
@@ -44,3 +46,23 @@ async function analyzeSentiment(event: Office.AddinCommands.Event) {
 
 // Register the Analyze Sentiment command handler
 Office.actions.associate('analyzeSentiment', analyzeSentiment);
+
+/**
+ * Handler for Extractions ribbon button.
+ */
+async function runExtractions(event: Office.AddinCommands.Event) {
+  try {
+    const { category, expand } = await promptExtractionOptions();
+    if (!category) {
+      // User cancelled or did not enter a category
+      return;
+    }
+    await extractElementsFromActiveWorksheet(category, !!expand);
+  } catch (err) {
+    console.error('Extractions error:', err);
+  } finally {
+    event.completed();
+  }
+}
+
+Office.actions.associate('runExtractions', runExtractions);

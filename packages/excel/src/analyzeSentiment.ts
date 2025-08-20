@@ -46,6 +46,7 @@ export async function analyzeSentiment(
 
     const result = await analyzeSentimentApi(inputs, {
         fast: inputs.length < 200,
+        version: '2025-08-17',
         onProgress: (message) => {
             console.log(message);
         },

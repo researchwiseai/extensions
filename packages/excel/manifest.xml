@@ -213,6 +213,29 @@
                                     </Action>
                                 </Control>
                             </Group>
+                            <Group id="ExtractorsGroup">
+                                <Label resid="ExtractorsGroup.Label" />
+                                <Icon>
+                                    <bt:Image size="16" resid="Icon.16x16" />
+                                    <bt:Image size="32" resid="Icon.32x32" />
+                                    <bt:Image size="80" resid="Icon.80x80" />
+                                </Icon>
+                                <Control xsi:type="Button" id="RunExtractionsButton">
+                                    <Label resid="RunExtractionsButton.Label" />
+                                    <Supertip>
+                                        <Title resid="RunExtractionsButton.Label" />
+                                        <Description resid="RunExtractionsButton.Tooltip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16" resid="GridDotsIcon.16x16" />
+                                        <bt:Image size="32" resid="GridDotsIcon.32x32" />
+                                        <bt:Image size="80" resid="GridDotsIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>runExtractionsHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                            </Group>
                             <Group id="TextGroup">
                                 <Label resid="TextGroup.Label" />
                                 <Icon>
@@ -469,6 +492,10 @@
                            DefaultValue="Similarity Matrix" />
                 <bt:String id="ManageThemesButton.Label"
                            DefaultValue="Manage Themes" />
+                <bt:String id="ExtractorsGroup.Label"
+                           DefaultValue="Extractors" />
+                <bt:String id="RunExtractionsButton.Label"
+                           DefaultValue="Run Extractions" />
             </bt:ShortStrings>
             <bt:LongStrings>
                 <bt:String id="GetStarted.Description"
@@ -501,6 +528,8 @@
                            DefaultValue="Create a new sheet with a similarity table of inputs and themes" />
                 <bt:String id="ManageThemesButton.Tooltip"
                            DefaultValue="Create, edit and delete theme sets for allocation" />
+                <bt:String id="RunExtractionsButton.Tooltip"
+                           DefaultValue="Find references by category using a dictionary and optional expansion" />
             </bt:LongStrings>
         </Resources>
     </VersionOverrides>
