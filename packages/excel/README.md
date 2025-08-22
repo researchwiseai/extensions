@@ -44,6 +44,12 @@ Pulse is an Excel add-in powered by ResearchWise AI that brings advanced qualita
 
 ## Usage
 
+### Authentication-on-click
+- Ribbon buttons remain enabled regardless of auth state. When a feature that requires Pulse authentication is clicked, a small dialog appears:
+  - It starts with a short “checking sign-in…” spinner.
+  - If you are already signed in (e.g., existing SSO session), it auto-closes and the command continues.
+  - If not signed in, it shows an email prompt to start the PKCE sign-in flow and then resumes the command on success.
+
 ### Analyze Sentiment
  1. Select a range of cells containing text.
  2. Click **Analyze Sentiment** in the Pulse task pane.
@@ -86,3 +92,4 @@ Pulse is an Excel add-in powered by ResearchWise AI that brings advanced qualita
  1. Fork the repository and create a feature branch.
  2. Submit a pull request with a detailed description of changes.
  3. Ensure coding style and (future) tests pass.
+

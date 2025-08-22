@@ -179,6 +179,12 @@ module.exports = async (env, options) => {
                 template: './src/taskpane/ConnectHelpDialog.html',
                 inject: false,
             }),
+            // Dialog for sign-in (guarded flows)
+            new HtmlWebpackPlugin({
+                filename: 'AuthDialog.html',
+                template: './src/taskpane/AuthDialog.html',
+                inject: false,
+            }),
             // Dialog for modals
             new HtmlWebpackPlugin({
                 filename: 'Modal.html',

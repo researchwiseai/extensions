@@ -1,14 +1,11 @@
-import { PrimaryButton, DefaultButton, TextField } from '@fluentui/react';
 import type { TaskpaneApi } from './api';
-import { useCallback, useEffect, useState } from 'react';
-// Import company logo via webpack asset module for correct path resolution
+import { useCallback, useState } from 'react';
 import logo from '../../assets/logo-filled.png';
 import { findOrganization } from 'pulse-common/org';
 import { setupExcelPKCEAuth } from './pkceAuth';
 import { getAccessToken, signIn } from 'pulse-common/auth';
 import { configureClient } from 'pulse-common/api';
 import { getRelativeUrl } from '../services/relativeUrl';
-import { showConnectHelpDialog } from '../services/connectHelp';
 
 interface Props {
     api: TaskpaneApi;
@@ -26,9 +23,10 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     // }, []);
     // Registration URL opens in browser for new users
     const handleRegister = useCallback(() => {
-        const url = 'https://researchwiseai.com/register';
-        // open in new tab/window
-        window.open(url, '_blank');
+        window.open('https://researchwiseai.com/register', '_blank');
+    }, []);
+    const handleMoreInfo = useCallback(() => {
+        window.open('https://researchwiseai.com/pulse', '_blank');
     }, []);
 
     const clickConnect = useCallback(
@@ -87,65 +85,84 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     );
 
     return (
-        <div className="bg-[#f3f2f1] h-full">
-            <header className="flex flex-col items-center w-full h-[200px] mt-10 relative space-y-5">
-                <img
-                    width="90"
-                    height="90"
-                    src={logo}
-                    alt="Pulse"
-                    title="Pulse"
-                />
-                <h1 className="ms-font-su">Pulse</h1>
-            </header>
-            <main
-                id="app-body"
-                className="flex flex-col items-center w-full space-y-5 pb-10"
-            >
-                <h2 className="ms-font-xl">AI-Powered Analysis for Excel</h2>
-                <ul className="flex flex-col space-x-2">
-                    <li className="ms-ListItem">
-                        <i
-                            className="ms-Icon ms-Icon--Emoji2 ms-font-xl mr-3"
-                            aria-hidden="true"
-                        ></i>
-                        <span className="ms-font-m">Analyze Sentiment</span>
-                    </li>
-                    <li className="ms-ListItem">
-                        <i
-                            className="ms-Icon ms-Icon--BulletedListText ms-font-xl mr-3"
-                            aria-hidden="true"
-                        ></i>
-                        <span className="ms-font-m">Generate Themes</span>
-                    </li>
-                    <li className="ms-ListItem">
-                        <i
-                            className="ms-Icon ms-Icon--Tag ms-font-xl mr-3"
-                            aria-hidden="true"
-                        ></i>
-                        <span className="ms-font-m">Allocate Themes</span>
-                    </li>
-                </ul>
-                <TextField
-                    label="Email"
-                    className="w-[85%]"
+        <div className="pulse-auth" style={{ padding: 20 }}>
+            <div style={{ maxWidth: 360, margin: '0 auto' }}>
+                <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                    <img
+                        src={logo}
+                        alt="Pulse"
+                        width={72}
+                        height={72}
+                        style={{ display: 'block', margin: '0 auto' }}
+                    />
+                    <h2
+                        style={{
+                            margin: '12px 0 0',
+                            fontWeight: 600,
+                            fontSize: 20,
+                        }}
+                    >
+                        Sign in to Pulse
+                    </h2>
+                    <div style={{ marginTop: 4, color: '#605e5c', fontSize: 12 }}>
+                        by ResearchWiseAI
+                    </div>
+                </div>
+
+                <label htmlFor="pulse-auth-email" style={{ fontWeight: 600 }}>
+                    Email
+                </label>
+                <input
+                    id="pulse-auth-email"
+                    type="email"
                     placeholder="you@email.com"
                     value={email}
-                    onChange={(e, newValue) => setEmail(newValue || '')}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{
+                        width: '100%',
+                        padding: 8,
+                        margin: '8px 0',
+                        boxSizing: 'border-box',
+                        background: '#fff',
+                        border: '1px solid #8a8886',
+                        borderRadius: 4,
+                    }}
                 />
-                <div className="flex space-x-2 mt-5">
-                    <PrimaryButton
+
+                <div className="actions" style={{ marginTop: 8 }}>
+                    <button
+                        id="pulse-auth-continue"
                         disabled={connecting}
                         onClick={() => clickConnect(email)}
-                        id="start"
+                        style={{ display: 'block', width: '100%', background: '#106f7a', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: 4, cursor: 'pointer' }}
                     >
-                        {connecting ? 'Connecting...' : 'Start'}
-                    </PrimaryButton>
-                    <DefaultButton id="register" onClick={handleRegister}>
-                        Register
-                    </DefaultButton>
+                        {connecting ? 'Connecting…' : 'Sign in'}
+                    </button>
                 </div>
-            </main>
+
+                <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0', color: '#666' }}>
+                    <div style={{ flex: 1, height: 1, background: '#e1dfdd' }}></div>
+                    <div style={{ padding: '0 8px' }}>or</div>
+                    <div style={{ flex: 1, height: 1, background: '#e1dfdd' }}></div>
+                </div>
+
+                <div className="actions">
+                    <button
+                        id="pulse-auth-register"
+                        onClick={handleRegister}
+                        style={{ display: 'block', width: '100%', background: '#fff', color: '#106f7a', border: '1px solid #106f7a', padding: '10px 14px', borderRadius: 4, cursor: 'pointer' }}
+                    >
+                        Register
+                    </button>
+                    <button
+                        id="pulse-auth-moreinfo"
+                        onClick={handleMoreInfo}
+                        style={{ display: 'block', width: '100%', background: '#fff', color: '#323130', border: '1px solid #8a8886', padding: '10px 14px', borderRadius: 4, marginTop: 8, cursor: 'pointer' }}
+                    >
+                        More info
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }

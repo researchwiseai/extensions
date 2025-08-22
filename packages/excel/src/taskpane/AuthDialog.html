@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <title>Sign in to Pulse</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, sans-serif;
+                margin: 20px;
+            }
+            .spinner {
+                width: 16px;
+                height: 16px;
+                border: 2px solid #ccc;
+                border-top-color: #0078d4;
+                border-radius: 50%;
+                animation: spin 1s linear infinite;
+                display: inline-block;
+                margin-right: 8px;
+            }
+            @keyframes spin {
+                to {
+                    transform: rotate(360deg);
+                }
+            }
+            #loading {
+                display: flex;
+                align-items: center;
+                color: #444;
+            }
+            #form {
+                display: none;
+            }
+            input[type='email'] {
+                width: 100%;
+                padding: 6px;
+                margin: 8px 0;
+                box-sizing: border-box;
+            }
+            .actions {
+                margin-top: 12px;
+                text-align: right;
+            }
+
+            /* Button interaction styles */
+            button {
+                transition:
+                    background-color 0.15s ease,
+                    color 0.15s ease,
+                    border-color 0.15s ease,
+                    box-shadow 0.15s ease;
+            }
+            #continue:hover {
+                background: #0e616b;
+            }
+            #continue:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(16, 111, 122, 0.25);
+            }
+            #continue:active {
+                background: #0c5861;
+            }
+
+            #register:hover {
+                background: #f3f2f1;
+                color: #0e616b;
+                border-color: #0e616b;
+            }
+            #register:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(16, 111, 122, 0.25);
+            }
+            #register:active {
+                background: #edebe9;
+            }
+
+            #moreinfo:hover {
+                background: #f8f8f8;
+                border-color: #605e5c;
+            }
+            #moreinfo:focus {
+                outline: none;
+                box-shadow: 0 0 0 2px rgba(96, 94, 92, 0.25);
+            }
+            #moreinfo:active {
+                background: #f3f2f1;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="loading">
+            <span class="spinner"></span>
+            <span id="loadingText">Checking your Pulse sign-in…</span>
+        </div>
+        <div id="form" style="max-width: 360px; margin: 0 auto">
+            <div style="text-align: center; margin-bottom: 16px">
+                <img
+                    src="/assets/logo-filled.png"
+                    alt="Pulse"
+                    width="72"
+                    height="72"
+                />
+                <h2 style="margin: 12px 0 0; font-weight: 600">
+                    Sign in to Pulse
+                </h2>
+                <div style="margin-top: 4px; color: #605e5c; font-size: 12px">
+                    by ResearchWiseAI
+                </div>
+            </div>
+
+            <label for="email" style="font-weight: 600">Email</label>
+            <input type="email" id="email" placeholder="Email address" />
+            <div class="actions" style="margin-top: 8px">
+                <button
+                    id="continue"
+                    style="
+                        display: block;
+                        width: 100%;
+                        background: #106f7a;
+                        color: #fff;
+                        border: none;
+                        padding: 10px 14px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    "
+                >
+                    Sign in
+                </button>
+            </div>
+
+            <div
+                style="
+                    display: flex;
+                    align-items: center;
+                    margin: 16px 0;
+                    color: #666;
+                "
+            >
+                <div style="flex: 1; height: 1px; background: #e1dfdd"></div>
+                <div style="padding: 0 8px">or</div>
+                <div style="flex: 1; height: 1px; background: #e1dfdd"></div>
+            </div>
+
+            <div class="actions">
+                <button
+                    id="register"
+                    style="
+                        display: block;
+                        width: 100%;
+                        background: #fff;
+                        color: #106f7a;
+                        border: 1px solid #106f7a;
+                        padding: 10px 14px;
+                        border-radius: 4px;
+                        cursor: pointer;
+                    "
+                >
+                    Register
+                </button>
+                <button
+                    id="moreinfo"
+                    style="
+                        display: block;
+                        width: 100%;
+                        background: #fff;
+                        color: #323130;
+                        border: 1px solid #8a8886;
+                        padding: 10px 14px;
+                        border-radius: 4px;
+                        margin-top: 8px;
+                        cursor: pointer;
+                    "
+                >
+                    More info
+                </button>
+            </div>
+
+            <p
+                id="error"
+                style="color: #a80000; display: none; margin-top: 10px"
+            ></p>
+        </div>
+        <script>
+            (function () {
+                function showForm() {
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('form').style.display = 'block';
+                }
+                function showError(msg) {
+                    var el = document.getElementById('error');
+                    el.textContent =
+                        msg || 'Something went wrong. Please try again.';
+                    el.style.display = 'block';
+                }
+                document.addEventListener('DOMContentLoaded', function () {
+                    // Notify parent we are ready so it can decide to close or proceed silently
+                    try {
+                        Office.context.ui.messageParent(
+                            JSON.stringify({ type: 'ready' }),
+                        );
+                    } catch {}
+                    // After a short delay, if parent hasn't closed the dialog, show form
+                    setTimeout(function () {
+                        // If dialog still open, reveal the form to capture email
+                        showForm();
+                    }, 800);
+                    document
+                        .getElementById('continue')
+                        .addEventListener('click', function () {
+                            var email = (
+                                document.getElementById('email').value || ''
+                            ).trim();
+                            if (!email) {
+                                showError('Please enter your email.');
+                                return;
+                            }
+                            try {
+                                Office.context.ui.messageParent(
+                                    JSON.stringify({
+                                        type: 'email',
+                                        email: email,
+                                    }),
+                                );
+                            } catch (e) {
+                                showError(String((e && e.message) || e));
+                            }
+                        });
+                    document
+                        .getElementById('register')
+                        .addEventListener('click', function () {
+                            try {
+                                window.open(
+                                    'https://researchwiseai.com/register',
+                                    '_blank',
+                                );
+                            } catch {}
+                        });
+                    document
+                        .getElementById('moreinfo')
+                        .addEventListener('click', function () {
+                            try {
+                                window.open(
+                                    'https://researchwiseai.com/pulse',
+                                    '_blank',
+                                );
+                            } catch {}
+                        });
+                });
+            })();
+        </script>
+    </body>
+</html>

@@ -11,28 +11,10 @@ import { setupExcelPKCEAuth } from './pkceAuth';
 import { getAccessToken } from 'pulse-common/auth';
 import { configureClient } from 'pulse-common/api';
 import { Unauthenticated } from './Unauthenticated';
-import * as Ribbon from '../services/ribbon';
 import { initializeLocalStorage } from '../services/localStorage';
 
 let initialized = false;
 let pendingView: View | null = null;
-
-function checkForLogin(success?: () => void, failure?: () => void) {
-    const token = sessionStorage.getItem('pkce_token');
-    const email = sessionStorage.getItem('user-email');
-    const orgId = sessionStorage.getItem('org-id');
-    if (token && email && orgId) {
-        Ribbon.enableRibbonButtons();
-        Ribbon.updateHomeStartButtonLabel('Settings');
-        Ribbon.updateHomeStartButtonIcon(true);
-        success?.();
-    } else {
-        Ribbon.disableRibbonButtons();
-        Ribbon.updateHomeStartButtonLabel('Start');
-        Ribbon.updateHomeStartButtonIcon(false);
-        failure?.();
-    }
-}
 
 export function Taskpane({ api }: { api: TaskpaneApi }) {
     const [view, setView] = useState<View>();
@@ -46,7 +28,6 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
             console.log('Taskpane event', event);
             if (event instanceof GoToViewEvent) {
                 setView(event.view);
-                checkForLogin();
             }
         };
         const removeViewChangeListener = api.onViewChange(handleViewChange);
@@ -64,8 +45,6 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
         console.log('Taskpane view changed', view);
         Office.addin.showAsTaskpane();
     }, [view]);
-
-    checkForLogin();
 
     if (!email) {
         return <Unauthenticated api={api} setEmail={setEmail} />;
@@ -92,22 +71,6 @@ Office.onReady().then(() => {
     const organization = sessionStorage.getItem('org-id');
     const redirectUri = `${window.location.origin}/auth-callback.html`;
 
-    let attempts = 0;
-    const checkForLoginInterval = setInterval(() => {
-        attempts++;
-        console.log('Checking for login state...');
-        checkForLogin(
-            () => {
-                clearInterval(checkForLoginInterval);
-            },
-            () => {
-                if (attempts >= 3) {
-                    clearInterval(checkForLoginInterval);
-                }
-            },
-        );
-    }, 5_000);
-
     if (storedToken && storedEmail && organization) {
         // Already authenticated: configure and show authenticated view
         setupExcelPKCEAuth({
@@ -127,7 +90,7 @@ Office.onReady().then(() => {
         sessionStorage.removeItem('pkce_token');
         sessionStorage.removeItem('user-email');
         sessionStorage.removeItem('org-id');
-        Ribbon.disableRibbonButtons();
+        // Do not disable buttons; inconsistent state cleared above
     }
 
     const container = document.getElementById('taskpane-root')!;

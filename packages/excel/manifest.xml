@@ -100,7 +100,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>analyzeSentimentHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                             </Group>
                             <Group id="SummarizeGroup">
@@ -131,7 +130,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>summarizeHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                             </Group>
                             <Group id="ThemesGroup">
@@ -162,7 +160,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>generateThemesHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                                 <Control xsi:type="Button"
                                          id="AllocateThemesButton">
@@ -182,7 +179,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>allocateThemesHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                                 <Control xsi:type="Button"
                                          id="MatrixThemesButton">
@@ -202,7 +198,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>matrixThemesHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                                 <Control xsi:type="Button"
                                          id="SimilarityMatrixThemesButton">
@@ -222,7 +217,6 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>similarityMatrixThemesHandler</FunctionName>
                                     </Action>
-                                    <Enabled>false</Enabled>
                                 </Control>
                                 <Control xsi:type="Button"
                                          id="ManageThemesButton">

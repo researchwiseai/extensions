@@ -45,12 +45,11 @@ export async function analyzeSentiment(
     await context.sync();
 
     const result = await analyzeSentimentApi(inputs, {
-        fast: inputs.length < 200,
+        fast: inputs.length < 50,
         version: '2025-08-17',
         onProgress: (message) => {
             console.log(message);
         },
-        ignoreCache: true,
     });
 
     const name = `Sentiment_${Date.now()}`;
@@ -68,7 +67,7 @@ export async function analyzeSentiment(
     target.values = valuesToWrite;
 
     positions.forEach((pos, i) => {
-        const sentiment = result.results[i].sentiment;
+        const sentiment = result.results[i]?.sentiment ?? 'Error';
         const rowIndex = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
         const cell = outputSheet.getCell(rowIndex, 1);
         cell.values = [[sentiment]];

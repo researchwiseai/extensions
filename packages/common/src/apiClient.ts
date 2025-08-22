@@ -376,7 +376,6 @@ export async function extractElements(
 
 interface AnalyzeSentimentOptions {
     fast?: boolean;
-    ignoreCache?: boolean;
     onProgress?: (message: string) => void;
     version?: string; // Optional version for API compatibility
 }
@@ -394,7 +393,6 @@ export async function analyzeSentiment(
         url,
         {
             fast: options?.fast,
-            ignoreCache: options?.ignoreCache,
             inputs,
             version: options?.version,
         },

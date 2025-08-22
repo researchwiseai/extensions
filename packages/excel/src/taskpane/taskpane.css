@@ -1,2 +1,18 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
+
+/* Auth view button interactions */
+.pulse-auth #pulse-auth-continue { transition: background-color .15s ease, box-shadow .15s ease; }
+.pulse-auth #pulse-auth-continue:hover { background: #0e616b; }
+.pulse-auth #pulse-auth-continue:focus { outline: none; box-shadow: 0 0 0 2px rgba(16,111,122,.25); }
+.pulse-auth #pulse-auth-continue:active { background: #0c5861; }
+
+.pulse-auth #pulse-auth-register { transition: background-color .15s ease, color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.pulse-auth #pulse-auth-register:hover { background: #f3f2f1; color: #0e616b; border-color: #0e616b; }
+.pulse-auth #pulse-auth-register:focus { outline: none; box-shadow: 0 0 0 2px rgba(16,111,122,.25); }
+.pulse-auth #pulse-auth-register:active { background: #edebe9; }
+
+.pulse-auth #pulse-auth-moreinfo { transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.pulse-auth #pulse-auth-moreinfo:hover { background: #f8f8f8; border-color: #605e5c; }
+.pulse-auth #pulse-auth-moreinfo:focus { outline: none; box-shadow: 0 0 0 2px rgba(96,94,92,.25); }
+.pulse-auth #pulse-auth-moreinfo:active { background: #f3f2f1; }

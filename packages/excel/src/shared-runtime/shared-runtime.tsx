@@ -12,140 +12,146 @@ import { modalApi } from '../modal/api';
 import { getRelativeUrl } from '../services/relativeUrl';
 import { promptExtractionOptions } from '../services/promptExtractionOptions';
 import { extractElementsFromActiveWorksheet } from '../extractElements';
+// Feature flagging removed
 import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { summarizeFlow } from '../flows/summarizeFlow';
+import { withPulseAuth } from '../services/authGuard';
 
 function analyzeSentimentHandler(event: any) {
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader } = await confirmRange(context);
-            event.completed();
+    console.log('Analyze sentiment handler');
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader } =
+                    await confirmRange(context);
+                event.completed();
 
-            if (confirmed === null) {
-                console.log('User cancelled the dialog');
-                return;
+                if (confirmed === null) {
+                    console.log('User cancelled the dialog');
+                    return;
+                }
+
+                openFeedHandler();
+                await analyzeSentiment(context, confirmed, hasHeader);
+            } catch (e) {
+                console.error('Dialog error', e);
+                console.error((e as Error).stack);
+            } finally {
+                event.completed();
             }
-
-            openFeedHandler();
-            await analyzeSentiment(context, confirmed, hasHeader);
-        } catch (e) {
-            console.error('Dialog error', e);
-            console.error((e as Error).stack);
-        } finally {
-            event.completed();
-        }
-    }).catch((err) => {
-        console.error(err);
+        }).catch((err) => {
+            console.error(err);
+        });
     });
 }
 Office.actions.associate('analyzeSentimentHandler', analyzeSentimentHandler);
 
 async function generateThemesHandler(event: any) {
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader: _hasHeader } =
-                await confirmRange(context);
-            event.completed();
-
-            if (confirmed === null) {
-                console.log('User cancelled the dialog');
-                return;
+    console.log('Generate themes handler');
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader: _hasHeader } =
+                    await confirmRange(context);
+                if (confirmed === null) {
+                    console.log('User cancelled the dialog');
+                    return;
+                }
+                openFeedHandler();
+                await themeGenerationFlow(
+                    context,
+                    confirmed,
+                    _hasHeader,
+                    Date.now(),
+                );
+            } catch (e) {
+                console.error('Dialog error', e);
             }
-
-            openFeedHandler();
-            await themeGenerationFlow(
-                context,
-                confirmed,
-                _hasHeader,
-                Date.now(),
-            );
-        } catch (e) {
-            console.error('Dialog error', e);
-        } finally {
-            event.completed();
-        }
-    }).catch((err) => {
-        console.error(err);
-    });
+        });
+    }).catch((err) => console.error(err));
 }
 Office.actions.associate('generateThemesHandler', generateThemesHandler);
 
 function allocateThemesHandler(event: any) {
     console.log('Allocate themes handler');
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader: _hasHeader } =
-                await confirmRange(context);
-            event.completed();
-
-            if (confirmed === null) {
-                console.log('User cancelled the dialog');
-                return;
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader: _hasHeader } =
+                    await confirmRange(context);
+                if (confirmed === null) {
+                    console.log('User cancelled the dialog');
+                    return;
+                }
+                openFeedHandler();
+                await allocateThemesRoot(context, confirmed, _hasHeader);
+            } catch (e) {
+                console.error('Dialog error', e);
             }
-
-            openFeedHandler();
-            await allocateThemesRoot(context, confirmed, _hasHeader);
-        } catch (e) {
-            console.error('Dialog error', e);
-        } finally {
-            event.completed();
-        }
-    }).catch((err) => {
-        console.error(err);
-    });
+        });
+    }).catch((err) => console.error(err));
 }
 Office.actions.associate('allocateThemesHandler', allocateThemesHandler);
 
 function matrixThemesHandler(event: any) {
     console.log('Matrix themes handler');
-
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader: _hasHeader } =
-                await confirmRange(context);
-            event.completed();
-
-            if (confirmed === null) {
-                console.log('User cancelled the dialog');
-                return;
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader: _hasHeader } =
+                    await confirmRange(context);
+                if (confirmed === null) {
+                    console.log('User cancelled the dialog');
+                    return;
+                }
+                openFeedHandler();
+                await matrixThemesRootFlow(context, confirmed, _hasHeader);
+            } catch (e) {
+                console.error('Dialog error', e);
             }
-
-            openFeedHandler();
-            await matrixThemesRootFlow(context, confirmed, _hasHeader);
-        } catch (e) {
-            console.error('Dialog error', e);
-        } finally {
-            event.completed();
-        }
-    }).catch((err) => {
-        console.error(err);
-    });
+        });
+    }).catch((err) => console.error(err));
 }
 Office.actions.associate('matrixThemesHandler', matrixThemesHandler);
 
 function similarityMatrixThemesHandler(event: any) {
     console.log('Similarity matrix themes handler');
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader } = await confirmRange(context);
-            event.completed();
-
-            if (confirmed === null) {
-                console.log('User cancelled the dialog');
-                return;
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader } =
+                    await confirmRange(context);
+                if (confirmed === null) {
+                    console.log('User cancelled the dialog');
+                    return;
+                }
+                openFeedHandler();
+                await similarityMatrixThemesRootFlow(
+                    context,
+                    confirmed,
+                    hasHeader,
+                );
+            } catch (e) {
+                console.error('Dialog error', e);
             }
-
-            openFeedHandler();
-            await similarityMatrixThemesRootFlow(context, confirmed, hasHeader);
-        } catch (e) {
-            console.error('Dialog error', e);
-        } finally {
-            event.completed();
-        }
-    }).catch((err) => {
-        console.error(err);
-    });
+        });
+    }).catch((err) => console.error(err));
 }
 Office.actions.associate(
     'similarityMatrixThemesHandler',
@@ -231,21 +237,17 @@ Office.actions.associate('manageThemesHandler', manageThemesHandler);
 async function runExtractionsHandler(event: any) {
     console.log('Run extractions handler');
     try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
         const { category, expand } = await promptExtractionOptions();
-        event.completed();
         if (!category) {
             console.log('User cancelled extractions dialog or empty category');
             return;
         }
         openFeedHandler();
         await extractElementsFromActiveWorksheet(category, !!expand);
-    } catch (e) {
-        console.error('Extractions dialog error', e);
-    } finally {
-        if (event && typeof event.completed === 'function') {
-            try { event.completed(); } catch {}
-        }
-    }
+    }).catch((e) => console.error('Extractions dialog error', e));
 }
 Office.actions.associate('runExtractionsHandler', runExtractionsHandler);
 
@@ -262,55 +264,61 @@ function canComplete(event: unknown): event is CanComplete {
 }
 
 function summarizeHandler(event: any) {
-    Excel.run(async (context) => {
-        try {
-            const { range: confirmed, hasHeader } = await confirmRange(context);
-            if (confirmed === null) {
-                canComplete(event) && event.completed();
-                return;
-            }
-            // If user indicated header, seed a descriptive default question based on the header
-            let defaultQuestion: string | undefined = undefined;
-            if (hasHeader) {
-                try {
-                    const { sheet, rangeInfo } = await getSheetInputsAndPositions(
-                        context,
-                        confirmed,
-                    );
-                    const headerCell = sheet.getRangeByIndexes(
-                        rangeInfo.rowIndex,
-                        rangeInfo.columnIndex,
-                        1,
-                        1,
-                    );
-                    headerCell.load('values');
-                    await context.sync();
-                    const headerText = String(headerCell.values[0][0] ?? '').trim();
-                    if (headerText) {
-                        defaultQuestion = `Given the column header "${headerText}", what does this data tell us? Please summarize the key insights, trends, and any notable outliers.`;
-                    }
-                } catch (e) {
-                    console.warn('Could not load header cell for default question', e);
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            try {
+                const { range: confirmed, hasHeader } =
+                    await confirmRange(context);
+                if (confirmed === null) {
+                    return;
                 }
+                // If user indicated header, seed a descriptive default question based on the header
+                let defaultQuestion: string | undefined = undefined;
+                if (hasHeader) {
+                    try {
+                        const { sheet, rangeInfo } =
+                            await getSheetInputsAndPositions(
+                                context,
+                                confirmed,
+                            );
+                        const headerCell = sheet.getRangeByIndexes(
+                            rangeInfo.rowIndex,
+                            rangeInfo.columnIndex,
+                            1,
+                            1,
+                        );
+                        headerCell.load('values');
+                        await context.sync();
+                        const headerText = String(
+                            headerCell.values[0][0] ?? '',
+                        ).trim();
+                        if (headerText) {
+                            defaultQuestion = `Given the column header "${headerText}", what does this data tell us? Please summarize the key insights, trends, and any notable outliers.`;
+                        }
+                    } catch (e) {
+                        console.warn(
+                            'Could not load header cell for default question',
+                            e,
+                        );
+                    }
+                }
+                const { question, preset } =
+                    await promptSummarizeOptions(defaultQuestion);
+                if (!question || !preset) {
+                    return; // cancelled or incomplete
+                }
+                openFeedHandler();
+                await summarizeFlow(context, confirmed, hasHeader, {
+                    question,
+                    preset,
+                });
+            } catch (e) {
+                console.error('Summarize error', e);
             }
-
-            const { question, preset } = await promptSummarizeOptions(
-                defaultQuestion,
-            );
-            canComplete(event) && event.completed();
-            if (!question || !preset) {
-                return; // cancelled or incomplete
-            }
-            openFeedHandler();
-            await summarizeFlow(context, confirmed, hasHeader, {
-                question,
-                preset,
-            });
-        } catch (e) {
-            console.error('Summarize error', e);
-        } finally {
-            canComplete(event) && event.completed();
-        }
+        });
     }).catch((err) => console.error(err));
 }
 Office.actions.associate('summarizeHandler', summarizeHandler);
@@ -373,3 +381,5 @@ async function toggleThemeSetManager(event?: unknown) {
 }
 console.log('Associating toggleThemeSetManager');
 Office.actions.associate('toggleThemeSetManager', toggleThemeSetManager);
+
+// (Feature flagging removed)
