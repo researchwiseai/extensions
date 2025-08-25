@@ -5,7 +5,7 @@
            xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides"
            xsi:type="TaskPaneApp">
     <Id>e6d579a3-3169-458f-a1f3-c5bf0a868198</Id>
-    <Version>1.2.0.0</Version>
+    <Version>1.3.0.0</Version>
     <ProviderName>ResearchWiseAI</ProviderName>
     <DefaultLocale>en-US</DefaultLocale>
     <DisplayName DefaultValue="Pulse" />
@@ -238,7 +238,7 @@
                                     </Action>
                                 </Control>
                             </Group>
-                            <Group id="ExtractorsGroup">
+                            <!-- <Group id="ExtractorsGroup">
                                 <Label resid="ExtractorsGroup.Label" />
                                 <Icon>
                                     <bt:Image size="16"
@@ -267,7 +267,7 @@
                                         <FunctionName>runExtractionsHandler</FunctionName>
                                     </Action>
                                 </Control>
-                            </Group>
+                            </Group> -->
                             <Group id="TextGroup">
                                 <Label resid="TextGroup.Label" />
                                 <Icon>
@@ -348,25 +348,6 @@
                                     <bt:Image size="80"
                                               resid="Icon.80x80" />
                                 </Icon>
-                                <!-- <Control xsi:type="Button"
-                                         id="FeedButton">
-                                    <Label resid="FeedButton.Label" />
-                                    <Supertip>
-                                        <Title resid="FeedButton.Label" />
-                                        <Description resid="FeedButton.Tooltip" />
-                                    </Supertip>
-                                    <Icon>
-                                        <bt:Image size="16"
-                                                  resid="TaskListIcon.16x16" />
-                                        <bt:Image size="32"
-                                                  resid="TaskListIcon.32x32" />
-                                        <bt:Image size="80"
-                                                  resid="TaskListIcon.80x80" />
-                                    </Icon>
-                                    <Action xsi:type="ExecuteFunction">
-                                        <FunctionName>openFeedHandler</FunctionName>
-                                    </Action>
-                                </Control> -->
                                 <Control xsi:type="Button"
                                          id="HomePulseStartButton">
                                     <!-- <OverriddenByRibbonApi>true</OverriddenByRibbonApi> -->
