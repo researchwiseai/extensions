@@ -2,7 +2,7 @@
 openapi: 3.1.0
 info:
     title: Pulse API
-    version: 0.6.0
+    version: 0.7.0
     description: |
         A stateless RESTful service that provides **six** core capabilities:
 
@@ -93,8 +93,8 @@ tags:
           - In asynchronous mode, accepts up to 10,000 input strings and returns a job_id (HTTP 202).
     - name: extractions
       description: |
-          Extractions endpoint. Extracts elements matching themes with sync (fast=true) and async (fast=false or omitted) modes.
-          - Both modes support up to 200 input strings and up to 50 themes.
+          Extractions endpoint. Extracts mentions using a provided dictionary, with prompt style controlled by `type` (`named-entities` default, or `themes`).
+          - Both modes support up to 200 input strings and a practical limit on dictionary size.
           - Synchronous returns immediate results (HTTP 200); asynchronous returns a job_id (HTTP 202).
     - name: jobs
       description: |
@@ -105,7 +105,9 @@ paths:
     /embeddings:
         post:
             operationId: createEmbeddings
-            summary: Generate dense vector embeddings for input strings (synchronous or asynchronous).
+            summary:
+                Generate dense vector embeddings for input strings (synchronous
+                or asynchronous).
             description: |
                 Generates dense vector embeddings for input strings in a single batch.
                 Supports synchronous (fast=true) and asynchronous (fast=false or omitted) modes.
@@ -118,42 +120,43 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/EmbeddingsRequest"
+                            $ref: '#/components/schemas/EmbeddingsRequest'
                         examples:
                             Default:
                                 summary: Sample embeddings request
                                 value:
-                                    inputs: ["Hello world", "Test input"]
+                                    inputs: ['Hello world', 'Test input']
             responses:
-                "200":
+                '200':
                     description: Embeddings successfully created.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/EmbeddingsResponse"
+                                $ref: '#/components/schemas/EmbeddingsResponse'
                             examples:
                                 EmbeddingsResponseExample:
                                     summary: Sample successful response
                                     value:
                                         embeddings:
-                                            - text: "Hello world"
+                                            - text: 'Hello world'
                                               vector: [0.1, 0.2, 0.3]
-                                            - text: "Test input"
+                                            - text: 'Test input'
                                               vector: [0.4, 0.5, 0.6]
-                                        requestId: "example-request-id"
-                "400":
-                    description: Bad request - validation error (e.g., >200 strings).
+                                        requestId: 'example-request-id'
+                '400':
+                    description:
+                        Bad request - validation error (e.g., >200 strings).
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InvalidEmbeddingsRequest:
                                     summary: Sample validation error response
                                     value:
                                         message:
-                                            "Validation error: inputs must be an array of up to 200
-                                            strings."
+                                            'Validation error: inputs must be an
+                                            array of up to 200 strings.'
 
     /similarity:
         post:
@@ -171,23 +174,23 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/SimilarityRequest"
+                            $ref: '#/components/schemas/SimilarityRequest'
                         examples:
                             SelfExample:
                                 summary: Self-similarity request
                                 value:
-                                    set: ["alpha", "beta", "gamma"]
+                                    set: ['alpha', 'beta', 'gamma']
                             CrossExample:
                                 summary: Cross-similarity request
                                 value:
-                                    set_a: ["apple", "banana"]
-                                    set_b: ["orange", "pear"]
-                                    version: "v1"
+                                    set_a: ['apple', 'banana']
+                                    set_b: ['orange', 'pear']
+                                    version: 'v1'
                             SplitExample:
                                 summary: Sentence and newline splitting
                                 value:
                                     set_a: ["red\nblue"]
-                                    set_b: ["Hello world. Goodbye world."]
+                                    set_b: ['Hello world. Goodbye world.']
                                     split:
                                         set_a: newline
                                         set_b:
@@ -195,42 +198,44 @@ paths:
                                             agg: max
                                     flatten: true
             responses:
-                "200":
+                '200':
                     description: Similarity values returned successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/SimilarityResponse"
+                                $ref: '#/components/schemas/SimilarityResponse'
                             examples:
                                 SimilarityMatrixExample:
                                     summary: Cross-similarity matrix response
                                     value:
-                                        scenario: "cross"
-                                        mode: "matrix"
+                                        scenario: 'cross'
+                                        mode: 'matrix'
                                         matrix: [[1.0, 0.8], [0.8, 1.0]]
                                         flattened: [1.0, 0.8, 0.8, 1.0]
-                                        requestId: "example-request-id"
+                                        requestId: 'example-request-id'
                                 SplitResponseExample:
                                     summary: Sentence/newline splitting response
                                     value:
-                                        scenario: "cross"
-                                        mode: "flattened"
+                                        scenario: 'cross'
+                                        mode: 'flattened'
                                         n: 1
                                         flattened: [0.9]
-                                        requestId: "example-request-id"
-                "400":
-                    description: Bad request - validation error (e.g., invalid input).
+                                        requestId: 'example-request-id'
+                '400':
+                    description:
+                        Bad request - validation error (e.g., invalid input).
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InvalidSimilarityRequest:
                                     summary: Sample validation error response
                                     value:
                                         message:
-                                            "Invalid request: either 'set' or both 'set_a' and
-                                            'set_b' must be provided."
+                                            "Invalid request: either 'set' or
+                                            both 'set_a' and 'set_b' must be
+                                            provided."
 
     /themes:
         post:
@@ -251,62 +256,66 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/ThemesRequest"
+                            $ref: '#/components/schemas/ThemesRequest'
                         examples:
                             Default:
                                 summary: Basic themes request
                                 value:
                                     inputs:
                                         [
-                                            "fast service",
-                                            "slow response",
-                                            "easy setup",
+                                            'fast service',
+                                            'slow response',
+                                            'easy setup',
                                         ]
                             WithOptions:
                                 summary: Themes request with options
                                 value:
                                     inputs:
                                         [
-                                            "app crashes on launch",
-                                            "error message shown",
+                                            'app crashes on launch',
+                                            'error message shown',
                                         ]
                                     minThemes: 2
                                     maxThemes: 5
-                                    context: "focus on reliability issues"
-                                    version: "v1"
+                                    context: 'focus on reliability issues'
+                                    version: 'v1'
                                     prune: 5
             responses:
-                "200":
+                '200':
                     description: Thematic clustering completed successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ThemesResponse"
+                                $ref: '#/components/schemas/ThemesResponse'
                             examples:
                                 ThemesResponseExample:
                                     summary: Sample themes response
                                     value:
                                         themes:
-                                            - shortLabel: "UI Issue"
-                                              label: "User Interface Issues"
-                                              description: "Problems related to layout and design."
+                                            - shortLabel: 'UI Issue'
+                                              label: 'User Interface Issues'
+                                              description:
+                                                  'Problems related to layout
+                                                  and design.'
                                               representatives:
-                                                  - "Button not aligned"
-                                                  - "Text too small"
-                                        requestId: "example-request-id"
-                "400":
-                    description: Bad request - validation error (e.g., inputs >200 strings).
+                                                  - 'Button not aligned'
+                                                  - 'Text too small'
+                                        requestId: 'example-request-id'
+                '400':
+                    description:
+                        Bad request - validation error (e.g., inputs >200
+                        strings).
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InvalidThemesRequest:
                                     summary: Sample validation error response
                                     value:
                                         message:
-                                            "Validation error: inputs must be an array of 2 to 500
-                                            strings."
+                                            'Validation error: inputs must be an
+                                            array of 2 to 500 strings.'
 
     /clustering:
         post:
@@ -324,44 +333,44 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/ClusteringRequest"
+                            $ref: '#/components/schemas/ClusteringRequest'
                         examples:
                             Default:
                                 summary: Basic clustering request
                                 value:
-                                    inputs: ["doc one", "doc two"]
+                                    inputs: ['doc one', 'doc two']
                                     k: 2
                             WithAlgorithm:
                                 summary: Specify algorithm
                                 value:
-                                    inputs: ["a", "b", "c"]
+                                    inputs: ['a', 'b', 'c']
                                     k: 2
                                     algorithm: agglomerative
                             HDBSCAN:
                                 summary: Use HDBSCAN
                                 value:
-                                    inputs: ["a", "b", "c", "d"]
+                                    inputs: ['a', 'b', 'c', 'd']
                                     k: 2
                                     algorithm: hdbscan
                             SKMeans:
                                 summary: Use spherical k-means
                                 value:
-                                    inputs: ["one", "two", "three"]
+                                    inputs: ['one', 'two', 'three']
                                     k: 2
                                     algorithm: skmeans
             responses:
-                "200":
+                '200':
                     description: Clustering completed successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ClusteringResponse"
-                "400":
+                                $ref: '#/components/schemas/ClusteringResponse'
+                '400':
                     description: Bad request - validation error.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
     /sentiment:
         post:
             operationId: analyzeSentiment
@@ -380,105 +389,139 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/SentimentRequest"
+                            $ref: '#/components/schemas/SentimentRequest'
                         examples:
                             Default:
                                 summary: Basic sentiment request
                                 value:
-                                    inputs: ["I love this", "I hate that"]
+                                    inputs: ['I love this', 'I hate that']
                             WithVersion:
                                 summary: Sentiment request with version
                                 value:
-                                    inputs: ["It was okay"]
-                                    version: "2025-08-17"
+                                    inputs: ['It was okay']
+                                    version: '2025-08-17'
                             OriginalVersion:
                                 summary: Sentiment request using legacy version
                                 value:
-                                    inputs: ["It was okay"]
-                                    version: "original"
+                                    inputs: ['It was okay']
+                                    version: 'original'
             responses:
-                "200":
+                '200':
                     description: Sentiment analysis results.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/SentimentResponse"
+                                $ref: '#/components/schemas/SentimentResponse'
                             examples:
                                 SentimentResponseExample:
                                     summary: Sample sentiment response
                                     value:
                                         results:
-                                            - sentiment: "positive"
+                                            - sentiment: 'positive'
                                               confidence: 0.95
-                                            - sentiment: "negative"
+                                            - sentiment: 'negative'
                                               confidence: 0.85
-                                        requestId: "example-request-id"
-                "400":
+                                        requestId: 'example-request-id'
+                '400':
                     description: Bad request - validation error.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InvalidSentimentRequest:
                                     summary: Sample validation error response
                                     value:
                                         message:
-                                            "Validation error: inputs must be an array of 1 to 10000
-                                            strings."
+                                            'Validation error: inputs must be an
+                                            array of 1 to 10000 strings.'
 
     /extractions:
         post:
             operationId: extractElements
-            summary: Extract terms matching a category from input texts.
+            summary: Extract terms or theme mentions from input texts.
             description: |
-                Extracts mentions from each input based on a required category and dictionary.
-                Optionally expands the dictionary before matching.
+                Extracts mentions from each input based on a provided dictionary.
+                Optionally expands the dictionary before matching. The optional `type` parameter
+                selects prompt style: `named-entities` (default) or `themes`.
             tags: [extractions]
             requestBody:
                 required: true
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/ExtractionsRequest"
+                            $ref: '#/components/schemas/ExtractionsRequest'
                         examples:
                             Default:
-                                summary: Basic extractions request
+                                summary:
+                                    Basic extractions request (named entities)
                                 value:
                                     inputs:
                                         [
-                                            "The food was great and the service was slow.",
+                                            'The food was great and the service
+                                            was slow.',
                                         ]
-                                    category: "service"
-                                    dictionary: ["service", "wait time"]
+                                    dictionary: ['service', 'wait time']
+                                    type: 'named-entities'
+                            Themes:
+                                summary: Extractions using theme labels
+                                value:
+                                    inputs:
+                                        [
+                                            'Checkout was confusing and payment
+                                            failed twice',
+                                        ]
+                                    dictionary:
+                                        [
+                                            'Checkout UX',
+                                            'Payments',
+                                            'Account setup',
+                                        ]
+                                    type: 'themes'
             responses:
-                "200":
+                '200':
                     description: Extraction results returned successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ExtractionsResponse"
+                                $ref: '#/components/schemas/ExtractionsResponse'
                             examples:
                                 ExtractionsResponseExample:
                                     summary: Sample extractions response
                                     value:
-                                        dictionary: ["service", "wait time"]
+                                        dictionary: ['service', 'wait time']
                                         results:
                                             - [
-                                                ["service"],
-                                                ["service was slow"],
+                                                  ['service'],
+                                                  ['service was slow'],
                                               ]
-                "400":
+                                        requestId: 'example-request-id'
+                '202':
+                    description:
+                        Accepted for asynchronous processing (fast=false).
+                        Returns a job_id to poll via /jobs.
+                    content:
+                        application/json:
+                            schema:
+                                type: object
+                                properties:
+                                    job_id:
+                                        type: string
+                                required: [job_id]
+                                additionalProperties: false
+                '400':
                     description: Bad request - validation error.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InvalidExtractionsRequest:
                                     summary: Sample validation error response
                                     value:
-                                        message: "Validation error: invalid extraction request"
+                                        message:
+                                            'Validation error: invalid
+                                            extraction request'
 
     /summaries:
         post:
@@ -496,26 +539,26 @@ paths:
                 content:
                     application/json:
                         schema:
-                            $ref: "#/components/schemas/SummariesRequest"
+                            $ref: '#/components/schemas/SummariesRequest'
                         examples:
                             Default:
                                 summary: Basic summaries request
                                 value:
-                                    inputs: ["Hello world"]
-                                    question: "What is said?"
+                                    inputs: ['Hello world']
+                                    question: 'What is said?'
             responses:
-                "200":
+                '200':
                     description: Summary returned successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/SummariesResponse"
-                "400":
+                                $ref: '#/components/schemas/SummariesResponse'
+                '400':
                     description: Bad request - validation error.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
 
     /jobs:
         get:
@@ -534,45 +577,45 @@ paths:
                       type: string
                   description: Unique identifier for the job.
             responses:
-                "200":
+                '200':
                     description: Job status returned successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/JobStatusResponse"
-                "400":
+                                $ref: '#/components/schemas/JobStatusResponse'
+                '400':
                     description: Missing or invalid jobId query parameter.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 MissingJobId:
                                     summary: Missing jobId error response
                                     value:
-                                        message: "Missing jobId query parameter"
-                "404":
+                                        message: 'Missing jobId query parameter'
+                '404':
                     description: Job not found.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 JobNotFound:
                                     summary: Job not found error response
                                     value:
-                                        message: "Job not found"
-                "500":
+                                        message: 'Job not found'
+                '500':
                     description: Internal server error.
                     content:
                         application/json:
                             schema:
-                                $ref: "#/components/schemas/ErrorResponse"
+                                $ref: '#/components/schemas/ErrorResponse'
                             examples:
                                 InternalError:
                                     summary: Internal server error response
                                     value:
-                                        message: "Internal server error"
+                                        message: 'Internal server error'
 
 components:
     securitySchemes:
@@ -619,15 +662,16 @@ components:
                     type: array
                     maxItems: 2000
                     description:
-                        List of input strings. For synchronous (fast=true) mode, max 200; for
-                        asynchronous (fast=false or omitted) mode, max 2000.
+                        List of input strings. For synchronous (fast=true) mode,
+                        max 200; for asynchronous (fast=false or omitted) mode,
+                        max 2000.
                     items:
                         type: string
                 fast:
                     type: boolean
                     description:
-                        Flag indicating synchronous (true) or asynchronous (false) processing.
-                        Default false.
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
             required: [inputs]
             additionalProperties: false
 
@@ -655,9 +699,11 @@ components:
                     type: array
                     maxItems: 200
                     items:
-                        $ref: "#/components/schemas/EmbeddingDocument"
+                        $ref: '#/components/schemas/EmbeddingDocument'
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [embeddings, requestId]
             additionalProperties: false
 
@@ -677,7 +723,9 @@ components:
                       window_size:
                           type: integer
                           minimum: 1
-                          description: Sliding window size applied to the base unit. Default 1.
+                          description:
+                              Sliding window size applied to the base unit.
+                              Default 1.
                           default: 1
                       stride_size:
                           type: integer
@@ -689,13 +737,13 @@ components:
 
         Split:
             oneOf:
-                - $ref: "#/components/schemas/UnitAgg"
+                - $ref: '#/components/schemas/UnitAgg'
                 - type: object
                   properties:
                       set_a:
-                          $ref: "#/components/schemas/UnitAgg"
+                          $ref: '#/components/schemas/UnitAgg'
                       set_b:
-                          $ref: "#/components/schemas/UnitAgg"
+                          $ref: '#/components/schemas/UnitAgg'
                   additionalProperties: false
 
         SimilarityRequest:
@@ -706,8 +754,9 @@ components:
                     minItems: 2
                     maxItems: 44721
                     description:
-                        Array of strings for self-similarity. For synchronous (fast=true), max 500;
-                        for asynchronous (fast=false or omitted), max 44,721.
+                        Array of strings for self-similarity. For synchronous
+                        (fast=true), max 500; for asynchronous (fast=false or
+                        omitted), max 44,721.
                     items:
                         type: string
                 set_a:
@@ -715,8 +764,9 @@ components:
                     minItems: 1
                     maxItems: 2000000000
                     description:
-                        Array of strings for cross-similarity. For synchronous (fast=true), ensure
-                        |set_a|×|set_b| ≤ 20,000; for asynchronous (fast=false or omitted), ensure
+                        Array of strings for cross-similarity. For synchronous
+                        (fast=true), ensure |set_a|×|set_b| ≤ 20,000; for
+                        asynchronous (fast=false or omitted), ensure
                         |set_a|×|set_b| ≤ 2,000,000,000.
                     items:
                         type: string
@@ -725,8 +775,9 @@ components:
                     minItems: 1
                     maxItems: 2000000000
                     description:
-                        Array of strings for cross-similarity. For synchronous (fast=true), ensure
-                        |set_a|×|set_b| ≤ 20,000; for asynchronous (fast=false or omitted), ensure
+                        Array of strings for cross-similarity. For synchronous
+                        (fast=true), ensure |set_a|×|set_b| ≤ 20,000; for
+                        asynchronous (fast=false or omitted), ensure
                         |set_a|×|set_b| ≤ 2,000,000,000.
                     items:
                         type: string
@@ -735,15 +786,15 @@ components:
                 fast:
                     type: boolean
                     description:
-                        Flag indicating synchronous (true) or asynchronous (false) processing.
-                        Default false.
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
                 flatten:
                     type: boolean
                     description:
-                        For cross-similarity, flatten the matrix into a 1-D array. Ignored for
-                        self-similarity. Default false.
+                        For cross-similarity, flatten the matrix into a 1-D
+                        array. Ignored for self-similarity. Default false.
                 split:
-                    $ref: "#/components/schemas/Split"
+                    $ref: '#/components/schemas/Split'
             oneOf:
                 - required: [set]
                 - required: [set_a, set_b]
@@ -777,6 +828,8 @@ components:
                             format: float
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [scenario, mode, n, flattened, requestId]
             additionalProperties: false
 
@@ -788,8 +841,9 @@ components:
                     minItems: 2
                     maxItems: 500
                     description:
-                        List of input strings. For synchronous (fast=true) mode, max 200; for
-                        asynchronous (fast=false or omitted) mode, max 500.
+                        List of input strings. For synchronous (fast=true) mode,
+                        max 200; for asynchronous (fast=false or omitted) mode,
+                        max 500.
                     items:
                         type: string
                 minThemes:
@@ -805,15 +859,15 @@ components:
                 prune:
                     type: integer
                     description: >-
-                        Cutoff percentage threshold (0-25) below which themes are pruned;
-                        if 0, pruning is disabled.
+                        Cutoff percentage threshold (0-25) below which themes
+                        are pruned; if 0, pruning is disabled.
                     minimum: 0
                     maximum: 25
                 fast:
                     type: boolean
                     description:
-                        Flag indicating synchronous (true) or asynchronous (false) processing.
-                        Default false.
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
             required: [inputs]
             additionalProperties: false
 
@@ -843,9 +897,11 @@ components:
                     type: array
                     maxItems: 50
                     items:
-                        $ref: "#/components/schemas/Theme"
+                        $ref: '#/components/schemas/Theme'
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [themes, requestId]
             additionalProperties: false
 
@@ -869,7 +925,9 @@ components:
                     enum: [kmeans, skmeans, agglomerative, hdbscan]
                 fast:
                     type: boolean
-                    description: Flag indicating synchronous (true) or asynchronous (false) processing.
+                    description:
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing.
             required: [inputs, k]
             additionalProperties: false
 
@@ -893,9 +951,11 @@ components:
                 clusters:
                     type: array
                     items:
-                        $ref: "#/components/schemas/Cluster"
+                        $ref: '#/components/schemas/Cluster'
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [algorithm, clusters, requestId]
             additionalProperties: false
         SentimentRequest:
@@ -906,8 +966,9 @@ components:
                     minItems: 1
                     maxItems: 10000
                     description:
-                        List of input strings. For synchronous (fast=true) mode, max 200; for
-                        asynchronous (fast=false or omitted) mode, max 10,000.
+                        List of input strings. For synchronous (fast=true) mode,
+                        max 200; for asynchronous (fast=false or omitted) mode,
+                        max 10,000.
                     items:
                         type: string
                 version:
@@ -917,8 +978,8 @@ components:
                 fast:
                     type: boolean
                     description:
-                        Flag indicating synchronous (true) or asynchronous (false) processing.
-                        Default false.
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
             required: [inputs]
             additionalProperties: false
 
@@ -942,9 +1003,11 @@ components:
                     type: array
                     maxItems: 10000
                     items:
-                        $ref: "#/components/schemas/SentimentResult"
+                        $ref: '#/components/schemas/SentimentResult'
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [results, requestId]
             additionalProperties: false
 
@@ -959,25 +1022,39 @@ components:
                         type: string
                 category:
                     type: string
+                    description:
+                        Deprecated; accepted for backwards compatibility and
+                        ignored.
+                type:
+                    type: string
+                    enum: [named-entities, themes]
+                    description:
+                        Optional extraction type. Defaults to `named-entities`.
+                        When `themes`, `expand_dictionary` must be false.
                 dictionary:
                     type: array
                     items:
                         type: string
                     description: Required list of canonical terms to match.
+                    minItems: 3
+                    maxItems: 200
                 expand_dictionary:
                     type: boolean
                     default: false
+                    description: Must be false when `type` is `themes`.
                 expand_dictionary_limit:
                     type: number
-                    description: Optional limit on number of additions when expanding.
+                    description:
+                        Optional limit on number of additions when expanding.
                 version:
                     type: string
                     description: Optional model version (e.g., "original").
                 fast:
                     type: boolean
-                    description: Synchronous (true) or asynchronous (false) processing. Default false.
-                    default: false
-            required: [inputs, category, dictionary]
+                    description:
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
+            required: [inputs, dictionary]
             additionalProperties: false
 
         ExtractionsResponse:
@@ -997,6 +1074,8 @@ components:
                                 type: string
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [dictionary, results, requestId]
             additionalProperties: false
 
@@ -1030,8 +1109,8 @@ components:
                 fast:
                     type: boolean
                     description:
-                        Flag indicating synchronous (true) or asynchronous (false) processing.
-                        Default false.
+                        Flag indicating synchronous (true) or asynchronous
+                        (false) processing. Default false.
             required: [inputs, question]
             additionalProperties: false
 
@@ -1042,6 +1121,8 @@ components:
                     type: string
                 requestId:
                     type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
             required: [summary, requestId]
             additionalProperties: false
 
@@ -1056,4 +1137,38 @@ components:
                 result_url:
                     type: string
             required: [status]
+            additionalProperties: false
+
+        UsageRecord:
+            type: object
+            properties:
+                feature:
+                    type: string
+                    enum:
+                        [
+                            embeddings,
+                            similarity,
+                            sentiment,
+                            themes,
+                            extractions,
+                            clustering,
+                            summaries,
+                        ]
+                quantity:
+                    type: integer
+                    minimum: 0
+            required: [feature, quantity]
+            additionalProperties: false
+
+        UsageReport:
+            type: object
+            properties:
+                records:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/UsageRecord'
+                total:
+                    type: integer
+                    minimum: 0
+            required: [records, total]
             additionalProperties: false
