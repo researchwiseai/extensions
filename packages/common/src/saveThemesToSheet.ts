@@ -12,6 +12,18 @@ export interface SaveThemesAdapter<SheetLike = any> {
     ): void | Promise<void>;
 }
 
+function colLetterFromIndex(index: number): string {
+    // index is 1-based column number
+    let n = index;
+    let s = '';
+    while (n > 0) {
+        const rem = (n - 1) % 26;
+        s = String.fromCharCode(65 + rem) + s;
+        n = Math.floor((n - 1) / 26);
+    }
+    return s;
+}
+
 export async function saveThemesToSheet<SheetLike>(
     opts: SaveThemesAdapter<SheetLike>,
 ): Promise<SheetLike> {
@@ -19,8 +31,12 @@ export async function saveThemesToSheet<SheetLike>(
     const sheet = await addSheet('Themes');
     await clearSheet(sheet);
 
+    const maxReps = Math.min(
+        10,
+        Math.max(0, ...themes.map((t) => (t.representatives?.length ?? 0))),
+    );
     const representativeHeaders = Array.from(
-        { length: 10 },
+        { length: maxReps },
         (_, i) => `Representative ${i + 1}`,
     );
     const headers = [
@@ -29,11 +45,12 @@ export async function saveThemesToSheet<SheetLike>(
         'Description',
         ...representativeHeaders,
     ];
-    await write(sheet, 'A1:M1', [headers]);
+    const lastCol = colLetterFromIndex(3 + maxReps);
+    await write(sheet, `A1:${lastCol}1`, [headers]);
 
-    const rows = themesToRows(themes);
+    const rows = themesToRows(themes, maxReps);
     const end = rows.length + 1;
-    const range = `A2:M${end}`;
+    const range = `A2:${lastCol}${end}`;
     await write(sheet, range, rows);
 
     return sheet;

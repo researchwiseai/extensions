@@ -14,15 +14,17 @@ export function writeThemes(
     } else {
         outputSheet.clear();
     }
-    const headers = [
-        'Label',
-        'Short Label',
-        'Description',
-        'Representative 1',
-        'Representative 2',
-    ];
+    const repCount = Math.min(
+        10,
+        Math.max(0, ...themes.map((t) => (t.representatives?.length ?? 0))),
+    );
+    const repHeaders = Array.from(
+        { length: repCount },
+        (_, i) => `Representative ${i + 1}`,
+    );
+    const headers = ['Label', 'Short Label', 'Description', ...repHeaders];
     outputSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-    const rows = themesToRows(themes);
+    const rows = themesToRows(themes, repCount);
     if (rows.length > 0) {
         outputSheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
     }
