@@ -108,20 +108,31 @@ async function postWithJob(
     });
 
     if (response.status === 200) {
+        // Parse to extract optional usage for cost display
+        const data = await response.json();
+
+        // Try to read usage.total credits and format cost in USD
+        const totalCredits = data?.usage?.total;
+        const costSuffix =
+            typeof totalCredits === 'number'
+                ? ` • $${(totalCredits * 0.01).toFixed(2)}`
+                : '';
+
         Jobs.updateItem({
             jobId: jobItem.jobId,
-            message: options.taskName
-                ? `${options.taskName} completed`
-                : 'Request completed',
+            message:
+                (options.taskName
+                    ? `${options.taskName} completed`
+                    : 'Request completed') + costSuffix,
             status: 'completed',
         });
 
         options.onProgress?.(
-            options.taskName
+            (options.taskName
                 ? `${options.taskName} complete successfully`
-                : 'Request completed successfully',
+                : 'Request completed successfully') + costSuffix,
         );
-        return response.json();
+        return data;
     } else if (response.status === 202) {
         const startTime = Date.now();
         const elapsedTime = () => Date.now() - startTime;
@@ -208,18 +219,26 @@ async function postWithJob(
                         throw new Error(`${resultResp.statusText}: ${errText}`);
                     }
 
+                    // Parse JSON to read optional usage for cost display
+                    const data = await resultResp.json();
+                    const totalCredits = data?.usage?.total;
+                    const costSuffix =
+                        typeof totalCredits === 'number'
+                            ? ` • $${(totalCredits * 0.01).toFixed(2)}`
+                            : '';
+
                     Jobs.updateItem({
                         jobId: jobItem.jobId,
-                        message: `Job completed in ${elapsedTimeStr()}`,
+                        message: `Job completed in ${elapsedTimeStr()}${costSuffix}`,
                         status: 'completed',
                     });
 
                     options.onProgress?.(
-                        options.taskName
+                        (options.taskName
                             ? `${options.taskName} job completed successfully`
-                            : 'Job completed successfully',
+                            : 'Job completed successfully') + costSuffix,
                     );
-                    return await resultResp.json();
+                    return data;
                 } catch (err) {
                     console.error(err);
                     Jobs.updateItem({
