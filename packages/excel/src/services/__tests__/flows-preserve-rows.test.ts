@@ -26,8 +26,10 @@ describe('flows writing', () => {
             getRange: jest.fn(() => ({
                 values: undefined,
                 getResizedRange: jest.fn(() => ({ values: undefined })),
+                format: { wrapText: false, columnWidth: 0 },
             })),
             getRangeByIndexes: jest.fn(() => ({ values: undefined })),
+            getUsedRange: jest.fn(() => ({ format: { autofitRows: jest.fn() } })),
         } as any;
         const context = {
             workbook: { worksheets: { add: jest.fn(() => outputSheet) } },

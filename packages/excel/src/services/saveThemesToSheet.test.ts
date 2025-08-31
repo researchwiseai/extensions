@@ -15,16 +15,22 @@ const mockExcel = {
 global.Excel = mockExcel;
 
 describe('saveThemesToSheet', () => {
-    // Header includes Label, Short Label, Description, and up to 10 representative columns
-    const MAX_REPRESENTATIVES = 10;
-    const expectedHeaders = [
-        'Label',
-        'Short Label',
-        'Description',
-        ...Array.from({ length: MAX_REPRESENTATIVES }, (_, i) => `Representative ${i + 1}`),
-    ];
-    const lastCol = String.fromCharCode('A'.charCodeAt(0) + expectedHeaders.length - 1);
-    const headerRangeStr = `A1:${lastCol}1`;
+    function expectedHeadersFor(themes: Theme[]) {
+        const repCount = Math.min(
+            10,
+            Math.max(0, ...themes.map((t) => t.representatives?.length ?? 0)),
+        );
+        return [
+            'Label',
+            'Short Label',
+            'Description',
+            ...Array.from({ length: repCount }, (_, i) => `Representative ${i + 1}`),
+        ];
+    }
+    function lastColForHeaders(headers: string[]) {
+        const colIndex = headers.length; // 1-based
+        return String.fromCharCode('A'.charCodeAt(0) + colIndex - 1);
+    }
 
     let mockContext: any;
     let mockWorksheet: any;
@@ -97,7 +103,9 @@ describe('saveThemesToSheet', () => {
         expect(mockUsedRange.clear).not.toHaveBeenCalled();
 
         // Verify header creation and formatting
-        // Verify header creation and formatting
+        const expectedHeaders = expectedHeadersFor(mockThemes);
+        const lastCol = lastColForHeaders(expectedHeaders);
+        const headerRangeStr = `A1:${lastCol}1`;
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(headerRangeStr);
         expect(mockHeaderRange.values).toEqual([expectedHeaders]);
         expect(mockFormat.fill.color).toBe('#D9EAD3');
@@ -148,6 +156,8 @@ describe('saveThemesToSheet', () => {
         expect(mockUsedRange.clear).toHaveBeenCalled();
 
         // Verify data population (same as the first test)
+        const expectedHeaders = expectedHeadersFor(mockThemes);
+        const lastCol = lastColForHeaders(expectedHeaders);
         const expectedDataRange = `A2:${lastCol}${mockThemes.length + 1}`;
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(expectedDataRange);
         expect(mockDataRange.values).not.toBeNull();
@@ -156,13 +166,17 @@ describe('saveThemesToSheet', () => {
     });
 
     it('should handle an empty array of themes', async () => {
-        await saveThemesToSheet({ context: mockContext, themes: [] });
+        const emptyThemes: Theme[] = [];
+        await saveThemesToSheet({ context: mockContext, themes: emptyThemes });
 
         expect(mockContext.workbook.worksheets.add).toHaveBeenCalledWith(
             'Themes',
         );
 
         // Headers should still be written
+        const expectedHeaders = expectedHeadersFor(emptyThemes);
+        const lastCol = lastColForHeaders(expectedHeaders);
+        const headerRangeStr = `A1:${lastCol}1`;
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(headerRangeStr);
         expect(mockHeaderRange.values).toEqual([expectedHeaders]);
 
