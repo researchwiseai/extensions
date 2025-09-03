@@ -489,7 +489,7 @@
                            DefaultValue="Analyze Sentiment" />
                 <!-- Pulse tab and controls labels -->
                 <bt:String id="PulseTab.Label"
-                           DefaultValue="Pulse" />
+                           DefaultValue="Pulse local" />
                 <bt:String id="PulseGroup.Label"
                            DefaultValue="Pulse" />
                 <bt:String id="SentimentGroup.Label"

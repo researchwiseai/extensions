@@ -397,6 +397,33 @@ export function getSettings(): { email: string; isAuthorized: boolean } {
 }
 
 /**
+ * Returns the organization's credit balances.
+ * Uses authenticated call to WEB_BASE /api/credits/organization.
+ */
+export async function getOrganizationCredits(): Promise<{
+    total: number;
+    complimentaryActive: number;
+}> {
+    const url = `${WEB_BASE}/api/credits/organization`;
+    const token = await getAccessToken();
+    const resp = UrlFetchApp.fetch(url, {
+        method: 'get',
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+        muteHttpExceptions: true,
+    });
+    const status = resp.getResponseCode();
+    if (status < 200 || status >= 300) {
+        throw new Error(`Failed to fetch credits (${status})`);
+    }
+    const data = JSON.parse(resp.getContentText() || '{}');
+    const total = Number(data.total) || 0;
+    const complimentaryActive = Number(data.complimentaryActive) || 0;
+    return { total, complimentaryActive };
+}
+
+/**
  * Shows a modeless dialog to collect custom theme ranges.
  * @param {string} dataRange A1 notation of the data range to allocate.
  */

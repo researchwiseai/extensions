@@ -64,6 +64,10 @@ function sleep(ms: number): Promise<void> {
     return sleepFn(ms);
 }
 
+export function getBaseUrl(): string {
+    return baseUrl;
+}
+
 interface PostWithJobOptions {
     intervalMs?: number;
     onProgress?: (message: string) => void;

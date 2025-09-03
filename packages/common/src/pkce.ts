@@ -50,6 +50,10 @@ export async function generatePKCECodes(): Promise<{
     return { codeVerifier, codeChallenge };
 }
 
+interface BuildAuthorizeUrlOptions {
+    authorizeUrlPath?: string;
+}
+
 /** Build the OAuth2 authorization URL with PKCE parameters. */
 /**
  * Build the OAuth2 authorization URL with PKCE parameters.
@@ -73,8 +77,11 @@ export function buildAuthorizeUrl(
     state: string,
     organization: string,
     audience?: string,
+    options?: BuildAuthorizeUrlOptions,
 ): string {
-    const url = new URL(`https://${domain}/authorize`);
+    const url = new URL(
+        `https://${domain}${options?.authorizeUrlPath || '/authorize'}`,
+    );
     url.searchParams.set('response_type', 'code');
     url.searchParams.set('client_id', clientId);
     url.searchParams.set('redirect_uri', redirectUri);
@@ -92,6 +99,10 @@ export function buildAuthorizeUrl(
     return url.toString();
 }
 
+interface ExchangeCodeForTokenOptions {
+    tokenUrlPath?: string;
+}
+
 /** Exchange an authorization code for tokens via the token endpoint. */
 export async function exchangeCodeForToken(
     domain: string,
@@ -99,8 +110,9 @@ export async function exchangeCodeForToken(
     code: string,
     codeVerifier: string,
     redirectUri: string,
+    options?: ExchangeCodeForTokenOptions,
 ): Promise<any> {
-    const url = `https://${domain}/oauth/token`;
+    const url = `https://${domain}${options?.tokenUrlPath || '/oauth/token'}`;
     const res = await fetchFn(url, {
         method: 'post',
         headers: { 'Content-Type': 'application/json' },

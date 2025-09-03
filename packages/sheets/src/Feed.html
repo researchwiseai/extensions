@@ -8,6 +8,9 @@
                 margin: 0;
                 padding: 10px;
                 background: #f3f2f1;
+                /* Reserve space for fixed footer */
+                min-height: 100vh;
+                padding-bottom: 64px; /* footer height */
             }
             .item {
                 background: #fff;
@@ -32,11 +35,47 @@
                 cursor: pointer;
                 text-decoration: underline;
             }
+            .footer {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: #fff;
+                border-top: 1px solid #ddd;
+                padding: 8px 12px;
+                box-shadow: 0 -1px 3px rgba(0,0,0,0.06);
+            }
+            .credits-text {
+                color: #444;
+                font-weight: 600;
+                font-size: 13px;
+            }
+            .progress {
+                width: 100%;
+                height: 6px;
+                background: #eee;
+                border-radius: 3px;
+                margin-top: 6px;
+                overflow: hidden;
+            }
+            .progress-bar {
+                height: 100%;
+                width: 0%;
+                background: #4caf50;
+                transition: width 0.25s ease-in-out;
+            }
         </style>
     </head>
     <body>
         <h5>Feed</h5>
         <div id="feed"></div>
+        <!-- Fixed footer with credits -->
+        <div id="footerCredits" class="footer" style="display: none">
+            <div id="creditsText" class="credits-text"></div>
+            <div id="creditsProgress" class="progress" style="display: none">
+                <div id="creditsBar" class="progress-bar"></div>
+            </div>
+        </div>
         <script>
             function css(status) {
                 return status.replace(/_/g, '-');
@@ -65,6 +104,42 @@
             }
             poll();
             setInterval(poll, 1000);
+
+            // Credits footer
+            function renderCredits(credits) {
+                var footer = document.getElementById('footerCredits');
+                var textEl = document.getElementById('creditsText');
+                var prog = document.getElementById('creditsProgress');
+                var bar = document.getElementById('creditsBar');
+                if (!credits) {
+                    footer.style.display = 'none';
+                    return;
+                }
+                var total = Number(credits.total) || 0;
+                var complimentary = Number(credits.complimentaryActive) || 0;
+                if (complimentary > 0) {
+                    var dollars = (complimentary * 0.01).toFixed(2);
+                    textEl.textContent = '$' + dollars + ' free credits';
+                    var pct = Math.max(0, Math.min(1, complimentary / 1000)) * 100;
+                    bar.style.width = pct + '%';
+                    prog.style.display = '';
+                } else {
+                    var dollarsTotal = (total * 0.01).toFixed(2);
+                    textEl.textContent = '$' + dollarsTotal + ' credits';
+                    prog.style.display = 'none';
+                }
+                footer.style.display = '';
+            }
+            function loadCredits() {
+                google.script.run
+                    .withSuccessHandler(renderCredits)
+                    .withFailureHandler(function () {
+                        document.getElementById('footerCredits').style.display = 'none';
+                    })
+                    .getOrganizationCredits();
+            }
+            // Try to load on start; silently ignore failures (e.g., not authorized)
+            loadCredits();
         </script>
     </body>
 </html>

@@ -38,6 +38,12 @@
                     <span class="green-text text-darken-2">Connected</span>
                     <span id="userEmail" class="ml-2"></span>
                 </p>
+                <div id="creditsSection" style="display: none">
+                    <p id="creditsText" class="grey-text text-darken-2"></p>
+                    <div id="creditsProgress" class="progress" style="display: none">
+                        <div id="creditsProgressBar" class="determinate" style="width: 0%"></div>
+                    </div>
+                </div>
                 <button
                     id="disconnectButton"
                     class="btn waves-effect waves-light"
@@ -149,10 +155,44 @@
                     connected ? 'none' : '';
                 if (connected) {
                     document.getElementById('userEmail').innerText = res.email;
+                    // Fetch and render credits when connected
+                    google.script.run
+                        .withSuccessHandler(renderCredits)
+                        .withFailureHandler(function (err) {
+                            // Hide credits on failure but do not block UI
+                            document.getElementById('creditsSection').style.display = 'none';
+                            console.warn('Failed to load credits', err);
+                        })
+                        .getOrganizationCredits();
                 } else {
                     document.getElementById('email').value = res.email || '';
                     M.updateTextFields();
                 }
+            }
+            function renderCredits(credits) {
+                const sec = document.getElementById('creditsSection');
+                const textEl = document.getElementById('creditsText');
+                const prog = document.getElementById('creditsProgress');
+                const bar = document.getElementById('creditsProgressBar');
+                if (!credits) {
+                    sec.style.display = 'none';
+                    return;
+                }
+                const total = Number(credits.total) || 0;
+                const complimentary = Number(credits.complimentaryActive) || 0;
+                if (complimentary > 0) {
+                    const dollars = (complimentary * 0.01).toFixed(2);
+                    textEl.textContent = `$${dollars} free credits`;
+                    // Show a progress bar from 0 to full at 1000+ credits
+                    const pct = Math.max(0, Math.min(1, complimentary / 1000)) * 100;
+                    bar.style.width = pct + '%';
+                    prog.style.display = '';
+                } else {
+                    const dollars = (total * 0.01).toFixed(2);
+                    textEl.textContent = `$${dollars} credits`;
+                    prog.style.display = 'none';
+                }
+                sec.style.display = '';
             }
             // Disconnect user and refresh UI
             function disconnect() {

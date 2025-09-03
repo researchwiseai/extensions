@@ -127,6 +127,11 @@ module.exports = async (env, options) => {
                                             'g',
                                         ),
                                         urlProd,
+                                    )
+                                    // Ensure Ribbon tab shows as "Pulse" in production builds
+                                    .replace(
+                                        /DefaultValue=\"Pulse local\"/g,
+                                        'DefaultValue="Pulse"',
                                     );
                             }
                         },
