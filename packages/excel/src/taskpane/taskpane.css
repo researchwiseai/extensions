@@ -1,6 +1,3 @@
-@import "tailwindcss";
-@plugin "@tailwindcss/typography";
-
 /* Auth view button interactions */
 .pulse-auth #pulse-auth-continue { transition: background-color .15s ease, box-shadow .15s ease; }
 .pulse-auth #pulse-auth-continue:hover { background: #0e616b; }

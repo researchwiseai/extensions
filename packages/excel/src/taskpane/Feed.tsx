@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { TaskpaneApi } from './api';
 import { useEffect } from 'react';
 import { FeedItem, getFeed } from 'pulse-common/jobs';
-import { getAccessToken } from 'pulse-common/auth';
-import { getBaseUrl } from 'pulse-common/api';
+import { loadOrganizationCredits, subscribeCredits } from 'pulse-common/credits';
 
 interface Props {
     api: TaskpaneApi;
@@ -58,48 +57,23 @@ export function Feed({ api }: Props) {
         };
     }, []);
 
-    // Fetch organization credits once on mount
+    // Load credits on mount and subscribe to future refreshes triggered by jobs
     useEffect(() => {
+        let unsub: (() => void) | null = null;
         const load = async () => {
-            try {
-                dlog('Credits: fetching token...');
-                const token = await getAccessToken();
-                const claims = token
-                    ? JSON.parse(atob(token.split('.')[1]))
-                    : null;
-                dlog('Credits: token obtained?', token);
-                if (!token) return;
-                const endpoint = `${getBaseUrl()}/v1/credits/organizations/${claims?.org_id}`;
-                dlog('Credits: fetching', endpoint);
-                const resp = await fetch(endpoint, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    mode: 'cors',
-                });
-                dlog('Credits: response status', resp.status);
-                if (!resp.ok) {
-                    dlog('Credits: non-ok response, hiding footer');
-                    return;
-                }
-                const data = await resp.json();
-                dlog('Credits: raw json', data);
-                const total = Number(data.total) || 0;
-                const complimentaryActive =
-                    Number(data.complimentaryActive) || 0;
-                dlog('Credits: parsed totals', {
-                    total,
-                    complimentaryActive,
-                });
-                setCredits({ total, complimentaryActive });
-            } catch (e) {
-                // Silently ignore; footer will stay hidden
-                console.warn('[Feed] Failed to load credits', e);
-            }
+            const data = await loadOrganizationCredits();
+            if (data) setCredits(data);
         };
         load();
+        unsub = subscribeCredits((data) => {
+            if (data) {
+                dlog('Credits: updated', data);
+                setCredits(data);
+            }
+        });
+        return () => {
+            if (unsub) unsub();
+        };
     }, []);
 
     useEffect(() => {

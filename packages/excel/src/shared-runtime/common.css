@@ -157,3 +157,7 @@ b {
         transform: rotate(360deg);
     }
 }
+
+#summary ul {
+    margin: 1.2em 0 0.6em 1.2em;
+}

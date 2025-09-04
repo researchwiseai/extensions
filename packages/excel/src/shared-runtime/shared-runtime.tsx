@@ -1,3 +1,5 @@
+import '../styles/tailwind.css';
+
 import { analyzeSentiment } from '../analyzeSentiment';
 import { themeGenerationFlow } from '../flows/themeGenerationFlow';
 import { confirmRange } from '../services/promptRange';

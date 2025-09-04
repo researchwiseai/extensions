@@ -15,6 +15,7 @@
         "./input": "./src/input.ts",
         "./org": "./src/org.ts",
         "./jobs": "./src/jobs.ts",
+        "./credits": "./src/credits.ts",
         "./storage": "./src/storage.ts",
         "./themes": "./src/themes.ts",
         "./dataUtils": "./src/dataUtils.ts",

@@ -1,4 +1,5 @@
 import fetchOriginal from 'cross-fetch';
+import { scheduleCreditsRefresh } from './credits';
 import { PromisePool } from '@supercharge/promise-pool';
 import { createBatches, sampleInputs } from './input';
 import type { SummarizePreset } from './summarize';
@@ -119,7 +120,7 @@ function convertUsageToCredits(usage: UsageReport | undefined): string {
         ? Intl.NumberFormat('en-US', {
               style: 'currency',
               currency: 'USD',
-          }).format(totalCredits)
+          }).format(totalCredits * 0.01)
         : '$0.00';
 }
 
@@ -165,6 +166,8 @@ async function postWithJob(
               }
             | undefined;
 
+        console.log('[DEBUG] Received response:', data);
+
         // Try to read usage.total credits and format cost in USD
         const totalCredits = convertUsageToCredits(data?.usage);
         const costSuffix =
@@ -178,6 +181,12 @@ async function postWithJob(
                     : 'Request completed') + costSuffix,
             status: 'completed',
         });
+        // Schedule a credits refresh so balance reflects recent usage.
+        try {
+            scheduleCreditsRefresh(10_000);
+        } catch (e) {
+            console.warn('[Credits] Failed to schedule refresh', e);
+        }
 
         options.onProgress?.(
             (options.taskName
@@ -272,11 +281,15 @@ async function postWithJob(
                     }
 
                     // Parse JSON to read optional usage for cost display
-                    const data = await resultResp.json();
-                    const totalCredits = data?.usage?.total;
+                    const data = (await resultResp.json()) as
+                        | {
+                              usage: UsageReport | undefined;
+                          }
+                        | undefined;
+                    const totalCredits = convertUsageToCredits(data?.usage);
                     const costSuffix =
-                        typeof totalCredits === 'number'
-                            ? ` • $${(totalCredits * 0.01).toFixed(2)}`
+                        typeof totalCredits === 'string'
+                            ? ` • ${totalCredits}`
                             : '';
 
                     Jobs.updateItem({
@@ -284,6 +297,13 @@ async function postWithJob(
                         message: `Job completed in ${elapsedTimeStr()}${costSuffix}`,
                         status: 'completed',
                     });
+
+                    // Schedule a credits refresh so balance reflects recent usage.
+                    try {
+                        scheduleCreditsRefresh(10_000);
+                    } catch (e) {
+                        console.warn('[Credits] Failed to schedule refresh', e);
+                    }
 
                     options.onProgress?.(
                         (options.taskName
@@ -298,6 +318,12 @@ async function postWithJob(
                         message: `Error fetching results: ${err}`,
                         status: 'failed',
                     });
+                    // Even on failure, usage may have been consumed; refresh credits.
+                    try {
+                        scheduleCreditsRefresh(10_000);
+                    } catch (e) {
+                        console.warn('[Credits] Failed to schedule refresh', e);
+                    }
                     throw err;
                 }
             } else {
@@ -306,6 +332,12 @@ async function postWithJob(
                     message: `Job failed (${status.status})`,
                     status: 'failed',
                 });
+                // Even on failure, usage may have been consumed; refresh credits.
+                try {
+                    scheduleCreditsRefresh(10_000);
+                } catch (e) {
+                    console.warn('[Credits] Failed to schedule refresh', e);
+                }
                 throw new Error(`Job failed with status: ${status.status}`);
             }
         }
@@ -316,6 +348,12 @@ async function postWithJob(
             message: `Error: ${errText}`,
             status: 'failed',
         });
+        // On request error, schedule a refresh in case any usage was recorded.
+        try {
+            scheduleCreditsRefresh(10_000);
+        } catch (e) {
+            console.warn('[Credits] Failed to schedule refresh', e);
+        }
         throw new Error(`${response.statusText}: ${errText}`);
     }
 }

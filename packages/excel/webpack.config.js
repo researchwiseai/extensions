@@ -31,7 +31,7 @@ module.exports = async (env, options) => {
                 './src/shared-runtime/shared-runtime.html',
             ],
             // CSS-only entry that contains Tailwind + typography plugin for dialogs
-            typography: './src/styles/typography.css',
+            tailwind: './src/styles/tailwind.css',
             modal: './src/modal/Modal.tsx',
             commands: './src/commands/commands.ts',
             // Small script to populate summarize presets dynamically
@@ -129,24 +129,26 @@ module.exports = async (env, options) => {
                             if (dev) {
                                 return content;
                             } else {
-                                return content
-                                    .toString()
-                                    .replace(
-                                        '<AppDomain>https://localhost:3000</AppDomain>',
-                                        '<AppDomain>https://researchwiseai.github.io</AppDomain>',
-                                    )
-                                    .replace(
-                                        new RegExp(
-                                            urlDev + '(?:public/)?',
-                                            'g',
-                                        ),
-                                        urlProd,
-                                    )
-                                    // Ensure Ribbon tab shows as "Pulse" in production builds
-                                    .replace(
-                                        /DefaultValue=\"Pulse local\"/g,
-                                        'DefaultValue="Pulse"',
-                                    );
+                                return (
+                                    content
+                                        .toString()
+                                        .replace(
+                                            '<AppDomain>https://localhost:3000</AppDomain>',
+                                            '<AppDomain>https://researchwiseai.github.io</AppDomain>',
+                                        )
+                                        .replace(
+                                            new RegExp(
+                                                urlDev + '(?:public/)?',
+                                                'g',
+                                            ),
+                                            urlProd,
+                                        )
+                                        // Ensure Ribbon tab shows as "Pulse" in production builds
+                                        .replace(
+                                            /DefaultValue=\"Pulse local\"/g,
+                                            'DefaultValue="Pulse"',
+                                        )
+                                );
                             }
                         },
                     },
