@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <base target="_top" />
+        <link
+            href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
+            rel="stylesheet"
+        />
+        <style>
+            html, body {
+                margin: 0;
+                padding: 0;
+                height: 100%;
+                width: 100%;
+                overflow: hidden;
+            }
+            .full-viewport {
+                height: 100vh;
+                width: 100vw;
+                overflow: auto;
+                background: #fafafa;
+                padding: 16px;
+            }
+            .theme-card {
+                height: calc(100vh - 140px);
+                overflow: auto;
+            }
+            .theme-item { margin-bottom: 16px; }
+            .theme-label { font-weight: 600; }
+            .theme-description { color: rgba(0,0,0,0.75); }
+            .card-title { font-size: 1.2rem; font-weight: 600; }
+        </style>
+    </head>
+    <body>
+        <div class="full-viewport">
+            <h5>Select a Theme Set</h5>
+            <p>Review the three generated options below and choose one to use.</p>
+            <div class="row">
+                <? var sets = themeSets || []; ?>
+                <? for (var i = 0; i < sets.length; i++) { ?>
+                    <div class="col s12 m4">
+                        <div class="card white theme-card z-depth-1">
+                            <div class="card-content">
+                                <span class="card-title">Option <?= (i+1) ?></span>
+                                <div>
+                                    <? var set = sets[i]; ?>
+                                    <? for (var j = 0; j < set.length; j++) { ?>
+                                        <div class="theme-item">
+                                            <div class="theme-label"><?= set[j].label ?></div>
+                                            <div class="theme-description"><?= set[j].description ?></div>
+                                        </div>
+                                    <? } ?>
+                                </div>
+                            </div>
+                            <div class="card-action right-align">
+                                <a class="btn" onclick='selectSet(<?= JSON.stringify(sets[i]) ?>)'>Use this set</a>
+                            </div>
+                        </div>
+                    </div>
+                <? } ?>
+            </div>
+            <div class="right-align">
+                <a class="btn-flat" onclick="google.script.host.close()">Cancel</a>
+            </div>
+        </div>
+        <script>
+            const startTime = <?= JSON.stringify(startTime) ?>;
+            function selectSet(set) {
+                google.script.run
+                    .withSuccessHandler(function () {
+                        google.script.host.close();
+                    })
+                    .finalizeThemeSetSelection(set, startTime);
+            }
+        </script>
+    </body>
+    </html>
+

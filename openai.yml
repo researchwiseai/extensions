@@ -2,7 +2,7 @@
 openapi: 3.1.0
 info:
     title: Pulse API
-    version: 0.7.0
+    version: 0.8.0
     description: |
         A stateless RESTful service that provides **six** core capabilities:
 
@@ -55,6 +55,11 @@ info:
         For the sentiment endpoint, the supported versions are:
 
           - "2025-08-17" — default and recommended.
+          - "original" — legacy behaviour.
+
+        For the themes endpoint, the supported versions are:
+
+          - "2025-09-01" — default and recommended.
           - "original" — legacy behaviour.
 
 servers:
@@ -126,6 +131,16 @@ paths:
                                 summary: Sample embeddings request
                                 value:
                                     inputs: ['Hello world', 'Test input']
+                            WithProvider:
+                                summary:
+                                    Embeddings request with provider override
+                                value:
+                                    inputs: ['Hello world']
+                                    provider:
+                                        type: openai
+                                        auth:
+                                            api_key: 'example-key'
+                                        endpoint: 'https://api.openai.com/v1'
             responses:
                 '200':
                     description: Embeddings successfully created.
@@ -145,7 +160,8 @@ paths:
                                         requestId: 'example-request-id'
                 '400':
                     description:
-                        Bad request - validation error (e.g., >200 strings).
+                        Bad request - validation error (e.g., >200 strings,
+                        invalid provider spec).
                     content:
                         application/json:
                             schema:
@@ -157,6 +173,13 @@ paths:
                                         message:
                                             'Validation error: inputs must be an
                                             array of up to 200 strings.'
+                                InvalidProviderSpec:
+                                    summary: Invalid provider specification
+                                    value:
+                                        message:
+                                            'Validation error: provider spec is
+                                            invalid'
+                                        details: ['INVALID_PROVIDER_SPEC']
 
     /similarity:
         post:
@@ -185,7 +208,7 @@ paths:
                                 value:
                                     set_a: ['apple', 'banana']
                                     set_b: ['orange', 'pear']
-                                    version: 'v1'
+                                    version: 'original'
                             SplitExample:
                                 summary: Sentence and newline splitting
                                 value:
@@ -197,6 +220,15 @@ paths:
                                             unit: sentence
                                             agg: max
                                     flatten: true
+                            WithProvider:
+                                summary:
+                                    Similarity request with provider override
+                                value:
+                                    set: ['a', 'b']
+                                    provider:
+                                        type: openai
+                                        auth:
+                                            api_key: 'example-key'
             responses:
                 '200':
                     description: Similarity values returned successfully.
@@ -223,7 +255,8 @@ paths:
                                         requestId: 'example-request-id'
                 '400':
                     description:
-                        Bad request - validation error (e.g., invalid input).
+                        Bad request - validation error (e.g., invalid input,
+                        unsupported provider).
                     content:
                         application/json:
                             schema:
@@ -236,6 +269,13 @@ paths:
                                             "Invalid request: either 'set' or
                                             both 'set_a' and 'set_b' must be
                                             provided."
+                                UnsupportedProvider:
+                                    summary: Unsupported provider
+                                    value:
+                                        message:
+                                            'Validation error: provider is
+                                            unsupported'
+                                        details: ['UNSUPPORTED_PROVIDER']
 
     /themes:
         post:
@@ -278,15 +318,27 @@ paths:
                                     minThemes: 2
                                     maxThemes: 5
                                     context: 'focus on reliability issues'
-                                    version: 'v1'
+                                    version: '2025-09-01'
                                     prune: 5
+                                    interactive: true
+                                    initialSets: 2
+                            WithProvider:
+                                summary: Themes request with provider override
+                                value:
+                                    inputs: ['service great', 'service slow']
+                                    provider:
+                                        type: openai
+                                        auth:
+                                            api_key: 'example-key'
             responses:
                 '200':
                     description: Thematic clustering completed successfully.
                     content:
                         application/json:
                             schema:
-                                $ref: '#/components/schemas/ThemesResponse'
+                                oneOf:
+                                    - $ref: '#/components/schemas/ThemesResponse'
+                                    - $ref: '#/components/schemas/ThemeSetsResponse'
                             examples:
                                 ThemesResponseExample:
                                     summary: Sample themes response
@@ -405,6 +457,15 @@ paths:
                                 value:
                                     inputs: ['It was okay']
                                     version: 'original'
+                            WithProvider:
+                                summary:
+                                    Sentiment request with provider override
+                                value:
+                                    inputs: ['Great service']
+                                    provider:
+                                        type: openai
+                                        auth:
+                                            api_key: 'example-key'
             responses:
                 '200':
                     description: Sentiment analysis results.
@@ -423,7 +484,8 @@ paths:
                                               confidence: 0.85
                                         requestId: 'example-request-id'
                 '400':
-                    description: Bad request - validation error.
+                    description:
+                        Bad request - validation error (e.g., invalid endpoint).
                     content:
                         application/json:
                             schema:
@@ -435,6 +497,13 @@ paths:
                                         message:
                                             'Validation error: inputs must be an
                                             array of 1 to 10000 strings.'
+                                InvalidEndpoint:
+                                    summary: Invalid provider endpoint
+                                    value:
+                                        message:
+                                            'Validation error: provider endpoint
+                                            is invalid'
+                                        details: ['INVALID_ENDPOINT']
 
     /extractions:
         post:
@@ -478,6 +547,16 @@ paths:
                                             'Account setup',
                                         ]
                                     type: 'themes'
+                            WithProvider:
+                                summary:
+                                    Extractions request with provider override
+                                value:
+                                    inputs: ['Great food']
+                                    dictionary: ['food']
+                                    provider:
+                                        type: openai
+                                        auth:
+                                            api_key: 'example-key'
             responses:
                 '200':
                     description: Extraction results returned successfully.
@@ -617,6 +696,56 @@ paths:
                                     value:
                                         message: 'Internal server error'
 
+        /credits/organizations/{orgId}:
+            get:
+                operationId: getOrganizationCredits
+                summary: Get credits snapshot for an organization.
+                description: |
+                    Returns current credits balance for the specified Auth0 organization.
+                    This endpoint is backed by the shared Core Credits Lambda and uses the
+                    same authorization context as other Pulse endpoints.
+                tags: [credits]
+                parameters:
+                    - in: path
+                      name: orgId
+                      required: true
+                      schema:
+                          type: string
+                      description: Auth0 Organization ID (e.g., org_abc123)
+                responses:
+                    '200':
+                        description: Credits snapshot retrieved successfully.
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    description: Organization credits snapshot
+                                    additionalProperties: true
+                    '400':
+                        description: Bad request
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/ErrorResponse'
+                    '403':
+                        description: Forbidden
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/ErrorResponse'
+                    '404':
+                        description: Organization not found
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/ErrorResponse'
+                    '500':
+                        description: Internal server error
+                        content:
+                            application/json:
+                                schema:
+                                    $ref: '#/components/schemas/ErrorResponse'
+
 components:
     securitySchemes:
         BearerAuth:
@@ -649,11 +778,27 @@ components:
                     type: string
                 details:
                     type: array
-                    description: Optional array of error detail messages
+                    description: |
+                        Optional array of error detail codes.
+                        May include `INVALID_PROVIDER_SPEC`, `UNSUPPORTED_PROVIDER`, or `INVALID_ENDPOINT`.
                     items:
                         type: string
                     maxItems: 10
             required: [message]
+            additionalProperties: false
+        ProviderSpec:
+            type: object
+            properties:
+                type:
+                    type: string
+                    description: Provider identifier (e.g., "openai").
+                auth:
+                    type: object
+                    description: Provider-specific authentication settings.
+                endpoint:
+                    type: string
+                    description: Optional custom API endpoint.
+            required: [type, auth]
             additionalProperties: false
         EmbeddingsRequest:
             type: object
@@ -672,6 +817,8 @@ components:
                     description:
                         Flag indicating synchronous (true) or asynchronous
                         (false) processing. Default false.
+                provider:
+                    $ref: '#/components/schemas/ProviderSpec'
             required: [inputs]
             additionalProperties: false
 
@@ -788,6 +935,8 @@ components:
                     description:
                         Flag indicating synchronous (true) or asynchronous
                         (false) processing. Default false.
+                provider:
+                    $ref: '#/components/schemas/ProviderSpec'
                 flatten:
                     type: boolean
                     description:
@@ -856,6 +1005,9 @@ components:
                     type: string
                 version:
                     type: string
+                    description: >-
+                        Optional model version. Supported values are
+                        "2025-09-01" (default, recommended) and "original".
                 prune:
                     type: integer
                     description: >-
@@ -868,6 +1020,20 @@ components:
                     description:
                         Flag indicating synchronous (true) or asynchronous
                         (false) processing. Default false.
+                interactive:
+                    type: boolean
+                    description:
+                        Enables interactive theme generation. Default false.
+                initialSets:
+                    type: integer
+                    minimum: 1
+                    maximum: 3
+                    description:
+                        Number of initial theme sets to generate (1-3). Values
+                        >1 require interactive=true.
+                    default: 1
+                provider:
+                    $ref: '#/components/schemas/ProviderSpec'
             required: [inputs]
             additionalProperties: false
 
@@ -903,6 +1069,24 @@ components:
                 usage:
                     $ref: '#/components/schemas/UsageReport'
             required: [themes, requestId]
+            additionalProperties: false
+
+        ThemeSetsResponse:
+            type: object
+            properties:
+                themeSets:
+                    type: array
+                    maxItems: 3
+                    items:
+                        type: array
+                        maxItems: 50
+                        items:
+                            $ref: '#/components/schemas/Theme'
+                requestId:
+                    type: string
+                usage:
+                    $ref: '#/components/schemas/UsageReport'
+            required: [themeSets, requestId]
             additionalProperties: false
 
         ClusteringRequest:
@@ -975,6 +1159,8 @@ components:
                     type: string
                     description: |
                         Optional model version. Supported values are "2025-08-17" (default, recommended) and "original".
+                provider:
+                    $ref: '#/components/schemas/ProviderSpec'
                 fast:
                     type: boolean
                     description:
@@ -1049,6 +1235,8 @@ components:
                 version:
                     type: string
                     description: Optional model version (e.g., "original").
+                provider:
+                    $ref: '#/components/schemas/ProviderSpec'
                 fast:
                     type: boolean
                     description:

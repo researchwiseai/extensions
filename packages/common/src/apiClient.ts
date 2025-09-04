@@ -517,6 +517,12 @@ interface GenerateThemesOptions {
     fast?: boolean;
     /** Optional context description for the theme generation request */
     context?: string;
+    /** Optional model version to pin behavior */
+    version?: string;
+    /** Enable interactive mode for multiple initial sets */
+    interactive?: boolean;
+    /** Number of initial sets to generate (1-3). Requires interactive=true for >1. */
+    initialSets?: number;
     onProgress?: (message: string) => void;
 }
 
@@ -527,20 +533,23 @@ interface GenerateThemesOptions {
 export async function generateThemes(
     inputs: string[],
     options?: GenerateThemesOptions,
-): Promise<{ themes: Theme[] }> {
+): Promise<{ themes: Theme[] } | { themeSets: Theme[][] }> {
     debugLog('Generating themes for inputs:', inputs);
 
     const sampledInputs = sampleInputs(inputs, options?.fast ? 200 : 500);
 
     const url = `${baseUrl}/v1/themes`;
-    // Include optional context field when provided
+    // Include optional fields when provided
     const body: Record<string, unknown> = {
         inputs: sampledInputs,
         fast: options?.fast ?? false,
     };
-    if (options?.context) {
-        body.context = options.context;
-    }
+    if (options?.context) body.context = options.context;
+    if (options?.version) body.version = options.version;
+    if (options?.interactive !== undefined)
+        body.interactive = options.interactive;
+    if (options?.initialSets !== undefined)
+        body.initialSets = options.initialSets;
     const data = await postWithJob(url, body, {
         onProgress: options?.onProgress,
         taskName: 'Theme generation',
@@ -548,6 +557,9 @@ export async function generateThemes(
     debugLog('Generated themes:', data);
     if (Array.isArray(data.themes)) {
         return { themes: data.themes };
+    }
+    if (Array.isArray(data.themeSets)) {
+        return { themeSets: data.themeSets };
     }
     throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }

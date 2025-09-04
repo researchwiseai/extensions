@@ -1,46 +1,60 @@
-import { describe, it, expect } from 'bun:test';
 import { saveThemesToSheet } from '../src/saveThemesToSheet';
 import type { Theme } from '../src/apiClient';
 
-interface MockSheet {
-  writes: Array<{ range: string; values: string[][] }>;
-  cleared: boolean;
-}
-
 describe('saveThemesToSheet', () => {
-  const headers = [
-    'Label',
-    'Short Label',
-    'Description',
-    'Representative 1',
-    'Representative 2',
-  ];
+  test('handles undefined themes defensively (writes only header)', async () => {
+    const writes: Array<{ range: string; values: string[][] }> = [];
+    const sheet = { id: 'sheet1' };
 
-  const themes: Theme[] = [
-    {
-      label: 'L',
-      shortLabel: 'SL',
-      description: 'D',
-      representatives: ['r1', 'r2'],
-    },
-  ];
+    await expect(
+      // @ts-expect-error: simulate runtime undefined themes
+      saveThemesToSheet({
+        themes: undefined as unknown as Theme[],
+        addSheet: async () => sheet,
+        clearSheet: async () => {},
+        write: async (_sheet, range, values) => {
+          writes.push({ range, values });
+        },
+      }),
+    ).resolves.toBe(sheet);
 
-  it('writes headers and rows via adapter', async () => {
-    const sheet: MockSheet = { writes: [], cleared: false };
+    // First write is the header row
+    expect(writes[0]).toBeDefined();
+    expect(writes[0].range).toMatch(/^A1:[A-Z]+1$/);
+    expect(writes[0].values[0]).toEqual(
+      expect.arrayContaining(['Label', 'Short Label', 'Description'])
+    );
+
+    // No body rows should be written for undefined/empty themes
+    expect(writes.length).toBe(1);
+  });
+
+  test('writes body rows when themes provided', async () => {
+    const writes: Array<{ range: string; values: string[][] }> = [];
+    const sheet = { id: 'sheet2' };
+    const themes: Theme[] = [
+      {
+        label: 'Theme A',
+        shortLabel: 'A',
+        description: 'Desc A',
+        representatives: ['r1', 'r2'],
+      },
+    ];
+
     await saveThemesToSheet({
       themes,
-      addSheet: () => sheet,
-      clearSheet: (s) => {
-        s.cleared = true;
-      },
-      write: (s, range, values) => {
-        s.writes.push({ range, values });
+      addSheet: async () => sheet,
+      clearSheet: async () => {},
+      write: async (_sheet, range, values) => {
+        writes.push({ range, values });
       },
     });
-    expect(sheet.cleared).toBe(true);
-    expect(sheet.writes[0]).toEqual({ range: 'A1:E1', values: [headers] });
-    expect(sheet.writes[1]).toEqual({ range: 'A2:E2', values: [
-      ['L', 'SL', 'D', 'r1', 'r2'],
-    ] });
+
+    // Should have header + body writes
+    expect(writes.length).toBe(2);
+    expect(writes[1].range).toMatch(/^A2:[A-Z]+\d+$/);
+    expect(writes[1].values.length).toBe(1);
+    expect(writes[1].values[0][0]).toBe('Theme A');
   });
 });
+

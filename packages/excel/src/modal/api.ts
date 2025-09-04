@@ -7,14 +7,15 @@ export class UpdateModalViewEvent extends ApiEvent {
     constructor(
         public view: ModalView,
         public action: 'show' | 'hide' | 'toggle' = 'toggle',
+        public payload?: any,
     ) {
-        super(UpdateModalViewEvent.type, { view, action });
+        super(UpdateModalViewEvent.type, { view, action, payload });
     }
 }
 
 export class ModalApi extends EventTarget {
-    goToView(view: ModalView, action?: ModalViewAction) {
-        this.dispatchEvent(new UpdateModalViewEvent(view, action));
+    goToView(view: ModalView, action?: ModalViewAction, payload?: any) {
+        this.dispatchEvent(new UpdateModalViewEvent(view, action, payload));
     }
 
     onViewChange(callback: (event: UpdateModalViewEvent) => void) {

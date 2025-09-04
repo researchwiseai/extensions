@@ -12,4 +12,30 @@ Office.onReady().then(() => {
     initializeLocalStorage();
 
     initializeIcons();
+
+    // Receive data from parent and switch views accordingly
+    Office.context.ui.addHandlerAsync(
+        Office.EventType.DialogParentMessageReceived,
+        (arg: any) => {
+            try {
+                const msg = JSON.parse(arg.message || '{}');
+                if (msg && msg.type === 'themeSets-choice' && msg.themeSets) {
+                    modalApi.goToView('themeSetsChoice', 'show', {
+                        themeSets: msg.themeSets,
+                    });
+                }
+            } catch (e) {
+                console.error('Failed to parse parent message', e);
+            }
+        },
+    );
+
+    // Notify parent that dialog is ready to receive data
+    try {
+        Office.context.ui.messageParent(
+            JSON.stringify({ type: 'ready' }),
+        );
+    } catch (e) {
+        console.warn('Failed to notify parent dialog is ready', e);
+    }
 });

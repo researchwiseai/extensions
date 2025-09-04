@@ -258,7 +258,7 @@ export function themeGenerationRouting(
 ) {
     debugLog('submitSelectedInputRangeForGeneration', dataRange, mode);
     if (mode === 'generation') {
-        generateThemesFlow(dataRange, hasHeader);
+        generateThemesFlow(dataRange, hasHeader, 'auto');
     } else {
         allocateThemesWithRange(dataRange, hasHeader);
     }
@@ -462,6 +462,7 @@ export { allocateAndSaveThemeSet } from './allocateAndSaveThemeSet';
 export { allocateThemesAutomatic } from './allocateThemesAutomatic';
 export { analyzeSentimentFlow } from './analyzeSentiment';
 export { generateThemesFlow } from './generateThemes';
+export { finalizeThemeSetSelection } from './generateThemes';
 export { getOAuthService } from './getOAuthService';
 export { saveThemeSet } from 'pulse-common';
 export { updateMenu } from './updateMenu';

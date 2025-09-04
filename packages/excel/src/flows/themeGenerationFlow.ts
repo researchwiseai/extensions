@@ -1,10 +1,10 @@
 import { generateThemes } from 'pulse-common/api';
 import { saveThemeSet } from 'pulse-common/themes';
-
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { maybeActivateSheet } from '../services/maybeActivateSheet';
 import { getFeed, updateItem } from 'pulse-common/jobs';
 import { saveThemesToSheet } from '../services/saveThemesToSheet';
+import { getRelativeUrl } from '../services/relativeUrl';
 
 export async function themeGenerationFlow(
     context: Excel.RequestContext,
@@ -40,6 +40,9 @@ export async function themeGenerationFlow(
 
     const result = await generateThemes(inputs, {
         fast: false,
+        interactive: true,
+        initialSets: 3,
+        version: '2025-09-01',
         context: hasHeader
             ? `The inputs provided are from a column of data in Excel. The column header is: ${header}`
             : undefined,
@@ -47,10 +50,105 @@ export async function themeGenerationFlow(
             console.log(message);
         },
     });
-
-    // Write themes to new/existing sheet called "Themes"
-    // Upsert the themes, removing existing ones
     const themesSheetName = 'Themes';
+
+    // If interactive response with themeSets, prompt user to choose one
+    if ((result as any).themeSets) {
+        const themeSets = (result as { themeSets: any[][] }).themeSets;
+        await new Promise<void>((resolve, reject) => {
+            const url = getRelativeUrl('Modal.html');
+            Office.context.ui.displayDialogAsync(
+                url,
+                { height: 60, width: 70, displayInIframe: true },
+                (res) => {
+                    if (res.status !== Office.AsyncResultStatus.Succeeded) {
+                        reject(res.error);
+                        return;
+                    }
+                    const dlg = res.value;
+                    const onMsg = (arg: any) => {
+                        try {
+                            const msg = JSON.parse(arg.message || '{}');
+                            if (msg && msg.type === 'ready') {
+                                // Send data to child dialog once it is ready
+                                try {
+                                    dlg.messageChild(
+                                        JSON.stringify({
+                                            type: 'themeSets-choice',
+                                            themeSets,
+                                        }),
+                                    );
+                                } catch (e) {
+                                    console.error(
+                                        'Failed to send data to dialog',
+                                        e,
+                                    );
+                                }
+                                return;
+                            }
+                            if (
+                                msg &&
+                                msg.type === 'themeSets-choice-selected' &&
+                                Array.isArray(msg.set)
+                            ) {
+                                dlg.close();
+                                // Proceed with saving selected set
+                                Excel.run(async (ctx) => {
+                                    await saveThemesToSheet({
+                                        context: ctx,
+                                        themes: msg.set,
+                                    });
+                                    await ctx.sync();
+                                })
+                                    .then(async () => {
+                                        await saveThemeSet(
+                                            new Date(Date.now())
+                                                .toISOString()
+                                                .slice(0, 19),
+                                            msg.set,
+                                        );
+                                        await maybeActivateSheet(
+                                            context,
+                                            context.workbook.worksheets.getItem(
+                                                themesSheetName,
+                                            ),
+                                            start,
+                                        );
+                                        const feed = getFeed();
+                                        const last = feed[feed.length - 1];
+                                        if (last) {
+                                            updateItem({
+                                                jobId: last.jobId,
+                                                onClick: () => {
+                                                    Excel.run(async (cx) => {
+                                                        cx.workbook.worksheets
+                                                            .getItem(
+                                                                themesSheetName,
+                                                            )
+                                                            .activate();
+                                                        await cx.sync();
+                                                    });
+                                                },
+                                            });
+                                        }
+                                        resolve();
+                                    })
+                                    .catch(reject);
+                            }
+                        } catch (e) {
+                            console.error('Dialog message parse error', e);
+                        }
+                    };
+                    dlg.addEventHandler(
+                        Office.EventType.DialogMessageReceived,
+                        onMsg,
+                    );
+                    // Wait for 'ready' message before sending data
+                },
+            );
+        });
+        return; // Done after selection path
+    }
     // let themesSheet;
     // try {
     //     console.log('Creating new themes sheet');

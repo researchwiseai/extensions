@@ -31,9 +31,12 @@ export async function saveThemesToSheet<SheetLike>(
     const sheet = await addSheet('Themes');
     await clearSheet(sheet);
 
+    // Be defensive: callers might pass undefined at runtime. Treat as empty.
+    const themesArr = (themes ?? []) as Theme[];
+
     const maxReps = Math.min(
         10,
-        Math.max(0, ...themes.map((t) => (t.representatives?.length ?? 0))),
+        Math.max(0, ...themesArr.map((t) => (t.representatives?.length ?? 0))),
     );
     const representativeHeaders = Array.from(
         { length: maxReps },
@@ -48,10 +51,12 @@ export async function saveThemesToSheet<SheetLike>(
     const lastCol = colLetterFromIndex(3 + maxReps);
     await write(sheet, `A1:${lastCol}1`, [headers]);
 
-    const rows = themesToRows(themes, maxReps);
-    const end = rows.length + 1;
-    const range = `A2:${lastCol}${end}`;
-    await write(sheet, range, rows);
+    const rows = themesToRows(themesArr, maxReps);
+    if (rows.length > 0) {
+        const end = rows.length + 1;
+        const range = `A2:${lastCol}${end}`;
+        await write(sheet, range, rows);
+    }
 
     return sheet;
 }
