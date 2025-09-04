@@ -162,13 +162,12 @@ module.exports = async (env, options) => {
                 inject: true,
                 chunks: ['summarizeDialog'],
             }),
-            // Dialog to display summary result
+            // Dialog to display summary result (no auto-injection to avoid
+            // corrupting inline <script> contents via accidental '</head>' matches)
             new HtmlWebpackPlugin({
                 filename: 'SummarizeResultDialog.html',
                 template: './src/taskpane/SummarizeResultDialog.html',
-                // Inject the typography CSS chunk so Tailwind `prose` works
-                inject: true,
-                chunks: ['typography'],
+                inject: false,
             }),
             // Dialog for extractions options (category + expansion)
             new HtmlWebpackPlugin({
