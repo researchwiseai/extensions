@@ -80,7 +80,14 @@ module.exports = async (env, options) => {
                 {
                     test: /\.html$/,
                     exclude: /node_modules/,
-                    use: 'html-loader',
+                    use: {
+                        loader: 'html-loader',
+                        options: {
+                            // Do not process <link href>, <img src>, etc.
+                            // We manually control asset inclusion in templates.
+                            sources: false,
+                        },
+                    },
                 },
                 {
                     test: /\.(png|jpg|jpeg|gif|ico)$/,
