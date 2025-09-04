@@ -77,6 +77,52 @@ interface PostWithJobOptions {
     headers?: Record<string, string>;
 }
 
+interface UsageRecord {
+    feature:
+        | 'embeddings'
+        | 'similarity'
+        | 'sentiment'
+        | 'themes'
+        | 'extractions'
+        | 'clustering'
+        | 'summaries';
+    quantity: number;
+}
+
+interface UsageReport {
+    records: UsageRecord[];
+    total: number;
+}
+
+function convertRecord(record: UsageRecord): number {
+    switch (record.feature) {
+        case 'extractions':
+        case 'summaries':
+        case 'sentiment':
+        case 'embeddings':
+            return record.quantity;
+        case 'clustering':
+        case 'similarity':
+            return record.quantity;
+        case 'themes':
+            return record.quantity * 50;
+        default:
+            return 0;
+    }
+}
+
+function convertUsageToCredits(usage: UsageReport | undefined): string {
+    const totalCredits = usage?.records
+        .map(convertRecord)
+        .reduce((a, b) => a + b, 0);
+    return typeof totalCredits === 'number'
+        ? Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: 'USD',
+          }).format(totalCredits)
+        : '$0.00';
+}
+
 /**
  * Perform POST request that may return immediate data or a jobId to poll.
  * If response status is 202, polls the job status until completed, then fetches the result URL.
@@ -113,14 +159,16 @@ async function postWithJob(
 
     if (response.status === 200) {
         // Parse to extract optional usage for cost display
-        const data = await response.json();
+        const data = (await response.json()) as
+            | {
+                  usage: UsageReport | undefined;
+              }
+            | undefined;
 
         // Try to read usage.total credits and format cost in USD
-        const totalCredits = data?.usage?.total;
+        const totalCredits = convertUsageToCredits(data?.usage);
         const costSuffix =
-            typeof totalCredits === 'number'
-                ? ` • $${(totalCredits * 0.01).toFixed(2)}`
-                : '';
+            typeof totalCredits === 'string' ? ` • ${totalCredits}` : '';
 
         Jobs.updateItem({
             jobId: jobItem.jobId,
