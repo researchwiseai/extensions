@@ -30,6 +30,8 @@ module.exports = async (env, options) => {
                 './src/shared-runtime/shared-runtime.tsx',
                 './src/shared-runtime/shared-runtime.html',
             ],
+            // CSS-only entry that contains Tailwind + typography plugin for dialogs
+            typography: './src/styles/typography.css',
             modal: './src/modal/Modal.tsx',
             commands: './src/commands/commands.ts',
             functions: './src/functions/functions.ts',
@@ -164,7 +166,9 @@ module.exports = async (env, options) => {
             new HtmlWebpackPlugin({
                 filename: 'SummarizeResultDialog.html',
                 template: './src/taskpane/SummarizeResultDialog.html',
-                inject: false,
+                // Inject the typography CSS chunk so Tailwind `prose` works
+                inject: true,
+                chunks: ['typography'],
             }),
             // Dialog for extractions options (category + expansion)
             new HtmlWebpackPlugin({
