@@ -49,18 +49,7 @@
                              lifetime="long" />
                 </Runtimes>
                 <AllFormFactors>
-                    <ExtensionPoint xsi:type="CustomFunctions">
-                        <Script>
-                            <SourceLocation resid="Functions.Script.Url" />
-                        </Script>
-                        <Page>
-                            <SourceLocation resid="SharedRuntime.Url" />
-                        </Page>
-                        <Metadata>
-                            <SourceLocation resid="Functions.Metadata.Url" />
-                        </Metadata>
-                        <Namespace resid="Functions.Namespace" />
-                    </ExtensionPoint>
+                    <!-- No CustomFunctions extension point -->
                 </AllFormFactors>
                 <DesktopFormFactor>
                     <GetStarted>
@@ -468,14 +457,10 @@
                         DefaultValue="https://localhost:3000/shared-runtime.html" />
                 <bt:Url id="GetStarted.LearnMoreUrl"
                         DefaultValue="https://researchwiseai.com/help" />
-                <bt:Url id="Functions.Script.Url"
-                        DefaultValue="https://localhost:3000/functions.js" />
-                <bt:Url id="Functions.Metadata.Url"
-                        DefaultValue="https://localhost:3000/functions.json" />
+                <!-- Custom functions URLs removed -->
             </bt:Urls>
             <bt:ShortStrings>
-                <bt:String id="Functions.Namespace"
-                           DefaultValue="PULSE" />
+                <!-- Custom functions namespace removed -->
                 <bt:String id="GetStarted.Title"
                            DefaultValue="Get started with Pulse" />
                 <bt:String id="HomePulseGroup.Label"

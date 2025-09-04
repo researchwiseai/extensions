@@ -34,7 +34,6 @@ module.exports = async (env, options) => {
             typography: './src/styles/typography.css',
             modal: './src/modal/Modal.tsx',
             commands: './src/commands/commands.ts',
-            functions: './src/functions/functions.ts',
             // Small script to populate summarize presets dynamically
             summarizeDialog: './src/taskpane/summarizeDialog.ts',
         },
@@ -105,7 +104,8 @@ module.exports = async (env, options) => {
             new HtmlWebpackPlugin({
                 filename: 'shared-runtime.html',
                 template: './src/shared-runtime/shared-runtime.html',
-                chunks: ['polyfill', 'shared', 'functions'],
+                // No custom functions bundle; only shared runtime + polyfills
+                chunks: ['polyfill', 'shared'],
             }),
             new CopyWebpackPlugin({
                 patterns: [
@@ -157,10 +157,7 @@ module.exports = async (env, options) => {
                     },
                 ],
             }),
-            new CustomFunctionsMetadataPlugin({
-                input: './src/functions/functions.ts',
-                output: 'functions.json',
-            }),
+            // CustomFunctions disabled; no metadata generation
             // Dialog page for range confirmation
             new HtmlWebpackPlugin({
                 filename: 'SelectRangeDialog.html',
