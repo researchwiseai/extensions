@@ -117,6 +117,11 @@ module.exports = async (env, options) => {
                         from: 'assets/*',
                         to: 'assets/[name][ext][query]',
                     },
+                    // Ensure the shared runtime stylesheet is available as /common.css
+                    {
+                        from: 'src/shared-runtime/common.css',
+                        to: 'common.css',
+                    },
                     {
                         from: 'manifest*.xml',
                         to: '[name]' + '[ext]',
