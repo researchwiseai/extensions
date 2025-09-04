@@ -106,7 +106,7 @@ function convertRecord(record: UsageRecord): number {
         case 'similarity':
             return record.quantity;
         case 'themes':
-            return record.quantity * 50;
+            return record.quantity * 15;
         default:
             return 0;
     }
