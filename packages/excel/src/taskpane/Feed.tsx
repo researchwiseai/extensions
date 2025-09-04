@@ -2,13 +2,18 @@ import { useState } from 'react';
 import { TaskpaneApi } from './api';
 import { useEffect } from 'react';
 import { FeedItem, getFeed } from 'pulse-common/jobs';
-import { loadOrganizationCredits, subscribeCredits } from 'pulse-common/credits';
+import {
+    loadOrganizationCredits,
+    subscribeCredits,
+} from 'pulse-common/credits';
+import { signOut } from 'pulse-common/auth';
 
 interface Props {
     api: TaskpaneApi;
+    setEmail: (email: string | null) => void;
 }
 
-export function Feed({ api }: Props) {
+export function Feed({ api, setEmail }: Props) {
     const DEBUG = true;
     const dlog = (...args: any[]) => {
         if (DEBUG) console.log('[Feed]', ...args);
@@ -92,6 +97,17 @@ export function Feed({ api }: Props) {
         });
     }, [credits]);
 
+    const logout = async () => {
+        try {
+            await signOut();
+            sessionStorage.removeItem('pkce_token');
+            sessionStorage.removeItem('org-id');
+        } finally {
+            sessionStorage.removeItem('user-email');
+            setEmail(null);
+        }
+    };
+
     const getStatusColor = (status: FeedItem['status']) => {
         switch (status) {
             case 'completed':
@@ -116,7 +132,24 @@ export function Feed({ api }: Props) {
     return (
         <div className="bg-[#f3f2f1] m-5" style={{ paddingBottom: 64 }}>
             <div className="w-full">
-                <h2 className="ms-font-su">Feed</h2>
+                <div className="flex justify-between items-center mb-2">
+                    <h2 className="ms-font-su">Feed</h2>
+                    <button
+                        onClick={logout}
+                        style={{
+                            background: '#f1fef6',
+                            color: '#0f766e',
+                            padding: '6px 10px',
+                            borderRadius: 4,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            border: '1px solid #0f766e',
+                            cursor: 'pointer',
+                        }}
+                    >
+                        Logout
+                    </button>
+                </div>
                 <div className="space-y-4">
                     {feed.map((item) => {
                         const clickable = Boolean(item.onClick);
@@ -163,10 +196,39 @@ export function Feed({ api }: Props) {
                     }}
                 >
                     <div
-                        style={{ color: '#444', fontWeight: 600, fontSize: 13 }}
+                        style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            gap: 12,
+                        }}
                     >
-                        ${dollars.toFixed(2)}{' '}
-                        {showProgress ? 'free credits' : 'credits'}
+                        <div
+                            style={{
+                                color: '#444',
+                                fontWeight: 600,
+                                fontSize: 13,
+                            }}
+                        >
+                            ${dollars.toFixed(2)}{' '}
+                            {showProgress ? 'free credits' : 'credits'}
+                        </div>
+                        <a
+                            href="https://researchwiseai.com/login?returnTo=/billing"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{
+                                background: '#0f766e',
+                                color: '#fff',
+                                padding: '6px 10px',
+                                borderRadius: 4,
+                                fontSize: 12,
+                                textDecoration: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
+                            Buy more credits
+                        </a>
                     </div>
                     {showProgress && (
                         <div

@@ -48,8 +48,9 @@ export async function summarizeFlow(
         updateItem({
             jobId: last.jobId,
             onClick: () => {
-                // No sheet to navigate to; keep as no-op for now
-                console.log('Summary ready');
+                // Reopen the summary dialog with the original content
+                // Keep persistence at the same level as the feed (session-level)
+                void showSummaryDialog(summary);
             },
         });
     }

@@ -11,36 +11,7 @@ interface Props {
 }
 
 export function Settings({ setEmail }: Props) {
-    const email = sessionStorage.getItem('user-email');
-    // Graph/Identity not used currently
-
-    console.log('Settings component mounted', email);
-
+    // Remove email display from taskpane; keep component for future use
     useEffect(() => {}, []);
-
-    const logout = async () => {
-        try {
-            await signOut();
-            sessionStorage.removeItem('pkce_token');
-            sessionStorage.removeItem('org-id');
-        } finally {
-            sessionStorage.removeItem('user-email');
-            setEmail(null);
-        }
-    };
-
-    // No-op placeholders retained for future Word Online integration
-
-    return (
-        <div className="bg-[#f3f2f1]">
-            <header className="flex flex-row justify-between m-5">
-                <div id="user-in">
-                    <Text>{email}</Text>
-                </div>
-                <DefaultButton id="logout" onClick={logout}>
-                    Logout
-                </DefaultButton>
-            </header>
-        </div>
-    );
+    return null;
 }

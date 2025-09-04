@@ -53,7 +53,7 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
     return (
         <>
             <Settings api={api} setEmail={setEmail} />
-            <Feed api={api} />
+            <Feed api={api} setEmail={setEmail} />
         </>
     );
 }
