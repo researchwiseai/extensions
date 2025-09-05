@@ -59,7 +59,7 @@ export async function themeGenerationFlow(
             const url = getRelativeUrl('Modal.html');
             Office.context.ui.displayDialogAsync(
                 url,
-                { height: 60, width: 70, displayInIframe: true },
+                { height: 86, width: 86, displayInIframe: true },
                 (res) => {
                     if (res.status !== Office.AsyncResultStatus.Succeeded) {
                         reject(res.error);
