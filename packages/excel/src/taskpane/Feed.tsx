@@ -134,9 +134,19 @@ export function Feed({ api, setEmail }: Props) {
             <div className="w-full">
                 <div className="flex justify-between items-center mb-2">
                     <h2 className="ms-font-su">Feed</h2>
-                    <button onClick={logout} className="pulse-btn pulse-btn--secondary">
-                        Logout
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <a
+                            href="https://researchwiseai.com/pulse/extensions/excel"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pulse-btn pulse-btn--secondary"
+                        >
+                            Help
+                        </a>
+                        <button onClick={logout} className="pulse-btn pulse-btn--secondary">
+                            Logout
+                        </button>
+                    </div>
                 </div>
                 <div className="space-y-4">
                     {feed.map((item) => {

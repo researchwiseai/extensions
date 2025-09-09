@@ -1,5 +1,5 @@
 import type { TaskpaneApi } from './api';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/logo-filled.png';
 import { findOrganization } from 'pulse-common/org';
 import { setupExcelPKCEAuth } from './pkceAuth';
@@ -11,78 +11,100 @@ interface Props {
     api: TaskpaneApi;
     setEmail: (email: string | null) => void;
 }
+// Auth / API constants
+const AUTH0_DOMAIN = 'research-wise-ai-eu.eu.auth0.com';
+const AUTH0_CLIENT_ID = 'kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O';
+const AUTH_SCOPE = 'openid profile email offline_access';
+const WEB_BASE_URL = 'https://researchwiseai.com';
+const API_BASE_URL = 'https://pulse.researchwiseai.com';
+const ORG_LOOKUP_PATH = '/users';
+const REGISTER_URL = `${WEB_BASE_URL}/register`;
+const MORE_INFO_URL = `${WEB_BASE_URL}/pulse/extensions/excel`;
+const WARMUP_EMAIL = 'support@researchwiseai.com';
+
+function isValidEmail(v: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+}
+
+/**
+ * Unauthenticated
+ * Renders the sign-in form for Pulse.
+ * Flow:
+ * 1. User enters email
+ * 2. We look up the organization for the email
+ * 3. Configure PKCE Auth with org
+ * 4. Trigger sign in, store org + email, configure API client
+ */
 export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [connecting, setConnecting] = useState(false);
     const [email, setEmail] = useState('');
 
-    // Temporarily disable the "Getting Started" dialog as it appears on every
-    // launch. Once we have a persistent dismissal mechanism this can be
-    // re-enabled.
-    // useEffect(() => {
-    //     showConnectHelpDialog().catch((e) => console.error(e));
-    // }, []);
-    // Registration URL opens in browser for new users
-    const handleRegister = useCallback(() => {
-        window.open('https://researchwiseai.com/register', '_blank');
+    // Warm Lambda / org lookup to reduce latency on first real sign-in
+    useEffect(() => {
+        const orgLookupUrl = `${WEB_BASE_URL}${ORG_LOOKUP_PATH}`;
+        findOrganization(orgLookupUrl, WARMUP_EMAIL).catch(() => {
+            /* ignore warm-up errors */
+        });
     }, []);
+
+    const handleRegister = useCallback(() => {
+        window.open(REGISTER_URL, '_blank');
+    }, []);
+
     const handleMoreInfo = useCallback(() => {
-        window.open('https://researchwiseai.com/pulse', '_blank');
+        window.open(MORE_INFO_URL, '_blank');
     }, []);
 
     const clickConnect = useCallback(
-        async (email: string) => {
+        async (rawEmail: string) => {
+            const trimmedEmail = rawEmail.trim();
+            if (!isValidEmail(trimmedEmail) || connecting) return;
+
             setConnecting(true);
+            try {
+                const redirectUri = getRelativeUrl('auth-callback.html');
+                const orgLookupUrl = `${WEB_BASE_URL}${ORG_LOOKUP_PATH}`;
 
-            const domain = 'research-wise-ai-eu.eu.auth0.com';
-            const clientId = 'kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O';
-
-            // Redirect URI must match your Auth0 app and maps to auth-callback.html
-            const redirectUri = getRelativeUrl('auth-callback.html');
-            const scope = 'openid profile email offline_access';
-            const apiBase = 'https://pulse.researchwiseai.com';
-
-            const webBase = 'https://researchwiseai.com';
-            const orgLookupUrl = `${webBase}/users`;
-            const orgResult = await findOrganization(orgLookupUrl, email);
-
-            if (!orgResult.success) {
-                setConnecting(false);
-                if (orgResult.notFound) {
-                    alert(
-                        'No account found for this email. Please sign up at https://researchwiseai.com',
-                    );
-                } else {
-                    alert('Error finding account. Please try again later.');
+                const orgResult = await findOrganization(orgLookupUrl, trimmedEmail);
+                if (!orgResult.success) {
+                    if (orgResult.notFound) {
+                        alert(
+                            'No account found for this email. Please sign up at https://researchwiseai.com',
+                        );
+                    } else {
+                        alert('Error finding account. Please try again later.');
+                    }
+                    return;
                 }
-                return;
-            } else {
-                const organization = orgResult.orgId!;
 
-                // Configure the PKCE AuthProvider with the user's organization
+                const organization = orgResult.orgId!;
                 setupExcelPKCEAuth({
-                    domain,
-                    clientId,
-                    email,
+                    domain: AUTH0_DOMAIN,
+                    clientId: AUTH0_CLIENT_ID,
+                    email: trimmedEmail,
                     redirectUri,
-                    scope,
+                    scope: AUTH_SCOPE,
                     organization,
                 });
-                // Save the organization ID in sessionStorage
+
                 sessionStorage.setItem('org-id', organization);
-                // Perform interactive sign-in
                 await signIn();
-                sessionStorage.setItem('user-email', email);
+                sessionStorage.setItem('user-email', trimmedEmail);
 
-                // Initialize the Pulse API client
-                configureClient({ baseUrl: apiBase, getAccessToken });
+                configureClient({ baseUrl: API_BASE_URL, getAccessToken });
 
-                console.log('✅ Connected and authenticated');
-
-                setAppEmail(email);
+                setAppEmail(trimmedEmail);
+            } catch (err) {
+                console.error('Sign-in failed', err);
+                alert('Sign-in failed. Please try again.');
+            } finally {
+                setConnecting(false);
             }
         },
-        [setConnecting],
+        [connecting, setAppEmail],
     );
+
+    const disableSignIn = connecting || !isValidEmail(email);
 
     return (
         <div className="pulse-auth" style={{ padding: 20 }}>
@@ -120,12 +142,18 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     onChange={(e) => setEmail(e.target.value)}
                     className="pulse-input"
                     style={{ margin: '8px 0' }}
+                    autoComplete="email"
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !disableSignIn) {
+                            clickConnect(email);
+                        }
+                    }}
                 />
 
                 <div className="actions" style={{ marginTop: 8 }}>
                     <button
                         id="pulse-auth-continue"
-                        disabled={connecting}
+                        disabled={disableSignIn}
                         onClick={() => clickConnect(email)}
                         className="pulse-btn pulse-btn--primary pulse-btn--block"
                         style={{ padding: '10px 14px' }}
@@ -134,7 +162,14 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', alignItems: 'center', margin: '16px 0', color: '#666' }}>
+                <div
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        margin: '16px 0',
+                        color: '#666',
+                    }}
+                >
                     <div style={{ flex: 1, height: 1, background: '#e1dfdd' }}></div>
                     <div style={{ padding: '0 8px' }}>or</div>
                     <div style={{ flex: 1, height: 1, background: '#e1dfdd' }}></div>

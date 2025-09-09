@@ -65,10 +65,10 @@ export async function splitIntoSentencesFlow(
 
     positions.forEach((pos, i) => {
         const sens = sentences[i];
-        sens.forEach((s, j) => {
+        sens.forEach((value, j) => {
             const rowIndex = pos.row - rangeInfo.rowIndex;
             const cell = outputSheet.getCell(rowIndex, j + 1);
-            batch.push({ cell, value: s.segment });
+            batch.push({ cell, value });
 
             if (batch.length >= batchSize) {
                 batch.forEach(({ cell, value }) => {
