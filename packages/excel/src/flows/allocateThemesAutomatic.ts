@@ -1,6 +1,6 @@
 import { allocateThemes as allocateThemesApi } from 'pulse-common/themes';
 import { themeGenerationFlow } from './themeGenerationFlow';
-import { writeAllocationsToSheet } from './allocateThemesFromSet';
+import { writeAllocationsOutput } from '../services/writeAllocationsOutput';
 import { ALLOCATION_THRESHOLD } from './constants';
 
 export async function allocateThemesAutomaticFlow(
@@ -20,14 +20,14 @@ export async function allocateThemesAutomaticFlow(
         },
     });
 
-    await writeAllocationsToSheet(
-        positions,
-        sheet,
-        allocations,
+    await writeAllocationsOutput({
         context,
+        sourceSheet: sheet,
         rangeInfo,
-        startTime,
+        positions,
+        allocations,
         hasHeader,
-        header,
-    );
+        headerText: header,
+        startTime,
+    });
 }
