@@ -7,6 +7,11 @@
   <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
   <title>Summarize Options</title>
   <style>
+    .pulse-btn { display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .pulse-btn--primary { background:#0f766e; border-color:#0f766e; color:#fff; }
+    .pulse-btn--primary:hover { background:#0d665f; }
+    .pulse-btn--secondary { background:#fff; border-color:#0f766e; color:#0f766e; }
+    .pulse-btn--secondary:hover { background:#f3f2f1; }
     body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
     label { display: block; margin-top: 12px; font-weight: 600; }
     /* Ensure padding is included in width so the textarea truly spans the container */
@@ -46,8 +51,8 @@
   
 
   <div class="row">
-    <button id="cancelBtn">Cancel</button>
-    <button id="okBtn">OK</button>
+    <button id="cancelBtn" class="pulse-btn pulse-btn--secondary">Cancel</button>
+    <button id="okBtn" class="pulse-btn pulse-btn--primary">OK</button>
   </div>
 </body>
 </html>

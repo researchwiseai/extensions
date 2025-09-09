@@ -11,6 +11,11 @@
             href="https://res-1.cdn.office.net/files/fabric-cdn-prod_20230815.002/office-ui-fabric-core/11.1.0/css/fabric.min.css"
         />
         <style>
+            .pulse-btn { display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+            .pulse-btn--primary { background:#0f766e; border-color:#0f766e; color:#fff; }
+            .pulse-btn--primary:hover { background:#0d665f; }
+            .pulse-btn--secondary { background:#fff; border-color:#0f766e; color:#0f766e; }
+            .pulse-btn--secondary:hover { background:#f3f2f1; }
             /* Layout and sizing */
             html,
             body {
@@ -111,12 +116,8 @@
             </div>
         </div>
         <div class="footer">
-            <button id="cancelBtn" class="ms-Button" style="margin-right: 8px">
-                <span class="ms-Button-label">Cancel</span>
-            </button>
-            <button id="okBtn" class="ms-Button ms-Button--primary">
-                <span class="ms-Button-label">OK</span>
-            </button>
+            <button id="cancelBtn" class="pulse-btn pulse-btn--secondary" style="margin-right:8px">Cancel</button>
+            <button id="okBtn" class="pulse-btn pulse-btn--primary">OK</button>
         </div>
         <script>
             Office.onReady(() => {

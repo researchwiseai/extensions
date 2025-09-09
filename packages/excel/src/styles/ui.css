@@ -61,3 +61,25 @@
 }
 .pulse-btn--danger:hover { background: var(--pulse-danger-dark); }
 .pulse-btn--danger:focus { outline: none; box-shadow: 0 0 0 2px rgba(185,28,28,.25); }
+
+/* Fluent UI button integration */
+.ms-Button.pulse-btn { background: transparent; border-color: transparent; box-shadow: none; }
+.ms-Button.pulse-btn .ms-Button-label { padding: 6px 10px; font-size: 12px; font-weight: 600; }
+.ms-Button.pulse-btn .ms-Button-flexContainer { gap: 6px; }
+
+.ms-Button.pulse-btn.pulse-btn--primary { background: var(--pulse-teal); border-color: var(--pulse-teal); color: #fff; }
+.ms-Button.pulse-btn.pulse-btn--primary .ms-Button-label { color: #fff; }
+.ms-Button.pulse-btn.pulse-btn--primary:hover { background: var(--pulse-teal-dark); }
+.ms-Button.pulse-btn.pulse-btn--primary:active { background: var(--pulse-teal-verydark); }
+.ms-Button.pulse-btn.pulse-btn--primary:focus { outline: none; box-shadow: 0 0 0 2px rgba(15,118,110,.25); }
+
+.ms-Button.pulse-btn.pulse-btn--secondary { background: #fff; border-color: var(--pulse-teal); color: var(--pulse-teal); }
+.ms-Button.pulse-btn.pulse-btn--secondary .ms-Button-label { color: var(--pulse-teal); }
+.ms-Button.pulse-btn.pulse-btn--secondary:hover { background: #f3f2f1; }
+.ms-Button.pulse-btn.pulse-btn--secondary:active { background: #edebe9; }
+.ms-Button.pulse-btn.pulse-btn--secondary:focus { outline: none; box-shadow: 0 0 0 2px rgba(15,118,110,.25); }
+
+.ms-Button.pulse-btn.pulse-btn--danger { background: var(--pulse-danger); border-color: var(--pulse-danger-dark); color: #fff; }
+.ms-Button.pulse-btn.pulse-btn--danger .ms-Button-label { color: #fff; }
+.ms-Button.pulse-btn.pulse-btn--danger:hover { background: var(--pulse-danger-dark); }
+.ms-Button.pulse-btn.pulse-btn--danger:focus { outline: none; box-shadow: 0 0 0 2px rgba(185,28,28,.25); }

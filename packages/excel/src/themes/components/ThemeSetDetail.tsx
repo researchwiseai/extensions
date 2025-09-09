@@ -132,9 +132,9 @@ export const ThemeSetDetail: React.FC<ThemeSetDetailProps> = ({
                 </Dialog>
             )}
             <Stack horizontal tokens={{ childrenGap: 8 }}>
-                <PrimaryButton text="Edit" onClick={onEdit} />
-                <DefaultButton text="Delete" onClick={onDelete} />
-                <DefaultButton text="Back" onClick={onBack} />
+                <PrimaryButton className="pulse-btn pulse-btn--primary" text="Edit" onClick={onEdit} />
+                <DefaultButton className="pulse-btn pulse-btn--danger" text="Delete" onClick={onDelete} />
+                <DefaultButton className="pulse-btn pulse-btn--secondary" text="Back" onClick={onBack} />
             </Stack>
         </Stack>
     );

@@ -275,10 +275,11 @@ export function ThemeSetManager() {
             >
                 <DialogFooter>
                     <PrimaryButton
+                        className="pulse-btn pulse-btn--danger"
                         text="Delete"
                         onClick={handleConfirmDelete}
                     />
-                    <DefaultButton text="Cancel" onClick={handleCancelDelete} />
+                    <DefaultButton className="pulse-btn pulse-btn--secondary" text="Cancel" onClick={handleCancelDelete} />
                 </DialogFooter>
             </Dialog>
         </div>

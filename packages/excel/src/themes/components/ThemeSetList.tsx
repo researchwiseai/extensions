@@ -90,13 +90,15 @@ export const ThemeSetList: React.FC<ThemeSetListProps> = ({
     return (
         <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 16 } }}>
             <Stack horizontal tokens={{ childrenGap: 8 }}>
-                <DefaultButton text="Create Theme Set" onClick={onCreate} />
+                <DefaultButton className="pulse-btn pulse-btn--primary" text="Create Theme Set" onClick={onCreate} />
                 <DefaultButton
+                    className="pulse-btn pulse-btn--secondary"
                     text="Import from Themes Sheet"
                     onClick={onImportFromSheet}
                     disabled={importDisabled}
                 />
                 <DefaultButton
+                    className="pulse-btn pulse-btn--secondary"
                     text="Create Themes Sheet Template"
                     onClick={onCreateSheetTemplate}
                     disabled={createSheetDisabled}

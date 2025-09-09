@@ -153,6 +153,7 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                             </Stack>
                         ))}
                         <DefaultButton
+                            className="pulse-btn pulse-btn--secondary"
                             text="Add Example"
                             onClick={() => addRepresentative(themeIndex)}
                             disabled={theme.representatives.length >= 10}
@@ -160,14 +161,15 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                     </Stack>
                 ))}
             </Stack>
-            <DefaultButton text="Add Theme" onClick={addTheme} />
+            <DefaultButton className="pulse-btn pulse-btn--secondary" text="Add Theme" onClick={addTheme} />
             <Stack horizontal tokens={{ childrenGap: 8 }}>
                 <PrimaryButton
+                    className="pulse-btn pulse-btn--primary"
                     text="Save"
                     onClick={handleSubmit}
                     disabled={!name.trim()}
                 />
-                <DefaultButton text="Cancel" onClick={onCancel} />
+                <DefaultButton className="pulse-btn pulse-btn--secondary" text="Cancel" onClick={onCancel} />
             </Stack>
         </Stack>
     );
