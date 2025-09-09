@@ -87,6 +87,21 @@ async function showUnexpectedErrorModal(payload: any) {
     }
 }
 
+function toFriendlyValidationMessage(message: string | undefined): string | undefined {
+    if (!message) return undefined;
+    const m = message.toLowerCase();
+    if (m.includes('at least 1 element')) {
+        return 'No usable inputs found in the selected range. Please select a single column with at least one non-empty cell and try again.';
+    }
+    if (m.includes('single column range')) {
+        return 'Please select exactly one column, not multiple.';
+    }
+    if (m.includes('no text found')) {
+        return 'We could not find any text in your selection. Select a column with text and try again.';
+    }
+    return undefined;
+}
+
 async function reportUnexpectedError(error: unknown, extra?: { correlationId?: string }) {
     try {
         const userId = sessionStorage.getItem('user-email') || undefined;
@@ -105,13 +120,16 @@ async function reportUnexpectedError(error: unknown, extra?: { correlationId?: s
             console.warn('Sentry capture failed', s);
         }
 
+        const rawMessage = (error as any)?.message || String(error);
+        const friendly = toFriendlyValidationMessage(String(rawMessage));
         await showUnexpectedErrorModal({
             eventId,
             correlationId: extra?.correlationId,
             dateTime,
             userId,
             orgId,
-            errorMessage: (error as any)?.message || String(error),
+            errorMessage: friendly ?? rawMessage,
+            kind: friendly ? 'validation' : 'unexpected',
             location: 'shared-runtime',
         });
     } catch (e) {
