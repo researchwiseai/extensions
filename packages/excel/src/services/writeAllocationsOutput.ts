@@ -47,7 +47,8 @@ export async function writeAllocationsOutput(opts: {
       const pos = positions[i];
       const alloc = allocations[i];
       if (!alloc) continue;
-      const idx = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
+      // Convert absolute 1-based Excel row to zero-based index in valuesToWrite
+      const idx = pos.row - (rangeInfo.rowIndex + 1) - (hasHeader ? 1 : 0);
       if (idx >= 0 && idx < rowCount) {
         // Coded Theme (only if above threshold)
         if (!alloc.belowThreshold) {
