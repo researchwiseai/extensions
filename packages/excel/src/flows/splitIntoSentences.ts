@@ -2,34 +2,40 @@ import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositio
 import { maybeActivateSheet } from '../services/maybeActivateSheet';
 import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting';
 
+function process(inputs: string[]): string[][] {
+    // @ts-expect-error Missing type definition for Intl.Segmenter
+    const segmenterEn = new Intl.Segmenter('en', { granularity: 'sentence' });
+
+    return inputs.map((input) =>
+        Array.from(segmenterEn.segment(input)).map(
+            (s) =>
+                (s as { index: number; input: string; segment: string })
+                    .segment,
+        ),
+    );
+}
+
 export async function splitIntoSentencesFlow(
     context: Excel.RequestContext,
     range: string,
 ): Promise<void> {
     console.log('splitIntoSentencesFlow', range);
     const startTime = Date.now();
+
+    // Create output sheet and write header
+    const outputSheet = context.workbook.worksheets.add(
+        `Sentences_${Date.now()}`,
+    );
+
+    // Get inputs and positions from the specified range
     const { inputs, positions, sheet, rangeInfo } =
         await getSheetInputsAndPositions(context, range);
 
-    // @ts-expect-error Missing type definition for Intl.Segmenter
-    const segmenterEn = new Intl.Segmenter('en', { granularity: 'sentence' });
-
-    const sentences = inputs.map(
-        (input) =>
-            Array.from(segmenterEn.segment(input)) as {
-                index: number;
-                input: string;
-                segment: string;
-            }[],
-    );
+    // Split inputs into sentences
+    const sentences = process(inputs);
     const maxSentences = Math.max(...sentences.map((s) => s.length));
-    const result = Array.from({ length: maxSentences }, () =>
-        Array.from({ length: positions.length }, () => ''),
-    );
 
-    console.log('sentences', sentences);
-    console.log('result', result);
-
+    // Read original range values
     const originalRange = sheet.getRangeByIndexes(
         rangeInfo.rowIndex,
         rangeInfo.columnIndex,
@@ -39,10 +45,6 @@ export async function splitIntoSentencesFlow(
     originalRange.load('values');
     await context.sync();
 
-    const outputSheet = context.workbook.worksheets.add(
-        `Sentences_${Date.now()}`,
-    );
-    try { context.trackedObjects.add(outputSheet); } catch {}
     const header = ['Text'];
     for (let i = 0; i < maxSentences; i++) {
         header.push(`Sentence ${i + 1}`);
@@ -50,7 +52,8 @@ export async function splitIntoSentencesFlow(
     outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
     // Bold header row
     try {
-        outputSheet.getRangeByIndexes(0, 0, 1, header.length).format.font.bold = true;
+        outputSheet.getRangeByIndexes(0, 0, 1, header.length).format.font.bold =
+            true;
     } catch {}
     const target = outputSheet
         .getRange('A2')
@@ -88,5 +91,7 @@ export async function splitIntoSentencesFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
-    try { context.trackedObjects.remove(outputSheet); } catch {}
+    try {
+        context.trackedObjects.remove(outputSheet);
+    } catch {}
 }

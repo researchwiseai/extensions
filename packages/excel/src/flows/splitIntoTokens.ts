@@ -4,6 +4,17 @@ import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting
 import winkNLP from 'wink-nlp';
 import model from 'wink-eng-lite-web-model';
 
+function process(inputs: string[]): string[][] {
+    const nlp = winkNLP(model);
+    return inputs.map((input) => {
+        const doc = nlp.readDoc(input ?? '');
+        return doc
+            .tokens()
+            .out()
+            .filter((t: string) => t.trim() !== '');
+    });
+}
+
 /**
  * Splits each input cell into tokens using wink-nlp and writes them into adjacent columns.
  */
@@ -13,18 +24,19 @@ export async function splitIntoTokensFlow(
 ): Promise<void> {
     console.log('splitIntoTokensFlow', range);
     const startTime = Date.now();
+
+    // Create output sheet and write header
+    const outputSheet = context.workbook.worksheets.add(`Tokens_${Date.now()}`);
+
+    // Get inputs and positions from the specified range
     const { inputs, positions, sheet, rangeInfo } =
         await getSheetInputsAndPositions(context, range);
 
-    const nlp = winkNLP(model);
-    const tokenLists: string[][] = inputs.map((input) => {
-        const doc = nlp.readDoc(input ?? '');
-        return doc
-            .tokens()
-            .out()
-            .filter((t: string) => t.trim() !== '');
-    });
+    // Split inputs into tokens
+    const tokenLists = process(inputs);
+    const maxTokens = Math.max(...tokenLists.map((t) => t.length));
 
+    // Read original range values
     const originalRange = sheet.getRangeByIndexes(
         rangeInfo.rowIndex,
         rangeInfo.columnIndex,
@@ -34,9 +46,6 @@ export async function splitIntoTokensFlow(
     originalRange.load('values');
     await context.sync();
 
-    const maxTokens = Math.max(...tokenLists.map((t) => t.length));
-    const outputSheet = context.workbook.worksheets.add(`Tokens_${Date.now()}`);
-    try { context.trackedObjects.add(outputSheet); } catch {}
     const header = ['Text'];
     for (let i = 0; i < maxTokens; i++) {
         header.push(`Token ${i + 1}`);
@@ -44,7 +53,8 @@ export async function splitIntoTokensFlow(
     outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
     // Bold header row
     try {
-        outputSheet.getRangeByIndexes(0, 0, 1, header.length).format.font.bold = true;
+        outputSheet.getRangeByIndexes(0, 0, 1, header.length).format.font.bold =
+            true;
     } catch {}
     const target = outputSheet
         .getRange('A2')
@@ -82,5 +92,7 @@ export async function splitIntoTokensFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
-    try { context.trackedObjects.remove(outputSheet); } catch {}
+    try {
+        context.trackedObjects.remove(outputSheet);
+    } catch {}
 }
