@@ -15,5 +15,8 @@
   "devDependencies": {
     "generator-office": "^3.0.1",
     "yo": "^5.1.0"
+  },
+  "dependencies": {
+    "@sentry/react": "^10.10.0"
   }
 }

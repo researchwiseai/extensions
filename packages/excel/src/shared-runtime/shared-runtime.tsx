@@ -19,6 +19,11 @@ import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { summarizeFlow } from '../flows/summarizeFlow';
 import { withPulseAuth } from '../services/authGuard';
+import * as Sentry from "@sentry/react";
+
+Sentry.init({
+  dsn: "https://f3c182e7744b0c06066f1021bfa85a25@o4505908303167488.ingest.us.sentry.io/4509984779796480",
+});
 
 function analyzeSentimentHandler(event: any) {
     console.log('Analyze sentiment handler');
