@@ -134,19 +134,7 @@ export function Feed({ api, setEmail }: Props) {
             <div className="w-full">
                 <div className="flex justify-between items-center mb-2">
                     <h2 className="ms-font-su">Feed</h2>
-                    <button
-                        onClick={logout}
-                        style={{
-                            background: '#f1fef6',
-                            color: '#0f766e',
-                            padding: '6px 10px',
-                            borderRadius: 4,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            border: '1px solid #0f766e',
-                            cursor: 'pointer',
-                        }}
-                    >
+                    <button onClick={logout} className="pulse-btn pulse-btn--secondary">
                         Logout
                     </button>
                 </div>
@@ -217,15 +205,7 @@ export function Feed({ api, setEmail }: Props) {
                             href="https://researchwiseai.com/login?returnTo=/billing"
                             target="_blank"
                             rel="noopener noreferrer"
-                            style={{
-                                background: '#0f766e',
-                                color: '#fff',
-                                padding: '6px 10px',
-                                borderRadius: 4,
-                                fontSize: 12,
-                                textDecoration: 'none',
-                                fontWeight: 600,
-                            }}
+                            className="pulse-btn pulse-btn--primary"
                         >
                             Buy more credits
                         </a>

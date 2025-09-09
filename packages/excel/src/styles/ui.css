@@ -1,0 +1,63 @@
+/* Shared Pulse UI styles */
+
+:root {
+  --pulse-teal: #0f766e;
+  --pulse-teal-dark: #0d665f;
+  --pulse-teal-verydark: #0c5852;
+  --pulse-danger: #b91c1c;
+  --pulse-danger-dark: #991b1b;
+}
+
+.pulse-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+}
+
+.pulse-btn:disabled,
+.pulse-btn[aria-disabled="true"] {
+  opacity: .6;
+  cursor: not-allowed;
+}
+
+.pulse-btn--block {
+  display: block;
+  width: 100%;
+}
+
+/* Variants */
+.pulse-btn--primary {
+  background: var(--pulse-teal);
+  color: #fff;
+  border-color: var(--pulse-teal);
+}
+.pulse-btn--primary:hover { background: var(--pulse-teal-dark); }
+.pulse-btn--primary:active { background: var(--pulse-teal-verydark); }
+.pulse-btn--primary:focus { outline: none; box-shadow: 0 0 0 2px rgba(15,118,110,.25); }
+
+.pulse-btn--secondary {
+  background: #fff;
+  color: var(--pulse-teal);
+  border-color: var(--pulse-teal);
+}
+.pulse-btn--secondary:hover { background: #f3f2f1; }
+.pulse-btn--secondary:active { background: #edebe9; }
+.pulse-btn--secondary:focus { outline: none; box-shadow: 0 0 0 2px rgba(15,118,110,.25); }
+
+.pulse-btn--danger {
+  background: var(--pulse-danger);
+  color: #fff;
+  border-color: var(--pulse-danger-dark);
+}
+.pulse-btn--danger:hover { background: var(--pulse-danger-dark); }
+.pulse-btn--danger:focus { outline: none; box-shadow: 0 0 0 2px rgba(185,28,28,.25); }

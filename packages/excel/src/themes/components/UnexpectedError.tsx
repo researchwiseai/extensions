@@ -70,15 +70,12 @@ export function UnexpectedError({ payload }: { payload: any }) {
                         className="w-full h-32 p-2 border border-slate-300 rounded"
                     />
                     <div className="flex gap-2">
-                        <button
-                            onClick={onCopy}
-                            className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
-                        >
+                        <button onClick={onCopy} className="pulse-btn pulse-btn--primary">
                             {copied ? 'Copied' : 'Copy details'}
                         </button>
                         <button
                             onClick={close}
-                            className="inline-flex items-center px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
+                            className="pulse-btn pulse-btn--secondary"
                         >
                             Close
                         </button>
@@ -86,10 +83,7 @@ export function UnexpectedError({ payload }: { payload: any }) {
                 </div>
             ) : (
                 <div className="flex gap-2">
-                    <button
-                        onClick={close}
-                        className="inline-flex items-center px-4 py-2 rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50"
-                    >
+                    <button onClick={close} className="pulse-btn pulse-btn--secondary">
                         Close
                     </button>
                 </div>

@@ -134,7 +134,8 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                         id="pulse-auth-continue"
                         disabled={connecting}
                         onClick={() => clickConnect(email)}
-                        style={{ display: 'block', width: '100%', background: '#106f7a', color: '#fff', border: 'none', padding: '10px 14px', borderRadius: 4, cursor: 'pointer' }}
+                        className="pulse-btn pulse-btn--primary pulse-btn--block"
+                        style={{ padding: '10px 14px' }}
                     >
                         {connecting ? 'Connecting…' : 'Sign in'}
                     </button>
@@ -150,14 +151,16 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     <button
                         id="pulse-auth-register"
                         onClick={handleRegister}
-                        style={{ display: 'block', width: '100%', background: '#fff', color: '#106f7a', border: '1px solid #106f7a', padding: '10px 14px', borderRadius: 4, cursor: 'pointer' }}
+                        className="pulse-btn pulse-btn--secondary pulse-btn--block"
+                        style={{ padding: '10px 14px' }}
                     >
                         Register
                     </button>
                     <button
                         id="pulse-auth-moreinfo"
                         onClick={handleMoreInfo}
-                        style={{ display: 'block', width: '100%', background: '#fff', color: '#323130', border: '1px solid #8a8886', padding: '10px 14px', borderRadius: 4, marginTop: 8, cursor: 'pointer' }}
+                        className="pulse-btn pulse-btn--secondary pulse-btn--block"
+                        style={{ padding: '10px 14px', marginTop: 8 }}
                     >
                         More info
                     </button>
