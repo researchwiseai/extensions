@@ -58,7 +58,15 @@ export function UnexpectedError({ payload }: { payload: any }) {
             <div className="flex gap-2">
                 <a
                     href={mailto}
-                    onClick={() => setTimeout(close, 200)}
+                    onClick={(e) => {
+                        e.preventDefault();
+                        try {
+                            Office.context.ui.messageParent(
+                                JSON.stringify({ type: 'open-mailto', href: mailto }),
+                            );
+                        } catch {}
+                        setTimeout(close, 50);
+                    }}
                     className="inline-flex items-center px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700"
                 >
                     Email support

@@ -65,6 +65,13 @@ async function showUnexpectedErrorModal(payload: any) {
                             } catch (e) {
                                 console.error('Failed to send error payload', e);
                             }
+                        } else if (msg && msg.type === 'open-mailto' && typeof msg.href === 'string') {
+                            try {
+                                // Attempt to open using window.location to trigger handler
+                                window.location.href = msg.href;
+                            } catch (e) {
+                                console.warn('Failed to open mailto from parent', e);
+                            }
                         } else if (msg && msg.type === 'close') {
                             dlg.close();
                         }

@@ -55,6 +55,7 @@ export async function themeGenerationFlow(
     // If interactive response with themeSets, prompt user to choose one
     if ((result as any).themeSets) {
         const themeSets = (result as { themeSets: any[][] }).themeSets;
+        let selectedSet: any[] | null = null;
         await new Promise<void>((resolve, reject) => {
             const url = getRelativeUrl('Modal.html');
             Office.context.ui.displayDialogAsync(
@@ -92,6 +93,7 @@ export async function themeGenerationFlow(
                                 Array.isArray(msg.set)
                             ) {
                                 dlg.close();
+                                selectedSet = msg.set;
                                 // Proceed with saving selected set
                                 Excel.run(async (ctx) => {
                                     await saveThemesToSheet({
@@ -147,7 +149,18 @@ export async function themeGenerationFlow(
                 },
             );
         });
-        return; // Done after selection path
+        // Return the selected set so callers (e.g., allocation flows) can proceed using it
+        if (selectedSet) {
+            return {
+                inputs,
+                positions,
+                sheet,
+                themes: selectedSet,
+                rangeInfo,
+                header,
+            };
+        }
+        return; // No selection; bail
     }
     // let themesSheet;
     // try {
