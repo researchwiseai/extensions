@@ -143,7 +143,17 @@
                 } catch (e) {
                     console.error(e);
                 }
-                sheets.reverse().forEach((sheet) => {
+                // Newest first, but ensure a sheet literally named "Themes" appears first
+                const THEME_SHEET_NAME = 'Themes';
+                const idx = sheets.indexOf(THEME_SHEET_NAME);
+                if (idx >= 0) {
+                    sheets.splice(idx, 1);
+                    sheets.reverse();
+                    sheets.unshift(THEME_SHEET_NAME);
+                } else {
+                    sheets.reverse();
+                }
+                sheets.forEach((sheet) => {
                     const opt = document.createElement('option');
                     opt.value = sheet;
                     opt.text = sheet;
