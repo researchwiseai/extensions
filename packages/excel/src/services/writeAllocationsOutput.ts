@@ -32,26 +32,35 @@ export async function writeAllocationsOutput(opts: {
 
   const valuesToWrite = hasHeader ? originalRange.values.slice(1) : originalRange.values;
   const outputSheet = context.workbook.worksheets.add(name);
-  outputSheet.getRange('A1:B1').values = [[headerText, 'Theme']];
+  // Write headers: Text, Coded Theme (thresholded), Best Fit (always best even if below threshold)
+  outputSheet.getRange('A1:C1').values = [[headerText, 'Coded Theme', 'Best Fit']];
 
   if (valuesToWrite.length > 0) {
     const aTarget = outputSheet.getRange('A2').getResizedRange(valuesToWrite.length - 1, 0);
     aTarget.values = valuesToWrite;
 
-    // Build column B values aligned to A using positions
+    // Build column B and C values aligned to A using positions
     const rowCount = valuesToWrite.length;
     const bValues: string[][] = Array.from({ length: rowCount }, () => ['']);
+    const cValues: string[][] = Array.from({ length: rowCount }, () => ['']);
     for (let i = 0; i < positions.length; i++) {
       const pos = positions[i];
       const alloc = allocations[i];
-      if (!alloc || alloc.belowThreshold) continue;
+      if (!alloc) continue;
       const idx = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
       if (idx >= 0 && idx < rowCount) {
-        bValues[idx] = [alloc.theme.label];
+        // Coded Theme (only if above threshold)
+        if (!alloc.belowThreshold) {
+          bValues[idx] = [alloc.theme.label];
+        }
+        // Best Fit always shows the top theme label
+        cValues[idx] = [alloc.theme.label];
       }
     }
     const bTarget = outputSheet.getRange('B2').getResizedRange(rowCount - 1, 0);
     bTarget.values = bValues;
+    const cTarget = outputSheet.getRange('C2').getResizedRange(rowCount - 1, 0);
+    cTarget.values = cValues;
   }
 
   await applyTextColumnFormatting(outputSheet, context, 'A');
@@ -73,4 +82,3 @@ export async function writeAllocationsOutput(opts: {
 
   return outputSheet;
 }
-
