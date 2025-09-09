@@ -25,6 +25,91 @@ Sentry.init({
   dsn: "https://f3c182e7744b0c06066f1021bfa85a25@o4505908303167488.ingest.us.sentry.io/4509984779796480",
 });
 
+// Catch truly unexpected errors and surface a helpful modal
+window.addEventListener('error', (evt) => {
+    try {
+        reportUnexpectedError((evt as any)?.error ?? evt?.message ?? evt);
+    } catch {}
+});
+window.addEventListener('unhandledrejection', (evt) => {
+    try {
+        reportUnexpectedError((evt as any)?.reason ?? evt);
+    } catch {}
+});
+
+async function showUnexpectedErrorModal(payload: any) {
+    try {
+        const url = getRelativeUrl('Modal.html');
+        Office.context.ui.displayDialogAsync(
+            url,
+            { height: 60, width: 60, displayInIframe: true },
+            (res) => {
+                if (res.status !== Office.AsyncResultStatus.Succeeded) {
+                    console.error('Failed to open error modal', res.error);
+                    return;
+                }
+                const dlg = res.value;
+                const onMsg = (arg: any) => {
+                    try {
+                        const msg = JSON.parse(arg.message || '{}');
+                        if (msg && msg.type === 'ready') {
+                            try {
+                                dlg.messageChild(
+                                    JSON.stringify({
+                                        type: 'unexpected-error',
+                                        payload,
+                                    }),
+                                );
+                            } catch (e) {
+                                console.error('Failed to send error payload', e);
+                            }
+                        } else if (msg && msg.type === 'close') {
+                            dlg.close();
+                        }
+                    } catch (e) {
+                        console.error('Error modal message parse error', e);
+                    }
+                };
+                dlg.addEventHandler(Office.EventType.DialogMessageReceived, onMsg);
+            },
+        );
+    } catch (e) {
+        console.error('Unexpected: could not show error modal', e);
+    }
+}
+
+async function reportUnexpectedError(error: unknown, extra?: { correlationId?: string }) {
+    try {
+        const userId = sessionStorage.getItem('user-email') || undefined;
+        const orgId = sessionStorage.getItem('org-id') || undefined;
+        const dateTime = new Date().toISOString();
+        let eventId: string | undefined;
+        try {
+            eventId = Sentry.captureException(error, {
+                extra: {
+                    correlationId: extra?.correlationId,
+                    userId,
+                    orgId,
+                },
+            }) as unknown as string | undefined;
+        } catch (s) {
+            console.warn('Sentry capture failed', s);
+        }
+
+        await showUnexpectedErrorModal({
+            eventId,
+            correlationId: extra?.correlationId,
+            dateTime,
+            userId,
+            orgId,
+            errorMessage: (error as any)?.message || String(error),
+            location: 'shared-runtime',
+        });
+    } catch (e) {
+        console.error('Failed to report unexpected error', e);
+    }
+}
+
 function analyzeSentimentHandler(event: any) {
     console.log('Analyze sentiment handler');
     try {
@@ -47,11 +132,13 @@ function analyzeSentimentHandler(event: any) {
             } catch (e) {
                 console.error('Dialog error', e);
                 console.error((e as Error).stack);
+                reportUnexpectedError(e);
             } finally {
                 event.completed();
             }
         }).catch((err) => {
             console.error(err);
+            reportUnexpectedError(err);
         });
     });
 }
@@ -80,6 +167,7 @@ async function generateThemesHandler(event: any) {
                 );
             } catch (e) {
                 console.error('Dialog error', e);
+                reportUnexpectedError(e);
             }
         });
     }).catch((err) => console.error(err));
@@ -104,6 +192,7 @@ function allocateThemesHandler(event: any) {
                 await allocateThemesRoot(context, confirmed, _hasHeader);
             } catch (e) {
                 console.error('Dialog error', e);
+                reportUnexpectedError(e);
             }
         });
     }).catch((err) => console.error(err));
@@ -128,6 +217,7 @@ function matrixThemesHandler(event: any) {
                 await matrixThemesRootFlow(context, confirmed, _hasHeader);
             } catch (e) {
                 console.error('Dialog error', e);
+                reportUnexpectedError(e);
             }
         });
     }).catch((err) => console.error(err));
@@ -156,6 +246,7 @@ function similarityMatrixThemesHandler(event: any) {
                 );
             } catch (e) {
                 console.error('Dialog error', e);
+                reportUnexpectedError(e);
             }
         });
     }).catch((err) => console.error(err));
@@ -179,11 +270,13 @@ function splitIntoSentencesHandler(event: any) {
         } catch (e) {
             console.error('Dialog error', e);
             console.error((e as Error).stack);
+            reportUnexpectedError(e);
         } finally {
             event.completed();
         }
     }).catch((err) => {
         console.error(err);
+        reportUnexpectedError(err);
     });
 }
 Office.actions.associate(
@@ -205,11 +298,13 @@ function splitIntoTokensHandler(event: any) {
         } catch (e) {
             console.error('Token split error', e);
             console.error((e as Error).stack);
+            reportUnexpectedError(e);
         } finally {
             event.completed();
         }
     }).catch((err) => {
         console.error(err);
+        reportUnexpectedError(err);
     });
 }
 Office.actions.associate('splitIntoTokensHandler', splitIntoTokensHandler);
@@ -228,11 +323,13 @@ function countWordsHandler(event: any) {
         } catch (e) {
             console.error('Word count error', e);
             console.error((e as Error).stack);
+            reportUnexpectedError(e);
         } finally {
             event.completed();
         }
     }).catch((err) => {
         console.error(err);
+        reportUnexpectedError(err);
     });
 }
 Office.actions.associate('countWordsHandler', countWordsHandler);
@@ -254,7 +351,10 @@ async function runExtractionsHandler(event: any) {
         }
         openFeedHandler();
         await extractElementsFromActiveWorksheet(category, !!expand);
-    }).catch((e) => console.error('Extractions dialog error', e));
+    }).catch((e) => {
+        console.error('Extractions dialog error', e);
+        reportUnexpectedError(e);
+    });
 }
 Office.actions.associate('runExtractionsHandler', runExtractionsHandler);
 
@@ -324,6 +424,7 @@ function summarizeHandler(event: any) {
                 });
             } catch (e) {
                 console.error('Summarize error', e);
+                reportUnexpectedError(e);
             }
         });
     }).catch((err) => console.error(err));

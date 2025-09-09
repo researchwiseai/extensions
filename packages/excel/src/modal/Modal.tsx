@@ -23,6 +23,8 @@ Office.onReady().then(() => {
                     modalApi.goToView('themeSetsChoice', 'show', {
                         themeSets: msg.themeSets,
                     });
+                } else if (msg && msg.type === 'unexpected-error') {
+                    modalApi.goToView('unexpectedError', 'show', msg.payload);
                 }
             } catch (e) {
                 console.error('Failed to parse parent message', e);
