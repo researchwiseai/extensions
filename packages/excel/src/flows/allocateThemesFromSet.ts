@@ -5,10 +5,9 @@ import {
 } from 'pulse-common/themes';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { maybeActivateSheet } from '../services/maybeActivateSheet';
-import { getFeed, updateItem } from 'pulse-common/jobs';
 import { Pos } from 'pulse-common';
 import { ALLOCATION_THRESHOLD } from './constants';
-import { applyTextColumnFormatting } from '../services/applyTextColumnFormatting';
+import { writeAllocationsOutput } from '../services/writeAllocationsOutput';
 
 export async function allocateThemesFromSetFlow(
     context: Excel.RequestContext,
@@ -57,91 +56,16 @@ export async function allocateThemesFromSetFlow(
         },
     });
 
-    await writeAllocationsToSheet(
-        positions,
-        sheet,
-        allocations,
+    await writeAllocationsOutput({
         context,
+        sourceSheet: sheet,
         rangeInfo,
-        startTime,
+        positions,
+        allocations,
         hasHeader,
-        header,
-    );
+        headerText: header,
+        startTime,
+    });
 }
 
-export async function writeAllocationsToSheet(
-    positions: Pos[],
-    sheet: Excel.Worksheet,
-    allocations: {
-        theme: ShortTheme;
-        score: number;
-        belowThreshold: boolean;
-    }[],
-    context: Excel.RequestContext,
-    rangeInfo: {
-        rowIndex: number;
-        columnIndex: number;
-        rowCount: number;
-        columnCount: number;
-    },
-    startTime: number,
-    hasHeader = false,
-    header?: string,
-) {
-    const originalRange = sheet.getRangeByIndexes(
-        rangeInfo.rowIndex,
-        rangeInfo.columnIndex,
-        rangeInfo.rowCount,
-        rangeInfo.columnCount,
-    );
-    originalRange.load('values');
-    await context.sync();
-
-    const name = `Allocation_${Date.now()}`;
-    const outputSheet = context.workbook.worksheets.add(name);
-    const headerLabel = hasHeader && header ? header : 'Text';
-    outputSheet.getRange('A1:B1').values = [[headerLabel, 'Theme']];
-    const valuesToWrite = hasHeader
-        ? originalRange.values.slice(1)
-        : originalRange.values;
-    const target = outputSheet
-        .getRange('A2')
-        .getResizedRange(valuesToWrite.length - 1, 0);
-    target.values = valuesToWrite;
-
-    const batchSize = 1000;
-    for (let i = 0; i < positions.length; i += batchSize) {
-        const batch = positions.slice(i, i + batchSize);
-        batch.forEach((pos, j) => {
-            const alloc = allocations[i + j];
-            const rowIndex = pos.row - rangeInfo.rowIndex - (hasHeader ? 1 : 0);
-            const cell = outputSheet.getCell(rowIndex, 1);
-            cell.values = [[alloc.theme.label]];
-            if (alloc.belowThreshold) {
-                cell.values = [[]];
-            } else {
-                cell.values = [[alloc.theme.label]];
-            }
-        });
-        await context.sync();
-    }
-
-    // Improve readability of the first column containing long text
-    await applyTextColumnFormatting(outputSheet, context, 'A');
-
-    await maybeActivateSheet(context, outputSheet, startTime);
-
-    const feed = getFeed();
-    const last = feed[feed.length - 1];
-    if (last) {
-        updateItem({
-            jobId: last.jobId,
-            onClick: () => {
-                Excel.run(async (context) => {
-                    context.workbook.worksheets.getItem(name).activate();
-                    await context.sync();
-                });
-            },
-        });
-    }
-}
+// sheet writing moved to shared service writeAllocationsOutput
