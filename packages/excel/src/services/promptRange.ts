@@ -31,6 +31,17 @@ export function promptRange(
                             }
                             try {
                                 const msg = JSON.parse(arg.message);
+                                // Also support plain postMessage payloads from child
+                                if (msg && typeof msg === 'object' && !('range' in msg) && 'data' in msg) {
+                                    try {
+                                        const inner = JSON.parse((msg as any).data);
+                                        if (inner && ('range' in inner)) {
+                                            dialog.close();
+                                            resolve({ range: inner.range, hasHeader: !!inner.hasHeader });
+                                            return;
+                                        }
+                                    } catch {}
+                                }
                                 dialog.close();
                                 resolve({
                                     range: msg.range,

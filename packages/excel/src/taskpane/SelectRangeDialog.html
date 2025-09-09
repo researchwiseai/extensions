@@ -27,21 +27,33 @@
     <button id="okBtn" class="pulse-btn pulse-btn--primary">OK</button>
   </div>
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    function safeMessageParent(payload) {
+      try {
+        Office.context.ui.messageParent(JSON.stringify(payload));
+      } catch (e) {
+        try {
+          // Fallback in case Office API isn't ready
+          window.parent.postMessage(JSON.stringify(payload), '*');
+        } catch {}
+      }
+    }
+    Office.onReady(function() {
       const params = new URLSearchParams(window.location.search);
       const range = params.get('range') || '';
       const input = document.getElementById('rangeInput');
       input.value = range;
       const headerCheckbox = document.getElementById('headerCheckbox');
-      document.getElementById('okBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(
-          JSON.stringify({ range: input.value, hasHeader: headerCheckbox.checked }),
-        );
+      const okBtn = document.getElementById('okBtn');
+      const cancelBtn = document.getElementById('cancelBtn');
+      okBtn.addEventListener('click', function () {
+        okBtn.disabled = true;
+        cancelBtn.disabled = true;
+        safeMessageParent({ range: input.value, hasHeader: !!headerCheckbox.checked });
       });
-      document.getElementById('cancelBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(
-          JSON.stringify({ range: null, hasHeader: headerCheckbox.checked }),
-        );
+      cancelBtn.addEventListener('click', function () {
+        okBtn.disabled = true;
+        cancelBtn.disabled = true;
+        safeMessageParent({ range: null, hasHeader: !!headerCheckbox.checked });
       });
       input.focus();
       input.select();
