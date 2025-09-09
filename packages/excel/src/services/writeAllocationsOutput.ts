@@ -78,8 +78,9 @@ export async function writeAllocationsOutput(opts: {
     aCol.format.columnWidth = Math.round(base * 1.2);
     const bCol = outputSheet.getRange('B:B');
     const cCol = outputSheet.getRange('C:C');
-    bCol.format.columnWidth = Math.round(base * 4);
-    cCol.format.columnWidth = Math.round(base * 4);
+    // Previously set to base * 4; reduce to a quarter of that (i.e., base)
+    bCol.format.columnWidth = Math.round(base);
+    cCol.format.columnWidth = Math.round(base);
   } catch {
     // Ignore width errors on hosts that don't allow setting fixed widths
   }
