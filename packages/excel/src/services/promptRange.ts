@@ -5,7 +5,9 @@ import { getRelativeUrl } from './relativeUrl';
  * @param defaultRange The default A1 range including sheet name (e.g., 'Sheet1!A1:B5').
  * @returns An object containing the confirmed range string (null if cancelled) and a flag indicating whether the first row contains header.
  */
-export function promptRange(defaultRange: string): Promise<{ range: string | null; hasHeader: boolean }> {
+export function promptRange(
+    defaultRange: string,
+): Promise<{ range: string | null; hasHeader: boolean }> {
     return new Promise((resolve, reject) => {
         const url = getRelativeUrl(
             `SelectRangeDialog.html?range=${encodeURIComponent(defaultRange)}`,
@@ -30,7 +32,10 @@ export function promptRange(defaultRange: string): Promise<{ range: string | nul
                             try {
                                 const msg = JSON.parse(arg.message);
                                 dialog.close();
-                                resolve({ range: msg.range, hasHeader: !!msg.hasHeader });
+                                resolve({
+                                    range: msg.range,
+                                    hasHeader: !!msg.hasHeader,
+                                });
                             } catch (e) {
                                 dialog.close();
                                 reject(e);

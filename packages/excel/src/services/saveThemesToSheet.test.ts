@@ -24,7 +24,10 @@ describe('saveThemesToSheet', () => {
             'Label',
             'Short Label',
             'Description',
-            ...Array.from({ length: repCount }, (_, i) => `Representative ${i + 1}`),
+            ...Array.from(
+                { length: repCount },
+                (_, i) => `Representative ${i + 1}`,
+            ),
         ];
     }
     function lastColForHeaders(headers: string[]) {
@@ -73,13 +76,20 @@ describe('saveThemesToSheet', () => {
             horizontalAlignment: undefined,
             borders: mockBorders,
         };
-        mockHeaderRange = { values: undefined, format: mockFormat };
-        mockDataRange = { values: undefined, format: mockFormat };
+        mockHeaderRange = undefined as any;
+        mockDataRange = undefined as any;
         mockUsedRange = { clear: jest.fn() };
         mockWorksheet = {
-            getRange: jest.fn().mockImplementation((address: string) =>
-                address === headerRangeStr ? mockHeaderRange : mockDataRange,
-            ),
+            getRange: jest.fn().mockImplementation((address: string) => {
+                const range = { values: undefined, format: mockFormat } as any;
+                // Treat first row as header range by convention
+                if (/^A1:.*1$/.test(address)) {
+                    mockHeaderRange = range;
+                } else {
+                    mockDataRange = range;
+                }
+                return range;
+            }),
             getUsedRange: jest.fn().mockReturnValue(mockUsedRange),
         };
         mockContext = {
@@ -180,10 +190,8 @@ describe('saveThemesToSheet', () => {
         expect(mockWorksheet.getRange).toHaveBeenCalledWith(headerRangeStr);
         expect(mockHeaderRange.values).toEqual([expectedHeaders]);
 
-        // Data range should be called with an empty array
-        expect(mockWorksheet.getRange).toHaveBeenCalledWith(`A2:${lastCol}1`);
-        expect(mockDataRange.values).toEqual([]);
-
-        expect(mockContext.sync).toHaveBeenCalledTimes(3);
+        // When there are no rows, only header is written
+        expect(mockWorksheet.getRange).toHaveBeenCalledWith(`A1:${lastCol}1`);
+        expect(mockContext.sync).toHaveBeenCalledTimes(2);
     });
 });

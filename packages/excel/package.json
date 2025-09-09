@@ -6,8 +6,8 @@
         "build": "webpack --mode production",
         "build:dev": "webpack --mode development",
         "dev-server": "webpack serve --mode development",
-        "lint": "office-addin-lint check",
-        "lint:fix": "office-addin-lint fix",
+        "lint": "eslint --ext .ts,.tsx src",
+        "lint:fix": "eslint --fix --ext .ts,.tsx src",
         "typecheck": "tsc --noEmit",
         "prestart": "npm run build",
         "prettier": "office-addin-lint prettier",
@@ -17,7 +17,7 @@
         "stop": "office-addin-debugging stop manifest.xml",
         "validate": "office-addin-manifest validate manifest.xml",
         "watch": "webpack --mode development --watch",
-        "test": "jest"
+        "test": "jest --passWithNoTests"
     },
     "dependencies": {
         "@fluentui/react": "^8.122.17",

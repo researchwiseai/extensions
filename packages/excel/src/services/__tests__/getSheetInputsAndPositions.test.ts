@@ -8,7 +8,9 @@ interface MockRange {
     columnCount: number;
     values?: any[][];
     load: jest.Mock;
-    getIntersectionOrNullObject?: (other: MockRange) => MockRange & { isNullObject?: boolean };
+    getIntersectionOrNullObject?: (
+        other: MockRange,
+    ) => MockRange & { isNullObject?: boolean };
 }
 
 function createRange(props: Partial<MockRange> = {}): MockRange {
@@ -54,7 +56,10 @@ describe('getSheetInputsAndPositions', () => {
             sync: jest.fn().mockResolvedValue(undefined),
         } as any;
 
-        const { inputs, positions } = await getSheetInputsAndPositions(context, 'A:A');
+        const { inputs, positions } = await getSheetInputsAndPositions(
+            context,
+            'A:A',
+        );
         expect(target.getIntersectionOrNullObject).toHaveBeenCalled();
         expect(inputs).toEqual(['foo', 'bar']);
         expect(positions).toEqual([
@@ -94,8 +99,8 @@ describe('getSheetInputsAndPositions', () => {
             sync: jest.fn().mockResolvedValue(undefined),
         } as any;
 
-        await expect(getSheetInputsAndPositions(context, 'A:B')).rejects.toThrow(
-            'single column',
-        );
+        await expect(
+            getSheetInputsAndPositions(context, 'A:B'),
+        ).rejects.toThrow('single column');
     });
 });

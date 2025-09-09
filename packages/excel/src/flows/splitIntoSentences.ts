@@ -8,10 +8,8 @@ export async function splitIntoSentencesFlow(
 ): Promise<void> {
     console.log('splitIntoSentencesFlow', range);
     const startTime = Date.now();
-    const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { inputs, positions, sheet, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
 
     // @ts-expect-error Missing type definition for Intl.Segmenter
     const segmenterEn = new Intl.Segmenter('en', { granularity: 'sentence' });
@@ -41,14 +39,14 @@ export async function splitIntoSentencesFlow(
     originalRange.load('values');
     await context.sync();
 
-    const outputSheet = context.workbook.worksheets.add(`Sentences_${Date.now()}`);
+    const outputSheet = context.workbook.worksheets.add(
+        `Sentences_${Date.now()}`,
+    );
     const header = ['Text'];
     for (let i = 0; i < maxSentences; i++) {
         header.push(`Sentence ${i + 1}`);
     }
-    outputSheet
-        .getRangeByIndexes(0, 0, 1, header.length)
-        .values = [header];
+    outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(rangeInfo.rowCount - 1, 0);

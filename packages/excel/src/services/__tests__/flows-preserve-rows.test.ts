@@ -29,7 +29,9 @@ describe('flows writing', () => {
                 format: { wrapText: false, columnWidth: 0 },
             })),
             getRangeByIndexes: jest.fn(() => ({ values: undefined })),
-            getUsedRange: jest.fn(() => ({ format: { autofitRows: jest.fn() } })),
+            getUsedRange: jest.fn(() => ({
+                format: { autofitRows: jest.fn() },
+            })),
         } as any;
         const context = {
             workbook: { worksheets: { add: jest.fn(() => outputSheet) } },
@@ -42,9 +44,17 @@ describe('flows writing', () => {
                 { row: 3, col: 1 },
             ],
             sheet: {
-                getRangeByIndexes: jest.fn(() => ({ load: jest.fn(), values: [['one two'], ['',], ['three']] })),
+                getRangeByIndexes: jest.fn(() => ({
+                    load: jest.fn(),
+                    values: [['one two'], [''], ['three']],
+                })),
             },
-            rangeInfo: { rowIndex: 0, columnIndex: 0, rowCount: 3, columnCount: 1 },
+            rangeInfo: {
+                rowIndex: 0,
+                columnIndex: 0,
+                rowCount: 3,
+                columnCount: 1,
+            },
         });
 
         await countWordsFlow(context, 'A:A');

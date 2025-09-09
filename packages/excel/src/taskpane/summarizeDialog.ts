@@ -23,4 +23,3 @@ if (document.readyState === 'loading') {
 } else {
     renderPresets();
 }
-

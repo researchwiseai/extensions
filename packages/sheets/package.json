@@ -9,8 +9,8 @@
         "push": "bun run build && clasp push",
         "deploy:dev": "clasp deploy --description 'dev build' --deploymentId $(clasp deployments | tail -n1 | awk '{print $2}')",
         "deploy:prod": "clasp deploy --description 'Production release' --deploymentId AKfycbwNwsg8eOA-XHGYv-Ox46rm2mlLrnrwhXq1hH5YXdYxyhLLy3EWaAUAJzVQGF_GxseD-A",
-        "lint": "eslint \"src/**/*.{ts}\"",
-        "lint:fix": "eslint --fix \"src/**/*.{ts}\"",
+        "lint": "eslint src",
+        "lint:fix": "eslint --fix src",
         "format": "prettier --write \"src/**/*.{ts,html,json}\""
     },
     "devDependencies": {

@@ -29,7 +29,7 @@ export async function signInGraph(): Promise<boolean> {
         console.warn('Graph sign-in failed', e);
         if (msg && /identity api.+not supported/i.test(msg)) {
             console.warn(
-                'Office Identity API is unavailable for this add-in. Ensure the manifest includes WebApplicationInfo and the add-in is configured for SSO.'
+                'Office Identity API is unavailable for this add-in. Ensure the manifest includes WebApplicationInfo and the add-in is configured for SSO.',
             );
         }
     }

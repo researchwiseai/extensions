@@ -14,34 +14,35 @@ import { promptExtractionOptions } from '../services/promptExtractionOptions';
  * @param event - The event object from the button click.
  */
 async function analyzeSentiment(event: Office.AddinCommands.Event) {
-  try {
-    await Excel.run(async (context) => {
-      // Get selected range and confirm with user
-      const selected = context.workbook.getSelectedRange();
-      selected.load('address');
-      await context.sync();
-      const defaultRange = selected.address;
-      // Prompt user to confirm or change range
-      let confirmedRange: string | null;
-      let hasHeader = false;
-      try {
-        ({ range: confirmedRange, hasHeader } = await promptRange(defaultRange));
-      } catch (err) {
-        console.error('Range selection dialog error:', err);
-        return;
-      }
-      if (!confirmedRange) {
-        // User cancelled
-        return;
-      }
-      // Perform sentiment analysis
-      await analyzeSentimentLogic(context, confirmedRange, hasHeader);
-    });
-  } catch (err) {
-    console.error('Analyze Sentiment error:', err);
-  } finally {
-    event.completed();
-  }
+    try {
+        await Excel.run(async (context) => {
+            // Get selected range and confirm with user
+            const selected = context.workbook.getSelectedRange();
+            selected.load('address');
+            await context.sync();
+            const defaultRange = selected.address;
+            // Prompt user to confirm or change range
+            let confirmedRange: string | null;
+            let hasHeader = false;
+            try {
+                ({ range: confirmedRange, hasHeader } =
+                    await promptRange(defaultRange));
+            } catch (err) {
+                console.error('Range selection dialog error:', err);
+                return;
+            }
+            if (!confirmedRange) {
+                // User cancelled
+                return;
+            }
+            // Perform sentiment analysis
+            await analyzeSentimentLogic(context, confirmedRange, hasHeader);
+        });
+    } catch (err) {
+        console.error('Analyze Sentiment error:', err);
+    } finally {
+        event.completed();
+    }
 }
 
 // Register the Analyze Sentiment command handler
@@ -51,18 +52,18 @@ Office.actions.associate('analyzeSentiment', analyzeSentiment);
  * Handler for Extractions ribbon button.
  */
 async function runExtractions(event: Office.AddinCommands.Event) {
-  try {
-    const { category, expand } = await promptExtractionOptions();
-    if (!category) {
-      // User cancelled or did not enter a category
-      return;
+    try {
+        const { category, expand } = await promptExtractionOptions();
+        if (!category) {
+            // User cancelled or did not enter a category
+            return;
+        }
+        await extractElementsFromActiveWorksheet(category, !!expand);
+    } catch (err) {
+        console.error('Extractions error:', err);
+    } finally {
+        event.completed();
     }
-    await extractElementsFromActiveWorksheet(category, !!expand);
-  } catch (err) {
-    console.error('Extractions error:', err);
-  } finally {
-    event.completed();
-  }
 }
 
 Office.actions.associate('runExtractions', runExtractions);

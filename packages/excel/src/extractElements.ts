@@ -9,7 +9,14 @@ export async function extractElementsFromActiveWorksheet(
     await Excel.run(async (context) => {
         const sheet = context.workbook.worksheets.getActiveWorksheet();
         const used = sheet.getUsedRange();
-        used.load(['values', 'rowCount', 'columnCount', 'rowIndex', 'columnIndex', 'address']);
+        used.load([
+            'values',
+            'rowCount',
+            'columnCount',
+            'rowIndex',
+            'columnIndex',
+            'address',
+        ]);
         await context.sync();
 
         const values: any[][] = used.values as any[][];
@@ -34,7 +41,9 @@ export async function extractElementsFromActiveWorksheet(
             }
         }
         if (dictionary.length === 0) {
-            throw new Error('No dictionary terms found in row 1 (from B1 across).');
+            throw new Error(
+                'No dictionary terms found in row 1 (from B1 across).',
+            );
         }
         if (firstDictOffset === -1) firstDictOffset = 1;
 
@@ -94,9 +103,7 @@ export async function extractElementsFromActiveWorksheet(
                     1,
                     Math.max(resultLen, 1),
                 );
-                headerRange.values = [
-                    resultLen > 0 ? resultDict : [''],
-                ];
+                headerRange.values = [resultLen > 0 ? resultDict : ['']];
             }
 
             // 2) Build per-column arrays and write by matching actual header positions
@@ -117,9 +124,10 @@ export async function extractElementsFromActiveWorksheet(
             headerScan.load('values');
             await context.sync();
 
-            const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-            const headerVals: string[] = (headerScan.values?.[0] ?? []).map((v) =>
-                (v == null ? '' : String(v)).trim(),
+            const normalize = (s: string) =>
+                s.toLowerCase().replace(/[^a-z0-9]/g, '');
+            const headerVals: string[] = (headerScan.values?.[0] ?? []).map(
+                (v) => (v == null ? '' : String(v)).trim(),
             );
             const idxMap = new Map<string, number>();
             headerVals.forEach((label, idx) => {
@@ -128,10 +136,14 @@ export async function extractElementsFromActiveWorksheet(
                 idxMap.set(normalize(label), colAbs);
             });
 
-            const writeRows = Math.min(limitedInputs.length, result.results.length);
+            const writeRows = Math.min(
+                limitedInputs.length,
+                result.results.length,
+            );
             for (let j = 0; j < resultLen; j++) {
                 const headerLabel = String(resultDict[j] ?? '').trim();
-                const colAbs = idxMap.get(normalize(headerLabel)) ?? dictStartCol + j;
+                const colAbs =
+                    idxMap.get(normalize(headerLabel)) ?? dictStartCol + j;
 
                 // Build this column's values
                 const colValues: string[][] = Array.from(

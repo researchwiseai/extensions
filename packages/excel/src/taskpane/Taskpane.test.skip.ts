@@ -12,7 +12,9 @@ describe('openFeedHandler', () => {
             StartupBehavior: { load: 'load' },
             actions: { associate: jest.fn() },
         };
-        (global as any).document = { getElementById: jest.fn().mockReturnValue({}) };
+        (global as any).document = {
+            getElementById: jest.fn().mockReturnValue({}),
+        };
     });
 
     afterEach(() => {

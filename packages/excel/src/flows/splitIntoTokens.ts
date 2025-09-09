@@ -13,10 +13,8 @@ export async function splitIntoTokensFlow(
 ): Promise<void> {
     console.log('splitIntoTokensFlow', range);
     const startTime = Date.now();
-    const { inputs, positions, sheet, rangeInfo } = await getSheetInputsAndPositions(
-        context,
-        range,
-    );
+    const { inputs, positions, sheet, rangeInfo } =
+        await getSheetInputsAndPositions(context, range);
 
     const nlp = winkNLP(model);
     const tokenLists: string[][] = inputs.map((input) => {
@@ -42,9 +40,7 @@ export async function splitIntoTokensFlow(
     for (let i = 0; i < maxTokens; i++) {
         header.push(`Token ${i + 1}`);
     }
-    outputSheet
-        .getRangeByIndexes(0, 0, 1, header.length)
-        .values = [header];
+    outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(rangeInfo.rowCount - 1, 0);
