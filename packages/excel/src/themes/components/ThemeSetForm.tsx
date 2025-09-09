@@ -21,6 +21,24 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
     onSave,
     onCancel,
 }) => {
+    const pulseTextFieldStyles = {
+        root: { marginTop: 0 },
+        fieldGroup: {
+            borderRadius: 4,
+            borderColor: '#8a8886',
+            selectors: {
+                ':hover': { borderColor: '#605e5c' },
+                ':focus-within': {
+                    borderColor: '#0f766e',
+                    boxShadow: '0 0 0 2px rgba(15,118,110,.15)',
+                },
+            },
+        },
+        field: { padding: '8px 10px' },
+        subComponentStyles: {
+            label: { root: { fontWeight: 600, marginBottom: 4 } },
+        },
+    } as any;
     const [name, setName] = useState(initialData?.name || '');
     const [themes, setThemes] = useState<ShortTheme[]>(
         initialData?.themes?.length
@@ -88,6 +106,7 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                 label="Theme Set Name"
                 value={name}
                 onChange={handleNameChange}
+                styles={pulseTextFieldStyles}
                 required
             />
             <Stack tokens={{ childrenGap: 24 }}>
@@ -119,6 +138,7 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                             label="Theme Label"
                             value={theme.label}
                             onChange={handleThemeChange(themeIndex, 'label')}
+                            styles={pulseTextFieldStyles}
                         />
                         <Label>Examples</Label>
                         {theme.representatives.map((rep, repIndex) => (
@@ -137,6 +157,7 @@ export const ThemeSetForm: React.FC<ThemeSetFormProps> = ({
                                             'representatives',
                                             repIndex,
                                         )}
+                                        styles={pulseTextFieldStyles}
                                     />
                                 </Stack.Item>
                                 <IconButton

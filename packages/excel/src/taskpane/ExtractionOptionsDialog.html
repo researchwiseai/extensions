@@ -14,14 +14,16 @@
     .pulse-btn--secondary:hover { background:#f3f2f1; }
     body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
     label { display:block; margin-top: 8px; }
-    input[type="text"] { width:100%; padding:4px; margin-top:4px; }
+    .pulse-input { width: 100%; padding: 8px 10px; border: 1px solid #8a8886; border-radius: 4px; background: #fff; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
+    .pulse-input:hover { border-color: #605e5c; }
+    .pulse-input:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 2px rgba(15,118,110,.15); }
     .actions { margin-top: 16px; text-align: right; }
   </style>
   </head>
 <body>
   <div>
     <label for="categoryInput">Category (e.g., product, service, brand)</label>
-    <input id="categoryInput" type="text" placeholder="Enter a category..." />
+    <input id="categoryInput" type="text" class="pulse-input" placeholder="Enter a category..." />
   </div>
   <div>
     <label><input id="expandCheckbox" type="checkbox" checked /> Allow dictionary expansion</label>

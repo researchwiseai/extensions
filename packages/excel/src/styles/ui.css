@@ -83,3 +83,10 @@
 .ms-Button.pulse-btn.pulse-btn--danger .ms-Button-label { color: #fff; }
 .ms-Button.pulse-btn.pulse-btn--danger:hover { background: var(--pulse-danger-dark); }
 .ms-Button.pulse-btn.pulse-btn--danger:focus { outline: none; box-shadow: 0 0 0 2px rgba(185,28,28,.25); }
+
+/* Form styles */
+.pulse-form label { font-weight: 600; color: #374151; margin-bottom: 4px; display: inline-block; }
+.pulse-input { width: 100%; padding: 8px 10px; border: 1px solid #8a8886; border-radius: 4px; background: #fff; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
+.pulse-input:hover { border-color: #605e5c; }
+.pulse-input:focus { outline: none; border-color: var(--pulse-teal); box-shadow: 0 0 0 2px rgba(15,118,110,.15); }
+.pulse-input:disabled { background: #f8f8f8; color: #6b7280; cursor: not-allowed; }

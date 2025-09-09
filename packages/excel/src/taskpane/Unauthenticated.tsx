@@ -118,15 +118,8 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     placeholder="you@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    style={{
-                        width: '100%',
-                        padding: 8,
-                        margin: '8px 0',
-                        boxSizing: 'border-box',
-                        background: '#fff',
-                        border: '1px solid #8a8886',
-                        borderRadius: 4,
-                    }}
+                    className="pulse-input"
+                    style={{ margin: '8px 0' }}
                 />
 
                 <div className="actions" style={{ marginTop: 8 }}>

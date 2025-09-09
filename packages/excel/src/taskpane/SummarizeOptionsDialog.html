@@ -13,6 +13,9 @@
     .pulse-btn--secondary { background:#fff; border-color:#0f766e; color:#0f766e; }
     .pulse-btn--secondary:hover { background:#f3f2f1; }
     body { font-family: 'Segoe UI', sans-serif; margin: 16px; }
+    .pulse-input { width: 100%; padding: 8px 10px; border: 1px solid #8a8886; border-radius: 4px; background: #fff; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
+    .pulse-input:hover { border-color: #605e5c; }
+    .pulse-input:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 2px rgba(15,118,110,.15); }
     label { display: block; margin-top: 12px; font-weight: 600; }
     /* Ensure padding is included in width so the textarea truly spans the container */
     textarea { width: 100%; min-height: 80px; padding: 6px; box-sizing: border-box; }
@@ -43,7 +46,7 @@
 </head>
 <body>
   <label for="questions">Question(s)</label>
-  <textarea id="questions" placeholder="e.g., What are the key takeaways and sentiment?&#10;You can add multiple questions on new lines."></textarea>
+  <textarea id="questions" class="pulse-input" placeholder="e.g., What are the key takeaways and sentiment?&#10;You can add multiple questions on new lines."></textarea>
 
   <label>Preset</label>
   <div id="presets" class="presets"></div>
