@@ -1,10 +1,5 @@
-import {
-    allocateThemes as allocateThemesApi,
-    ShortTheme,
-} from 'pulse-common/themes';
+import { allocateThemes as allocateThemesApi } from 'pulse-common/themes';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
-import { maybeActivateSheet } from '../services/maybeActivateSheet';
-import { Pos } from 'pulse-common';
 import { getThemesFromSheet } from './helpers/getThemesFromSheet';
 import { ALLOCATION_THRESHOLD } from './constants';
 import { writeAllocationsOutput } from '../services/writeAllocationsOutput';

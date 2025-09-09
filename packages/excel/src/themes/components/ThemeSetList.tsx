@@ -15,6 +15,11 @@ interface ThemeSetListProps {
     onCreate: () => void;
     onView: (themeSet: ThemeSet) => void;
     onDelete: (themeSet: ThemeSet) => void;
+    onImportFromSheet?: () => void;
+    onCreateSheetTemplate?: () => void;
+    importDisabled?: boolean;
+    createSheetDisabled?: boolean;
+    sheetSetName?: string;
 }
 
 export const ThemeSetList: React.FC<ThemeSetListProps> = ({
@@ -22,6 +27,11 @@ export const ThemeSetList: React.FC<ThemeSetListProps> = ({
     onCreate,
     onView,
     onDelete,
+    onImportFromSheet,
+    onCreateSheetTemplate,
+    importDisabled,
+    createSheetDisabled,
+    sheetSetName,
 }) => {
     const columns: IColumn[] = [
         {
@@ -31,6 +41,27 @@ export const ThemeSetList: React.FC<ThemeSetListProps> = ({
             minWidth: 200,
             maxWidth: 350,
             isResizable: true,
+            onRender: (item: ThemeSet) => (
+                <div className="flex items-center gap-2">
+                    <span>{item.name}</span>
+                    {sheetSetName && sheetSetName === item.name ? (
+                        <span
+                            title="This set matches the Themes worksheet"
+                            style={{
+                                background: '#E0F2F1',
+                                color: '#00695C',
+                                border: '1px solid #26A69A',
+                                borderRadius: 4,
+                                padding: '1px 6px',
+                                fontSize: 11,
+                                lineHeight: '16px',
+                            }}
+                        >
+                            On Sheet
+                        </span>
+                    ) : null}
+                </div>
+            ),
         },
         {
             key: 'actions',
@@ -58,7 +89,19 @@ export const ThemeSetList: React.FC<ThemeSetListProps> = ({
 
     return (
         <Stack tokens={{ childrenGap: 16 }} styles={{ root: { padding: 16 } }}>
-            <DefaultButton text="Create Theme Set" onClick={onCreate} />
+            <Stack horizontal tokens={{ childrenGap: 8 }}>
+                <DefaultButton text="Create Theme Set" onClick={onCreate} />
+                <DefaultButton
+                    text="Import from Themes Sheet"
+                    onClick={onImportFromSheet}
+                    disabled={importDisabled}
+                />
+                <DefaultButton
+                    text="Create Themes Sheet Template"
+                    onClick={onCreateSheetTemplate}
+                    disabled={createSheetDisabled}
+                />
+            </Stack>
             <DetailsList
                 selectionMode={SelectionMode.none}
                 compact={true}

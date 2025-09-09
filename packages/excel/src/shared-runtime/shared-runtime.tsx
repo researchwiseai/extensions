@@ -10,9 +10,11 @@ import { similarityMatrixThemesRootFlow } from '../flows/similarityMatrixThemesR
 import { splitIntoTokensFlow } from '../flows/splitIntoTokens';
 import { countWordsFlow } from '../flows/countWords';
 import { openFeedHandler } from '../taskpane/Taskpane';
-import { modalApi } from '../modal/api';
 import { getRelativeUrl } from '../services/relativeUrl';
 import { promptExtractionOptions } from '../services/promptExtractionOptions';
+import { readThemesFromSheet } from '../services/readThemesFromSheet';
+import { saveThemesToSheet as saveThemesToSheetSvc } from '../services/saveThemesToSheet';
+import type { Theme } from 'pulse-common';
 import { extractElementsFromActiveWorksheet } from '../extractElements';
 // Feature flagging removed
 import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
@@ -435,13 +437,17 @@ let dialog: Promise<unknown> | null = null;
 
 function _dialog() {
     return new Promise((resolve, reject) => {
+        let settled = false;
         const url = getRelativeUrl('Modal.html');
         Office.context.ui.displayDialogAsync(
             url,
             { height: 60, width: 50, displayInIframe: true },
             (result) => {
                 if (result.status === Office.AsyncResultStatus.Failed) {
-                    reject(result.error);
+                    if (!settled) {
+                        settled = true;
+                        reject(result.error);
+                    }
                 } else {
                     const dialog = result.value;
                     dialog.addEventHandler(
@@ -449,17 +455,170 @@ function _dialog() {
                         (arg) => {
                             if ('error' in arg) {
                                 console.error('Dialog error', arg.error);
-                                dialog.close();
-                                reject(arg.error);
+                                try { dialog.close(); } catch {}
+                                if (!settled) {
+                                    settled = true;
+                                    reject(arg.error);
+                                }
                                 return;
                             }
                             try {
-                                const msg = JSON.parse(arg.message);
-                                dialog.close();
-                                resolve(msg.range);
+                                const msg = JSON.parse(arg.message || '{}');
+                                // Ignore initial ready pings from the modal; only close on explicit signals
+                                if (msg && msg.type === 'ready') {
+                                    // No-op: modal is ready; do not close
+                                    return;
+                                }
+                                // Handle Theme Manager RPC from dialog
+                                if (msg && msg.type === 'themes-sheet-status-request') {
+                                    (async () => {
+                                        try {
+                                            let exists = false;
+                                            let themes: Theme[] | null = null;
+                                            await Excel.run(async (context) => {
+                                                const item = context.workbook.worksheets.getItemOrNullObject('Themes');
+                                                await context.sync();
+                                                exists = !(item as any).isNullObject;
+                                            });
+                                            if (exists) {
+                                                try {
+                                                    const t = await readThemesFromSheet('Themes');
+                                                    themes = (t as any[]).map((x) => ({
+                                                        label: String(x.label || ''),
+                                                        shortLabel: String((x as any).shortLabel || ''),
+                                                        description: String((x as any).description || ''),
+                                                        representatives: Array.isArray((x as any).representatives)
+                                                            ? (x as any).representatives.map((r: any) => String(r))
+                                                            : [],
+                                                    })) as Theme[];
+                                                } catch (e) {
+                                                    themes = null;
+                                                }
+                                            }
+                                            try {
+                                                dialog.messageChild(
+                                                    JSON.stringify({
+                                                        type: 'themes-sheet-status-response',
+                                                        exists,
+                                                        themes,
+                                                    }),
+                                                );
+                                            } catch {}
+                                        } catch (e) {
+                                            console.error('Status request failed', e);
+                                        }
+                                    })();
+                                    return;
+                                }
+                                if (msg && msg.type === 'themes-sheet-create-template-request') {
+                                    (async () => {
+                                        try {
+                                            const exampleThemes: Theme[] = [
+                                                {
+                                                    label: 'Customer Satisfaction',
+                                                    shortLabel: 'Satisfaction',
+                                                    description:
+                                                        'Feedback related to overall satisfaction and experience.',
+                                                    representatives: [
+                                                        'very satisfied',
+                                                        'happy with service',
+                                                        'great experience',
+                                                    ],
+                                                },
+                                                {
+                                                    label: 'Product Quality',
+                                                    shortLabel: 'Quality',
+                                                    description:
+                                                        'Issues or praise concerning quality and reliability.',
+                                                    representatives: [
+                                                        'defective',
+                                                        'works as expected',
+                                                        'durable',
+                                                    ],
+                                                },
+                                                {
+                                                    label: 'Pricing',
+                                                    shortLabel: 'Price',
+                                                    description:
+                                                        'Comments about pricing, value for money, or discounts.',
+                                                    representatives: [
+                                                        'too expensive',
+                                                        'good value',
+                                                        'affordable',
+                                                    ],
+                                                },
+                                            ];
+                                            await Excel.run(async (context) => {
+                                                await saveThemesToSheetSvc({ context, themes: exampleThemes });
+                                            });
+                                            try {
+                                                dialog.messageChild(
+                                                    JSON.stringify({ type: 'themes-sheet-create-template-response', ok: true }),
+                                                );
+                                            } catch {}
+                                        } catch (e) {
+                                            console.error('Create template failed', e);
+                                            try {
+                                                dialog.messageChild(
+                                                    JSON.stringify({ type: 'themes-sheet-create-template-response', ok: false }),
+                                                );
+                                            } catch {}
+                                        }
+                                    })();
+                                    return;
+                                }
+                                if (msg && msg.type === 'themes-sheet-read-request') {
+                                    (async () => {
+                                        try {
+                                            const themes = await readThemesFromSheet('Themes');
+                                            try {
+                                                dialog.messageChild(
+                                                    JSON.stringify({ type: 'themes-sheet-read-response', themes }),
+                                                );
+                                            } catch {}
+                                        } catch (e) {
+                                            console.error('Read themes request failed', e);
+                                            try {
+                                                dialog.messageChild(
+                                                    JSON.stringify({ type: 'themes-sheet-read-response', error: true }),
+                                                );
+                                            } catch {}
+                                        }
+                                    })();
+                                    return;
+                                }
+                                if (msg && msg.type === 'close') {
+                                    try { dialog.close(); } catch {}
+                                    if (!settled) {
+                                        settled = true;
+                                        resolve(undefined);
+                                    }
+                                    return;
+                                }
+                                // Back-compat: some dialogs may return a payload (e.g., a range)
+                                if (msg && ("range" in msg || "payload" in msg)) {
+                                    try { dialog.close(); } catch {}
+                                    if (!settled) {
+                                        settled = true;
+                                        resolve((msg as any).range ?? (msg as any).payload);
+                                    }
+                                    return;
+                                }
+                                // Unknown message; ignore and keep dialog open
+                                console.debug('Dialog message ignored', msg);
                             } catch (e) {
-                                dialog.close();
-                                reject(e);
+                                console.warn('Dialog message parse error; ignoring', e);
+                            }
+                        },
+                    );
+                    // Ensure we clear the open-dialog state if the dialog is closed by the host/UI
+                    dialog.addEventHandler(
+                        Office.EventType.DialogEventReceived,
+                        () => {
+                            try { dialog.close(); } catch {}
+                            if (!settled) {
+                                settled = true;
+                                resolve(undefined);
                             }
                         },
                     );
@@ -482,7 +641,6 @@ function openDialog() {
 async function toggleThemeSetManager(event?: unknown) {
     console.log('Toggle theme set manager');
     openDialog();
-    modalApi.goToView('themeSets');
     if (canComplete(event)) {
         event.completed();
     }
