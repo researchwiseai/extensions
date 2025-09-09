@@ -34,6 +34,10 @@ export async function writeAllocationsOutput(opts: {
   const outputSheet = context.workbook.worksheets.add(name);
   // Write headers: Text, Coded Theme (thresholded), Best Fit (always best even if below threshold)
   outputSheet.getRange('A1:C1').values = [[headerText, 'Coded Theme', 'Best Fit']];
+  // Bold header row
+  try {
+    outputSheet.getRange('A1:C1').format.font.bold = true;
+  } catch {}
 
   if (valuesToWrite.length > 0) {
     const aTarget = outputSheet.getRange('A2').getResizedRange(valuesToWrite.length - 1, 0);
@@ -65,6 +69,20 @@ export async function writeAllocationsOutput(opts: {
   }
 
   await applyTextColumnFormatting(outputSheet, context, 'A');
+  // Adjust column widths: A 20% wider than base, B 4x base, C same as B
+  try {
+    const aCol = outputSheet.getRange('A:A');
+    aCol.format.load('columnWidth');
+    await context.sync();
+    const base = Math.max(60, Number(aCol.format.columnWidth) || 320);
+    aCol.format.columnWidth = Math.round(base * 1.2);
+    const bCol = outputSheet.getRange('B:B');
+    const cCol = outputSheet.getRange('C:C');
+    bCol.format.columnWidth = Math.round(base * 4);
+    cCol.format.columnWidth = Math.round(base * 4);
+  } catch {
+    // Ignore width errors on hosts that don't allow setting fixed widths
+  }
   await maybeActivateSheet(context, outputSheet, startTime);
 
   const feed = getFeed();

@@ -57,6 +57,10 @@ export async function analyzeSentiment(
     // Write header using custom header label if provided
     const headerLabel = hasHeader && header ? header : 'Text';
     outputSheet.getRange('A1:B1').values = [[headerLabel, 'Sentiment']];
+    // Bold header row
+    try {
+        outputSheet.getRange('A1:B1').format.font.bold = true;
+    } catch {}
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(rangeInfo.rowCount - (hasHeader ? 2 : 1), 0);

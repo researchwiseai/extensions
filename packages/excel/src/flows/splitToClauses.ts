@@ -513,6 +513,10 @@ export async function splitToClausesFlow(
         header.push(`Clause ${i + 1}`);
     }
     outputSheet.getRangeByIndexes(0, 0, 1, header.length).values = [header];
+    // Bold header row
+    try {
+        outputSheet.getRangeByIndexes(0, 0, 1, header.length).format.font.bold = true;
+    } catch {}
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(rangeInfo.rowCount - 1, 0);

@@ -38,6 +38,10 @@ export async function countWordsFlow(
         `WordCount_${Date.now()}`,
     );
     outputSheet.getRange('A1:B1').values = [['Text', 'Word Count']];
+    // Bold header row
+    try {
+        outputSheet.getRange('A1:B1').format.font.bold = true;
+    } catch {}
     const target = outputSheet
         .getRange('A2')
         .getResizedRange(rangeInfo.rowCount - 1, 0);
