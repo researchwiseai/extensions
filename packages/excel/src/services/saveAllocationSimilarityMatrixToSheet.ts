@@ -28,6 +28,7 @@ export async function saveAllocationMatrixToSheet({
 
     // add a new sheet
     const sheet = context.workbook.worksheets.add(name);
+    try { context.trackedObjects.add(sheet); } catch {}
 
     // build headers: first cell is original header (if any), then theme shortLabels
     const headerRow = [
@@ -138,6 +139,7 @@ export async function saveAllocationMatrixToSheet({
     await applyTextColumnFormatting(sheet, context, 'A');
 
     await maybeActivateSheet(context, sheet, startTime);
+    try { context.trackedObjects.remove(sheet); } catch {}
 
     const feed = getFeed();
     // Link all feed items created since this operation started to this sheet

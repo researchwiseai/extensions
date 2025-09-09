@@ -508,6 +508,7 @@ export async function splitToClausesFlow(
     const outputSheet = context.workbook.worksheets.add(
         `Clauses_${Date.now()}`,
     );
+    try { context.trackedObjects.add(outputSheet); } catch {}
     const header = ['Text'];
     for (let i = 0; i < maxClauses; i++) {
         header.push(`Clause ${i + 1}`);
@@ -553,4 +554,5 @@ export async function splitToClausesFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
+    try { context.trackedObjects.remove(outputSheet); } catch {}
 }

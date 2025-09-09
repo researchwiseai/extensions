@@ -32,6 +32,7 @@ export async function writeAllocationsOutput(opts: {
 
   const valuesToWrite = hasHeader ? originalRange.values.slice(1) : originalRange.values;
   const outputSheet = context.workbook.worksheets.add(name);
+  try { context.trackedObjects.add(outputSheet); } catch {}
   // Write headers: Text, Coded Theme (thresholded), Best Fit (always best even if below threshold)
   outputSheet.getRange('A1:C1').values = [[headerText, 'Coded Theme', 'Best Fit']];
   // Bold header row
@@ -100,5 +101,6 @@ export async function writeAllocationsOutput(opts: {
     });
   }
 
+  try { context.trackedObjects.remove(outputSheet); } catch {}
   return outputSheet;
 }

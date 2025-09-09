@@ -36,6 +36,7 @@ export async function splitIntoTokensFlow(
 
     const maxTokens = Math.max(...tokenLists.map((t) => t.length));
     const outputSheet = context.workbook.worksheets.add(`Tokens_${Date.now()}`);
+    try { context.trackedObjects.add(outputSheet); } catch {}
     const header = ['Text'];
     for (let i = 0; i < maxTokens; i++) {
         header.push(`Token ${i + 1}`);
@@ -81,4 +82,5 @@ export async function splitIntoTokensFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
+    try { context.trackedObjects.remove(outputSheet); } catch {}
 }

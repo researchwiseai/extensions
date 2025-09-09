@@ -54,6 +54,7 @@ export async function analyzeSentiment(
 
     const name = `Sentiment_${Date.now()}`;
     const outputSheet = context.workbook.worksheets.add(name);
+    try { context.trackedObjects.add(outputSheet); } catch {}
     // Write header using custom header label if provided
     const headerLabel = hasHeader && header ? header : 'Text';
     outputSheet.getRange('A1:B1').values = [[headerLabel, 'Sentiment']];
@@ -82,6 +83,7 @@ export async function analyzeSentiment(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
+    try { context.trackedObjects.remove(outputSheet); } catch {}
 
     const feed = getFeed();
     const last = feed[feed.length - 1];

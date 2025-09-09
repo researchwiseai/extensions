@@ -42,6 +42,7 @@ export async function splitIntoSentencesFlow(
     const outputSheet = context.workbook.worksheets.add(
         `Sentences_${Date.now()}`,
     );
+    try { context.trackedObjects.add(outputSheet); } catch {}
     const header = ['Text'];
     for (let i = 0; i < maxSentences; i++) {
         header.push(`Sentence ${i + 1}`);
@@ -87,4 +88,5 @@ export async function splitIntoSentencesFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
+    try { context.trackedObjects.remove(outputSheet); } catch {}
 }

@@ -37,6 +37,7 @@ export async function countWordsFlow(
     const outputSheet = context.workbook.worksheets.add(
         `WordCount_${Date.now()}`,
     );
+    try { context.trackedObjects.add(outputSheet); } catch {}
     outputSheet.getRange('A1:B1').values = [['Text', 'Word Count']];
     // Bold header row
     try {
@@ -76,4 +77,5 @@ export async function countWordsFlow(
     await applyTextColumnFormatting(outputSheet, context, 'A');
 
     await maybeActivateSheet(context, outputSheet, startTime);
+    try { context.trackedObjects.remove(outputSheet); } catch {}
 }
