@@ -550,12 +550,20 @@ function _dialog() {
                                             ];
                                             await Excel.run(async (context) => {
                                                 await saveThemesToSheetSvc({ context, themes: exampleThemes });
+                                                // Activate the Themes worksheet after creation
+                                                try {
+                                                    const sheet = context.workbook.worksheets.getItem('Themes');
+                                                    sheet.activate();
+                                                } catch {}
+                                                await context.sync();
                                             });
                                             try {
                                                 dialog.messageChild(
                                                     JSON.stringify({ type: 'themes-sheet-create-template-response', ok: true }),
                                                 );
                                             } catch {}
+                                            // Close the Theme Manager dialog upon successful creation
+                                            try { dialog.close(); } catch {}
                                         } catch (e) {
                                             console.error('Create template failed', e);
                                             try {
