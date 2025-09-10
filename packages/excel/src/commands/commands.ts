@@ -6,8 +6,9 @@
 /* global Office, Excel */
 import { promptRange } from '../services/promptRange';
 import { analyzeSentiment as analyzeSentimentLogic } from '../analyzeSentiment';
-import { extractElementsFromActiveWorksheet } from '../extractElements';
-import { promptExtractionOptions } from '../services/promptExtractionOptions';
+import { extractElementsFromWorksheet } from '../extractElements';
+import { promptExtractionSetup } from '../services/promptExtractionSetup';
+import { promptDictionaryEditor } from '../services/promptDictionaryEditor';
 
 /**
  * Handler for Analyze Sentiment ribbon button.
@@ -53,12 +54,78 @@ Office.actions.associate('analyzeSentiment', analyzeSentiment);
  */
 async function runExtractions(event: Office.AddinCommands.Event) {
     try {
-        const { category, expand } = await promptExtractionOptions();
-        if (!category) {
-            // User cancelled or did not enter a category
-            return;
-        }
-        await extractElementsFromActiveWorksheet(category, !!expand);
+        await Excel.run(async (context) => {
+            const worksheets = context.workbook.worksheets;
+            worksheets.load('items/name');
+            const activeSheet = worksheets.getActiveWorksheet();
+            activeSheet.load('name');
+            await context.sync();
+            const sheetNames = worksheets.items.map((ws) => ws.name);
+            const setup = await promptExtractionSetup(sheetNames, activeSheet.name);
+            if (!setup) return;
+            const used = (setup.sheetName
+                ? context.workbook.worksheets.getItem(setup.sheetName)
+                : context.workbook.worksheets.getActiveWorksheet()
+            ).getUsedRange();
+            used.load(['values', 'rowCount', 'columnCount']);
+            await context.sync();
+            const values: any[][] = used.values as any[][];
+            const rowCount = used.rowCount;
+            const colCount = used.columnCount;
+            let count = 0;
+            for (let r = 0; r < rowCount; r++) {
+                const v = values[r]?.[0];
+                const t = (v == null ? '' : String(v)).trim();
+                if (t) count += 1;
+            }
+            if (setup.hasHeader && count > 0) count -= 1;
+            const init: string[] = [];
+            if (setup.hasHeader && colCount >= 2 && rowCount >= 1) {
+                const header = values[0] || [];
+                for (let c = 1; c < colCount; c++) {
+                    const term = String(header[c] ?? '').trim();
+                    if (term) init.push(term);
+                }
+            }
+            const edited = await promptDictionaryEditor(
+                init,
+                count,
+                true,
+                async (draft) => {
+                    return await Excel.run(async (context) => {
+                        const sheet = setup.sheetName
+                            ? context.workbook.worksheets.getItem(setup.sheetName)
+                            : context.workbook.worksheets.getActiveWorksheet();
+                        const used = sheet.getUsedRange();
+                        used.load(['values', 'rowCount', 'columnCount']);
+                        await context.sync();
+                        const values: any[][] = used.values as any[][];
+                        const rowCount = used.rowCount;
+                        const colCount = used.columnCount;
+                        const startRow = setup.hasHeader ? 1 : 0;
+                        let anyExisting = false;
+                        for (let r = startRow; r < rowCount; r++) {
+                            const a = (values[r]?.[0] ?? '').toString().trim();
+                            if (!a) continue;
+                            for (let c = 1; c < colCount; c++) {
+                                const v = values[r]?.[c];
+                                const t = (v == null ? '' : String(v)).trim();
+                                if (t) { anyExisting = true; break; }
+                            }
+                            if (anyExisting) break;
+                        }
+                        return !anyExisting;
+                    });
+                },
+            );
+            if (!edited) return;
+            await extractElementsFromWorksheet({
+                sheetName: setup.sheetName,
+                hasHeader: setup.hasHeader,
+                dictionary: edited.dictionary,
+                expandDictionary: !!edited.expand,
+            });
+        });
     } catch (err) {
         console.error('Extractions error:', err);
     } finally {

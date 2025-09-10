@@ -11,11 +11,13 @@ import { splitIntoTokensFlow } from '../flows/splitIntoTokens';
 import { countWordsFlow } from '../flows/countWords';
 import { openFeedHandler } from '../taskpane/Taskpane';
 import { getRelativeUrl } from '../services/relativeUrl';
-import { promptExtractionOptions } from '../services/promptExtractionOptions';
+// Deprecated: old extraction dialog removed
+import { promptExtractionSetup } from '../services/promptExtractionSetup';
+import { promptDictionaryEditor } from '../services/promptDictionaryEditor';
 import { readThemesFromSheet } from '../services/readThemesFromSheet';
 import { saveThemesToSheet as saveThemesToSheetSvc } from '../services/saveThemesToSheet';
 import type { Theme } from 'pulse-common';
-import { extractElementsFromActiveWorksheet } from '../extractElements';
+import { extractElementsFromWorksheet } from '../extractElements';
 // Feature flagging removed
 import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
@@ -364,20 +366,107 @@ Office.actions.associate('countWordsHandler', countWordsHandler);
 function manageThemesHandler() {}
 Office.actions.associate('manageThemesHandler', manageThemesHandler);
 
-// Extractions handler: prompts for category and expansion, then runs extraction flow
+// Extractions handler: select sheet + header, preview/edit dictionary, then run
 async function runExtractionsHandler(event: any) {
     console.log('Run extractions handler');
     try {
         event?.completed?.();
     } catch {}
     withPulseAuth(async () => {
-        const { category, expand } = await promptExtractionOptions();
-        if (!category) {
-            console.log('User cancelled extractions dialog or empty category');
-            return;
-        }
-        openFeedHandler();
-        await extractElementsFromActiveWorksheet(category, !!expand);
+        // 1) Gather worksheet names and active sheet
+        const { sheetNames, active } = await Excel.run(async (context) => {
+            const worksheets = context.workbook.worksheets;
+            worksheets.load('items/name');
+            const activeSheet = worksheets.getActiveWorksheet();
+            activeSheet.load('name');
+            await context.sync();
+            return {
+                sheetNames: worksheets.items.map((ws) => ws.name),
+                active: activeSheet.name,
+            };
+        });
+
+        // 2) Prompt for sheet + header
+        const setup = await promptExtractionSetup(sheetNames, active);
+        if (!setup) return; // cancelled
+
+        // 3) Inspect the chosen sheet to count inputs and seed dictionary (if header)
+        const { inputsCount, initialDict } = await Excel.run(async (context) => {
+            const sheet = setup.sheetName
+                ? context.workbook.worksheets.getItem(setup.sheetName)
+                : context.workbook.worksheets.getActiveWorksheet();
+            const used = sheet.getUsedRange();
+            used.load(['values', 'rowCount', 'columnCount']);
+            await context.sync();
+            const values: any[][] = used.values as any[][];
+            const rowCount = used.rowCount;
+            const colCount = used.columnCount;
+            let count = 0;
+            for (let r = 0; r < rowCount; r++) {
+                const v = values[r]?.[0];
+                const t = (v == null ? '' : String(v)).trim();
+                if (t) count += 1;
+            }
+            if (setup.hasHeader && count > 0) count -= 1;
+            const init: string[] = [];
+            if (setup.hasHeader && colCount >= 2 && rowCount >= 1) {
+                const header = values[0] || [];
+                for (let c = 1; c < colCount; c++) {
+                    const term = String(header[c] ?? '').trim();
+                    if (term) init.push(term);
+                }
+            }
+            return { inputsCount: count, initialDict: init };
+        });
+
+        // 4) Prompt user to edit dictionary (require at least 3 terms)
+        const edited = await promptDictionaryEditor(
+            initialDict,
+            inputsCount,
+            true,
+            async (draft) => {
+                // Check if any data in write region (columns B+ for data rows) would be overwritten
+                return await Excel.run(async (context) => {
+                    const sheet = setup.sheetName
+                        ? context.workbook.worksheets.getItem(setup.sheetName)
+                        : context.workbook.worksheets.getActiveWorksheet();
+                    const used = sheet.getUsedRange();
+                    used.load(['values', 'rowCount', 'columnCount', 'rowIndex', 'columnIndex']);
+                    await context.sync();
+                    const values: any[][] = used.values as any[][];
+                    const rowCount = used.rowCount;
+                    const colCount = used.columnCount;
+                    const hasHeader = !!setup.hasHeader;
+                    const startRow = hasHeader ? 1 : 0;
+                    let anyExisting = false;
+                    for (let r = startRow; r < rowCount; r++) {
+                        const a = (values[r]?.[0] ?? '').toString().trim();
+                        if (!a) continue; // only consider rows with an input in col A
+                        for (let c = 1; c < colCount; c++) {
+                            const v = values[r]?.[c];
+                            const t = (v == null ? '' : String(v)).trim();
+                            if (t) {
+                                anyExisting = true;
+                                break;
+                            }
+                        }
+                        if (anyExisting) break;
+                    }
+                    // If any existing content found, return false to trigger inline confirmation
+                    return !anyExisting;
+                });
+            },
+        );
+        if (!edited) return; // cancelled
+
+        openFeedHandler(); // keep credits/taskpane visible and active
+        // 5) Run extraction and writeback
+        await extractElementsFromWorksheet({
+            sheetName: setup.sheetName,
+            hasHeader: setup.hasHeader,
+            dictionary: edited.dictionary,
+            expandDictionary: !!edited.expand,
+        });
     }).catch((e) => {
         console.error('Extractions dialog error', e);
         reportUnexpectedError(e);

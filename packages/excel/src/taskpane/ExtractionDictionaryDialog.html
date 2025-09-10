@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+  <title>Named Entity Extraction – Dictionary</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
+    .title { font-weight:700; margin-bottom:4px; }
+    .hint { color:#605e5c; font-size:12px; margin-top:4px; }
+    .gamify { color:#0f766e; font-size:12px; margin-top:8px; }
+    .list { margin-top: 10px; }
+    .row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+    .pulse-input { flex: 1; padding: 8px 10px; border: 1px solid #8a8886; border-radius: 4px; background: #fff; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
+    .pulse-input:hover { border-color: #605e5c; }
+    .pulse-input:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 2px rgba(15,118,110,.15); }
+    .pulse-btn { display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .pulse-btn--primary { background:#0f766e; border-color:#0f766e; color:#fff; }
+    .pulse-btn--primary:hover { background:#0d665f; }
+    .pulse-btn--secondary { background:#fff; border-color:#0f766e; color:#0f766e; }
+    .pulse-btn--secondary:hover { background:#f3f2f1; }
+    .pulse-btn--ghost { background:transparent; color:#444; border:1px dashed #8a8886; }
+    .remove { color:#a80000; cursor:pointer; }
+    .actions { margin-top: 16px; display:flex; justify-content: space-between; align-items:center; }
+    .right { text-align:right; }
+    .disabled { opacity: 0.6; pointer-events:none; }
+    .toggle { font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="title">Build your dictionary</div>
+  <div id="inputCount" class="hint"></div>
+  <div class="hint">Add the entities you want to extract (e.g., brands, products). Start with at least 3. The more you add, the better the extraction.</div>
+  <div class="gamify">Tip: 3 gets you started, 10+ levels up accuracy 🚀</div>
+
+  <div id="list" class="list"></div>
+  <button id="addBtn" class="pulse-btn pulse-btn--ghost" type="button">+ Add term</button>
+
+  <div id="overwriteWarn" class="hint" style="display:none; margin-top:10px; padding:8px; border:1px solid #f3bf72; background:#fff8e1; border-radius:4px;">
+    Heads-up: existing values will be overwritten. This cannot be undone.
+    <div style="margin-top:8px; display:flex; gap:8px;">
+      <button id="backBtn" class="pulse-btn pulse-btn--secondary" type="button">Back</button>
+      <button id="confirmBtn" class="pulse-btn pulse-btn--primary" type="button">Confirm & Run</button>
+    </div>
+  </div>
+
+  <div class="actions">
+    <label class="toggle"><input id="expandCheckbox" type="checkbox" checked /> Allow dictionary expansion</label>
+    <div class="right">
+      <button id="cancelBtn" class="pulse-btn pulse-btn--secondary" style="margin-right:8px;">Cancel</button>
+      <button id="okBtn" class="pulse-btn pulse-btn--primary disabled">Run</button>
+    </div>
+  </div>
+
+  <script>
+    function getParams() {
+      const p = new URLSearchParams(location.search);
+      const initial = JSON.parse(p.get('initial') || '[]');
+      const count = parseInt(p.get('inputs') || '0', 10) || 0;
+      const expand = (p.get('expand') || 'true') === 'true';
+      return { initial, count, expand };
+    }
+    function row(value) {
+      const div = document.createElement('div');
+      div.className = 'row';
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'pulse-input';
+      input.value = value || '';
+      input.placeholder = 'e.g., Acme';
+      const remove = document.createElement('a');
+      remove.textContent = 'Remove';
+      remove.href = '#';
+      remove.className = 'remove';
+      remove.addEventListener('click', (e) => { e.preventDefault(); div.remove(); validate(); });
+      input.addEventListener('input', validate);
+      div.appendChild(input);
+      div.appendChild(remove);
+      return div;
+    }
+    function terms() {
+      const values = [];
+      document.querySelectorAll('#list input').forEach((el) => {
+        const v = (el.value || '').trim();
+        if (v) values.push(v);
+      });
+      // de-duplicate while preserving order
+      return Array.from(new Set(values));
+    }
+    function validate() {
+      const ok = document.getElementById('okBtn');
+      const t = terms();
+      if (t.length >= 3) ok.classList.remove('disabled'); else ok.classList.add('disabled');
+    }
+    function handleParentMessage(message) {
+      try {
+        const msg = JSON.parse(message || '{}');
+        if (msg && msg.type === 'confirm-overwrite') {
+          // Show confirmation UI; require explicit confirm click
+          document.getElementById('overwriteWarn').style.display = 'block';
+          document.getElementById('okBtn').classList.add('disabled');
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      const { initial, count, expand } = getParams();
+      document.getElementById('inputCount').textContent = `${count} inputs detected in column A`;
+      const list = document.getElementById('list');
+      const addBtn = document.getElementById('addBtn');
+      const expandCheckbox = document.getElementById('expandCheckbox');
+      expandCheckbox.checked = !!expand;
+      (initial.length ? initial : ['','','']).forEach((v) => list.appendChild(row(v)));
+      addBtn.addEventListener('click', () => { list.appendChild(row('')); validate(); });
+      validate();
+      document.getElementById('okBtn').addEventListener('click', function () {
+        if (this.classList.contains('disabled')) return;
+        Office.context.ui.messageParent(JSON.stringify({
+          type: 'submit',
+          dictionary: terms(),
+          expand: !!expandCheckbox.checked,
+        }));
+      });
+      document.getElementById('cancelBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(JSON.stringify({ cancelled: true }));
+      });
+      document.getElementById('confirmBtn').addEventListener('click', function () {
+        Office.context.ui.messageParent(JSON.stringify({ type: 'confirm-overwrite' }));
+      });
+      document.getElementById('backBtn').addEventListener('click', function () {
+        document.getElementById('overwriteWarn').style.display = 'none';
+        validate();
+      });
+
+      // Receive parent messages for inline confirmations
+      try {
+        Office.context.ui.addHandlerAsync(
+          Office.EventType.DialogParentMessageReceived,
+          (arg) => handleParentMessage(arg && arg.message)
+        );
+      } catch (e) {
+        // fallback: try window message
+        window.addEventListener('message', (evt) => handleParentMessage((evt && evt.data) || ''));
+      }
+    });
+  </script>
+</body>
+</html>
