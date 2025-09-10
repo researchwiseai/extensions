@@ -186,6 +186,17 @@ module.exports = async (env, options) => {
                 template: './src/taskpane/ExtractionOptionsDialog.html',
                 inject: false,
             }),
+            // New dialogs for extraction setup and dictionary editor
+            new HtmlWebpackPlugin({
+                filename: 'ExtractionSetupDialog.html',
+                template: './src/taskpane/ExtractionSetupDialog.html',
+                inject: false,
+            }),
+            new HtmlWebpackPlugin({
+                filename: 'ExtractionDictionaryDialog.html',
+                template: './src/taskpane/ExtractionDictionaryDialog.html',
+                inject: false,
+            }),
             // Dialog page for choosing allocation mode
             new HtmlWebpackPlugin({
                 filename: 'AllocationModeDialog.html',
