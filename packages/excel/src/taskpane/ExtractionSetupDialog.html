@@ -36,6 +36,10 @@
     <button id="okBtn" class="pulse-btn pulse-btn--primary">Continue</button>
   </div>
   <script>
+    function safeMessageParent(payload) {
+      try { Office.context.ui.messageParent(JSON.stringify(payload)); }
+      catch (e) { try { window.parent.postMessage(JSON.stringify(payload), '*'); } catch {} }
+    }
     function getParams() {
       const p = new URLSearchParams(location.search);
       return {
@@ -52,20 +56,55 @@
         select.appendChild(opt);
       });
     }
-    document.addEventListener('DOMContentLoaded', function () {
+    Office.onReady(function() {
       const { sheets, current } = getParams();
       const sheetSelect = document.getElementById('sheetSelect');
       const hasHeader = document.getElementById('hasHeader');
+      const warn = document.createElement('div');
+      warn.id = 'overwriteWarnSetup';
+      warn.style.cssText = 'display:none;margin-top:10px;padding:8px;border:1px solid #f3bf72;background:#fff8e1;border-radius:4px;';
+      warn.textContent = 'Heads-up: existing values in data rows (from column B) will be overwritten.';
+      sheetSelect.parentElement?.appendChild(warn);
+
       populateSheets(sheetSelect, sheets, current);
+      function notifyChange() {
+        const sheetName = sheetSelect.value || current || (sheets[0] || null);
+        safeMessageParent({ type: 'selection-changed', sheetName, hasHeader: !!(hasHeader).checked });
+      }
+      sheetSelect.addEventListener('change', notifyChange);
+      hasHeader.addEventListener('change', notifyChange);
+      // fire initial
+      setTimeout(notifyChange, 0);
+
       document.getElementById('okBtn').addEventListener('click', function () {
         const sheetName = sheetSelect.value || current || (sheets[0] || null);
-        Office.context.ui.messageParent(JSON.stringify({ sheetName, hasHeader: !!hasHeader.checked }));
+        safeMessageParent({ sheetName, hasHeader: !!(hasHeader).checked });
       });
       document.getElementById('cancelBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ cancelled: true }));
+        safeMessageParent({ cancelled: true });
       });
+
+      // Parent→child warnings
+      try {
+        Office.context.ui.addHandlerAsync(Office.EventType.DialogParentMessageReceived, (arg) => {
+          try {
+            const msg = JSON.parse((arg && arg.message) || '{}');
+            if (msg && msg.type === 'overwrite-risk') {
+              const any = !!msg.anyExisting;
+              const count = Number(msg.count || 0);
+              if (any) {
+                warn.style.display = 'block';
+                warn.textContent = count > 0
+                  ? `Heads-up: ${count} existing cell${count===1?'':'s'} in data rows (from column B) will be overwritten.`
+                  : 'Heads-up: existing values in data rows (from column B) will be overwritten.';
+              } else {
+                warn.style.display = 'none';
+              }
+            }
+          } catch {}
+        });
+      } catch {}
     });
   </script>
 </body>
 </html>
-

@@ -55,6 +55,10 @@
   </div>
 
   <script>
+    function safeMessageParent(payload) {
+      try { Office.context.ui.messageParent(JSON.stringify(payload)); }
+      catch (e) { try { window.parent.postMessage(JSON.stringify(payload), '*'); } catch {} }
+    }
     function getParams() {
       const p = new URLSearchParams(location.search);
       const initial = JSON.parse(p.get('initial') || '[]');
@@ -107,7 +111,7 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    Office.onReady(function () {
       const { initial, count, expand } = getParams();
       document.getElementById('inputCount').textContent = `${count} inputs detected in column A`;
       const list = document.getElementById('list');
@@ -119,17 +123,17 @@
       validate();
       document.getElementById('okBtn').addEventListener('click', function () {
         if (this.classList.contains('disabled')) return;
-        Office.context.ui.messageParent(JSON.stringify({
+        safeMessageParent({
           type: 'submit',
           dictionary: terms(),
           expand: !!expandCheckbox.checked,
-        }));
+        });
       });
       document.getElementById('cancelBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ cancelled: true }));
+        safeMessageParent({ cancelled: true });
       });
       document.getElementById('confirmBtn').addEventListener('click', function () {
-        Office.context.ui.messageParent(JSON.stringify({ type: 'confirm-overwrite' }));
+        safeMessageParent({ type: 'confirm-overwrite' });
       });
       document.getElementById('backBtn').addEventListener('click', function () {
         document.getElementById('overwriteWarn').style.display = 'none';
