@@ -238,6 +238,25 @@
                                               resid="Icon.80x80" />
                                 </Icon>
                                 <Control xsi:type="Button"
+                                         id="RunThemeExtractionsButton">
+                                    <Label resid="ThemeExtractsBtn.Label" />
+                                    <Supertip>
+                                        <Title resid="ThemeExtractsBtn.Label" />
+                                        <Description resid="ThemeExtractsBtn.Tip" />
+                                    </Supertip>
+                                    <Icon>
+                                        <bt:Image size="16"
+                                                  resid="ExtractNEIcon.16x16" />
+                                        <bt:Image size="32"
+                                                  resid="ExtractNEIcon.32x32" />
+                                        <bt:Image size="80"
+                                                  resid="ExtractNEIcon.80x80" />
+                                    </Icon>
+                                    <Action xsi:type="ExecuteFunction">
+                                        <FunctionName>runThemeExtractionsHandler</FunctionName>
+                                    </Action>
+                                </Control>
+                                <Control xsi:type="Button"
                                          id="RunExtractionsButton">
                                     <Label resid="RunExtractionsButton.Label" />
                                     <Supertip>
@@ -510,6 +529,8 @@
                            DefaultValue="Extractors" />
                 <bt:String id="RunExtractionsButton.Label"
                            DefaultValue="Extract Named Entities" />
+                <bt:String id="ThemeExtractsBtn.Label"
+                           DefaultValue="Extract Themes" />
             </bt:ShortStrings>
             <bt:LongStrings>
                 <bt:String id="GetStarted.Description"
@@ -546,6 +567,8 @@
                            DefaultValue="Create, edit and delete theme sets for allocation" />
                 <bt:String id="RunExtractionsButton.Tooltip"
                            DefaultValue="Find references by category using a dictionary and optional expansion" />
+                <bt:String id="ThemeExtractsBtn.Tip"
+                           DefaultValue="Extract mentions of a chosen theme set across inputs" />
             </bt:LongStrings>
         </Resources>
     </VersionOverrides>

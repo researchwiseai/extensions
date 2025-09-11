@@ -483,6 +483,52 @@ export async function extractElements(
     throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
 }
 
+/**
+ * Theme-mode extractions: extract mentions based on a provided theme set.
+ * Uses the same /v1/extractions endpoint with mode="themes" and a list of theme labels.
+ */
+export async function extractThemes(
+    inputs: string[],
+    themes: Array<string | { label: string }>,
+    options?: {
+        fast?: boolean;
+        version?: string;
+        onProgress?: (m: string) => void;
+    },
+): Promise<ExtractionsResponse> {
+    const url = `${baseUrl}/v1/extractions`;
+    const labels = themes.map((t) => (typeof t === 'string' ? t : t.label));
+    const body: Record<string, unknown> = {
+        inputs,
+        mode: 'themes',
+        dictionary: labels,
+        fast: options?.fast ?? false,
+    };
+    if (typeof options?.version === 'string') {
+        body.version = options.version;
+    }
+
+    const data = await postWithJob(url, body, {
+        onProgress: options?.onProgress,
+        taskName: 'Theme extractions',
+        headers: { 'x-pulse-debug': 'true' },
+    });
+
+    if (Array.isArray(data?.results)) {
+        return {
+            dictionary: Array.isArray(data?.dictionary)
+                ? (data.dictionary as string[])
+                : labels,
+            results: data.results as string[][][],
+            requestId:
+                typeof data?.requestId === 'string'
+                    ? (data.requestId as string)
+                    : undefined,
+        };
+    }
+    throw new Error(`Unexpected response: ${JSON.stringify(data)}`);
+}
+
 interface AnalyzeSentimentOptions {
     fast?: boolean;
     onProgress?: (message: string) => void;

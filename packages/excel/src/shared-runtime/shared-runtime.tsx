@@ -18,6 +18,9 @@ import { readThemesFromSheet } from '../services/readThemesFromSheet';
 import { saveThemesToSheet as saveThemesToSheetSvc } from '../services/saveThemesToSheet';
 import type { Theme } from 'pulse-common';
 import { extractElementsFromWorksheet } from '../extractElements';
+import { getThemeSets } from 'pulse-common/themes';
+import { saveThemeExtractionsToSheet } from '../services/saveThemeExtractionsToSheet';
+import { extractThemes } from 'pulse-common/api';
 // Feature flagging removed
 import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
@@ -25,8 +28,16 @@ import { summarizeFlow } from '../flows/summarizeFlow';
 import { withPulseAuth } from '../services/authGuard';
 import * as Sentry from "@sentry/react";
 
+// Initialize Sentry with HTTP/network breadcrumbs and performance tracing enabled
 Sentry.init({
   dsn: "https://f3c182e7744b0c06066f1021bfa85a25@o4505908303167488.ingest.us.sentry.io/4509984779796480",
+  integrations: [
+    // Capture fetch/XHR as breadcrumbs and performance spans
+    Sentry.browserTracingIntegration(),
+    Sentry.breadcrumbsIntegration({ console: true, dom: true, fetch: true, xhr: true }),
+  ],
+  // Sample some percentage of transactions; adjust as needed
+  tracesSampleRate: 1.0,
 });
 
 // Catch truly unexpected errors and surface a helpful modal
@@ -473,6 +484,164 @@ async function runExtractionsHandler(event: any) {
     });
 }
 Office.actions.associate('runExtractionsHandler', runExtractionsHandler);
+
+// Theme Extractions handler: choose theme set source (auto/set/sheet) then run theme-mode extractions
+async function runThemeExtractionsHandler(event: any) {
+    console.log('Run theme extractions handler');
+    try {
+        event?.completed?.();
+    } catch {}
+    withPulseAuth(async () => {
+        return Excel.run(async (context) => {
+            // 1) Confirm range and header
+            const { range: confirmed, hasHeader } = await confirmRange(context);
+            if (confirmed === null) {
+                console.log('User cancelled the dialog');
+                return;
+            }
+
+            // 2) Collect sheet names for the theme-set source picker
+            const worksheets = context.workbook.worksheets;
+            worksheets.load('items/name');
+            await context.sync();
+            const sheetNames = worksheets.items.map((ws) => ws.name);
+
+            // 3) Prompt for theme set source (automatic / saved set / worksheet)
+            const themeSets = await getThemeSets();
+            const themeSetNames = themeSets.map((s) => s.name);
+
+            const url = getRelativeUrl(
+                `AllocationModeDialog.html?sets=${encodeURIComponent(
+                    JSON.stringify(themeSetNames),
+                )}&sheets=${encodeURIComponent(JSON.stringify(sheetNames))}`,
+            );
+            type Mode =
+                | { mode: 'automatic' }
+                | { mode: 'set'; setName: string }
+                | { mode: 'sheet'; sheetName: string };
+            const mode = await new Promise<Mode | null>((resolve, reject) => {
+                Office.context.ui.displayDialogAsync(
+                    url,
+                    { height: 60, width: 40, displayInIframe: true },
+                    (result) => {
+                        if (result.status !== Office.AsyncResultStatus.Succeeded) {
+                            reject(result.error);
+                            return;
+                        }
+                        const dialog = result.value;
+                        const onMsg = (arg: any) => {
+                            if ('error' in arg) {
+                                try {
+                                    dialog.close();
+                                } catch {}
+                                reject(arg.error);
+                                return;
+                            }
+                            try {
+                                const payload = JSON.parse(arg.message || '{}');
+                                if (payload && payload.mode) {
+                                    try {
+                                        dialog.close();
+                                    } catch {}
+                                    resolve(payload as Mode);
+                                }
+                            } catch (e) {
+                                try {
+                                    dialog.close();
+                                } catch {}
+                                reject(e);
+                            }
+                        };
+                        dialog.addEventHandler(
+                            Office.EventType.DialogMessageReceived,
+                            onMsg,
+                        );
+                    },
+                );
+            });
+            if (!mode || !mode.mode) return;
+
+            // 4) Resolve theme labels based on chosen mode
+            let themeLabels: string[] = [];
+            if (mode.mode === 'automatic') {
+                const gen = await themeGenerationFlow(
+                    context,
+                    confirmed,
+                    hasHeader,
+                    Date.now(),
+                );
+                if (!gen || !gen.themes) return;
+                themeLabels = (gen.themes as any[])
+                    .map((t) => String(t.label || '').trim())
+                    .filter(Boolean);
+            } else if (mode.mode === 'set') {
+                const set = themeSets.find((s) => s.name === mode.setName);
+                if (!set) return;
+                themeLabels = set.themes
+                    .map((t) => String((t as any).label || '').trim())
+                    .filter(Boolean);
+            } else {
+                const themes = await readThemesFromSheet(mode.sheetName);
+                themeLabels = (themes as any[])
+                    .map((t) => String(t.label || '').trim())
+                    .filter(Boolean);
+            }
+            if (themeLabels.length === 0) {
+                throw new Error('No themes available. Please provide a theme set.');
+            }
+
+            // 5) Gather inputs from the confirmed range
+            const { inputs: rawInputs, rangeInfo, sheet } =
+                await getSheetInputsAndPositions(context, confirmed);
+            let inputs = rawInputs;
+            let headerText = 'Text';
+            if (hasHeader) {
+                const headerCell = sheet.getRangeByIndexes(
+                    rangeInfo.rowIndex,
+                    rangeInfo.columnIndex,
+                    1,
+                    1,
+                );
+                headerCell.load('values');
+                await context.sync();
+                headerText = String(headerCell.values[0][0] ?? '').trim() || 'Text';
+                inputs = rawInputs.slice(1);
+            }
+            if (inputs.length === 0) {
+                throw new Error('No input texts found in the selected range.');
+            }
+
+            openFeedHandler();
+            // 6) Run theme-mode extractions and save to a new sheet
+            const result = await extractThemes(inputs, themeLabels, {
+                fast: false,
+                onProgress: (m) => console.log('[ThemeExtractions][progress]', m),
+            });
+
+            console.log('[ThemeExtractions] Response received', {
+                inputsLength: inputs.length,
+                labelsLength: (result.dictionary ?? themeLabels).length,
+                resultsLength: Array.isArray(result.results)
+                    ? result.results.length
+                    : -1,
+            });
+
+            console.log('[ThemeExtractions] Writing results to sheet...');
+            await saveThemeExtractionsToSheet({
+                context,
+                inputs,
+                headerText,
+                labels: result.dictionary ?? themeLabels,
+                results: result.results,
+            });
+            console.log('[ThemeExtractions] Finished writing results to sheet.');
+        });
+    }).catch((e) => {
+        console.error('Theme extractions dialog error', e);
+        reportUnexpectedError(e);
+    });
+}
+Office.actions.associate('runThemeExtractionsHandler', runThemeExtractionsHandler);
 
 interface CanComplete {
     completed: () => void;
