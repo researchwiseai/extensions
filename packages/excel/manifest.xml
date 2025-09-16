@@ -237,7 +237,7 @@
                                     <bt:Image size="80"
                                               resid="Icon.80x80" />
                                 </Icon>
-                                <Control xsi:type="Button"
+                                <!-- <Control xsi:type="Button"
                                          id="RunThemeExtractionsButton">
                                     <Label resid="ThemeExtractsBtn.Label" />
                                     <Supertip>
@@ -255,7 +255,7 @@
                                     <Action xsi:type="ExecuteFunction">
                                         <FunctionName>runThemeExtractionsHandler</FunctionName>
                                     </Action>
-                                </Control>
+                                </Control> -->
                                 <Control xsi:type="Button"
                                          id="RunExtractionsButton">
                                     <Label resid="RunExtractionsButton.Label" />
