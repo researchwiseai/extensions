@@ -2,26 +2,23 @@ import type { TaskpaneApi } from './api';
 import { useCallback, useEffect, useState } from 'react';
 import logo from '../../assets/logo-filled.png';
 import { findOrganization } from 'pulse-common/org';
-import { setupExcelPKCEAuth } from './pkceAuth';
-import { getAccessToken, signIn } from 'pulse-common/auth';
-import { configureClient } from 'pulse-common/api';
-import { getRelativeUrl } from '../services/relativeUrl';
+import { signIn } from 'pulse-common/auth';
+import {
+    REGISTER_URL,
+    MORE_INFO_URL,
+    WARMUP_EMAIL,
+    WEB_BASE_URL,
+    ORG_LOOKUP_PATH,
+    getAuthRedirectUri,
+    setupPulseAuthProvider,
+    persistStoredSession,
+    clearPulseAuthState,
+} from '../services/pulseAuth';
 
 interface Props {
     api: TaskpaneApi;
     setEmail: (email: string | null) => void;
 }
-// Auth / API constants
-const AUTH0_DOMAIN = 'research-wise-ai-eu.eu.auth0.com';
-const AUTH0_CLIENT_ID = 'kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O';
-const AUTH_SCOPE = 'openid profile email offline_access';
-const WEB_BASE_URL = 'https://researchwiseai.com';
-const API_BASE_URL = 'https://pulse.researchwiseai.com';
-const ORG_LOOKUP_PATH = '/users';
-const REGISTER_URL = `${WEB_BASE_URL}/register`;
-const MORE_INFO_URL = `${WEB_BASE_URL}/pulse/extensions/excel`;
-const WARMUP_EMAIL = 'support@researchwiseai.com';
-
 function isValidEmail(v: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 }
@@ -62,7 +59,7 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
 
             setConnecting(true);
             try {
-                const redirectUri = getRelativeUrl('auth-callback.html');
+                const redirectUri = getAuthRedirectUri();
                 const orgLookupUrl = `${WEB_BASE_URL}${ORG_LOOKUP_PATH}`;
 
                 const orgResult = await findOrganization(orgLookupUrl, trimmedEmail);
@@ -78,24 +75,16 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                 }
 
                 const organization = orgResult.orgId!;
-                setupExcelPKCEAuth({
-                    domain: AUTH0_DOMAIN,
-                    clientId: AUTH0_CLIENT_ID,
-                    email: trimmedEmail,
-                    redirectUri,
-                    scope: AUTH_SCOPE,
-                    organization,
-                });
+                const session = { email: trimmedEmail, organization };
+                setupPulseAuthProvider(session, redirectUri);
 
-                sessionStorage.setItem('org-id', organization);
                 await signIn();
-                sessionStorage.setItem('user-email', trimmedEmail);
 
-                configureClient({ baseUrl: API_BASE_URL, getAccessToken });
-
+                persistStoredSession(session);
                 setAppEmail(trimmedEmail);
             } catch (err) {
                 console.error('Sign-in failed', err);
+                clearPulseAuthState();
                 alert('Sign-in failed. Please try again.');
             } finally {
                 setConnecting(false);

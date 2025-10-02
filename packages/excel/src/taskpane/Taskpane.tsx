@@ -7,9 +7,10 @@ import { Feed } from './Feed';
 import { TaskpaneApi } from './api';
 import { View } from './types';
 import { GoToViewEvent } from './events';
-import { setupExcelPKCEAuth } from './pkceAuth';
-import { getAccessToken } from 'pulse-common/auth';
-import { configureClient } from 'pulse-common/api';
+import {
+    restorePulseAuthFromStorage,
+    clearPulseAuthState,
+} from '../services/pulseAuth';
 import { Unauthenticated } from './Unauthenticated';
 import { initializeLocalStorage } from '../services/localStorage';
 
@@ -66,31 +67,9 @@ Office.onReady().then(() => {
     initializeLocalStorage();
 
     // Determine login state from sessionStorage
-    const storedToken = sessionStorage.getItem('pkce_token');
-    const storedEmail = sessionStorage.getItem('user-email');
-    const organization = sessionStorage.getItem('org-id');
-    const redirectUri = `${window.location.origin}/auth-callback.html`;
-
-    if (storedToken && storedEmail && organization) {
-        // Already authenticated: configure and show authenticated view
-        setupExcelPKCEAuth({
-            domain: 'research-wise-ai-eu.eu.auth0.com',
-            clientId: 'kcQuNXgTeKSzztl8kGm5zwJ0RQeX7w1O',
-            email: storedEmail,
-            redirectUri,
-            organization,
-            scope: 'openid profile email offline_access',
-        });
-        configureClient({
-            baseUrl: 'https://pulse.researchwiseai.com',
-            getAccessToken,
-        });
-    } else if (storedToken || storedEmail || organization) {
-        // Inconsistent state: clear sessionStorage
-        sessionStorage.removeItem('pkce_token');
-        sessionStorage.removeItem('user-email');
-        sessionStorage.removeItem('org-id');
-        // Do not disable buttons; inconsistent state cleared above
+    const restored = restorePulseAuthFromStorage();
+    if (!restored) {
+        clearPulseAuthState();
     }
 
     const container = document.getElementById('taskpane-root')!;

@@ -1,5 +1,7 @@
 // Auth guard utilities for protected flows
 
+import { ensurePulseAuthConfigured } from './pulseAuth';
+
 export function isAuthed(): boolean {
     const token = sessionStorage.getItem('pkce_token');
     const email = sessionStorage.getItem('user-email');
@@ -37,5 +39,6 @@ export async function withPulseAuth<T>(
 ): Promise<T | undefined> {
     const ok = await ensureAuthed();
     if (!ok) return undefined;
+    if (!ensurePulseAuthConfigured()) return undefined;
     return fn();
 }

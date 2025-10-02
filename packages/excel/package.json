@@ -21,6 +21,7 @@
     },
     "dependencies": {
         "@fluentui/react": "^8.122.17",
+        "@sentry/browser": "^8.0.0",
         "core-js": "^3.36.0",
         "pulse-common": "workspace:*",
         "react": "^19.1.0",

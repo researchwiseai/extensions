@@ -27,6 +27,9 @@ import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositio
 import { summarizeFlow } from '../flows/summarizeFlow';
 import { withPulseAuth } from '../services/authGuard';
 import * as Sentry from "@sentry/react";
+import { restorePulseAuthFromStorage } from '../services/pulseAuth';
+
+restorePulseAuthFromStorage();
 
 // Initialize Sentry with HTTP/network breadcrumbs and performance tracing enabled
 Sentry.init({

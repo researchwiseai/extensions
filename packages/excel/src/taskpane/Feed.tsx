@@ -7,6 +7,7 @@ import {
     subscribeCredits,
 } from 'pulse-common/credits';
 import { signOut } from 'pulse-common/auth';
+import { clearPulseAuthState } from '../services/pulseAuth';
 
 interface Props {
     api: TaskpaneApi;
@@ -100,10 +101,8 @@ export function Feed({ api, setEmail }: Props) {
     const logout = async () => {
         try {
             await signOut();
-            sessionStorage.removeItem('pkce_token');
-            sessionStorage.removeItem('org-id');
         } finally {
-            sessionStorage.removeItem('user-email');
+            clearPulseAuthState();
             setEmail(null);
         }
     };
