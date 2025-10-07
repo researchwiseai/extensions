@@ -14,6 +14,7 @@ import {
     persistStoredSession,
     clearPulseAuthState,
 } from '../services/pulseAuth';
+import { logAuthError, logError, logSuccess } from '../services/sentry';
 
 interface Props {
     api: TaskpaneApi;
@@ -35,6 +36,7 @@ function isValidEmail(v: string) {
 export function Unauthenticated({ setEmail: setAppEmail }: Props) {
     const [connecting, setConnecting] = useState(false);
     const [email, setEmail] = useState('');
+    const [error, setError] = useState<string | null>(null);
 
     // Warm Lambda / org lookup to reduce latency on first real sign-in
     useEffect(() => {
@@ -58,34 +60,63 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
             if (!isValidEmail(trimmedEmail) || connecting) return;
 
             setConnecting(true);
+            setError(null); // Clear any previous errors
+
             try {
                 const redirectUri = getAuthRedirectUri();
                 const orgLookupUrl = `${WEB_BASE_URL}${ORG_LOOKUP_PATH}`;
 
+                logSuccess('auth:org_lookup_start', { email: trimmedEmail });
+
                 const orgResult = await findOrganization(orgLookupUrl, trimmedEmail);
                 if (!orgResult.success) {
                     if (orgResult.notFound) {
-                        alert(
-                            'No account found for this email. Please sign up at https://researchwiseai.com',
-                        );
+                        const errorMessage = 'No account found for this email. Please sign up at https://researchwiseai.com';
+                        setError(errorMessage);
+                        logAuthError('auth:org_not_found', new Error('Organization not found'), {
+                            email: trimmedEmail,
+                            orgLookupUrl,
+                        });
                     } else {
-                        alert('Error finding account. Please try again later.');
+                        const errorMessage = 'Error finding account. Please try again later.';
+                        setError(errorMessage);
+                        logAuthError('auth:org_lookup_failed', new Error('Organization lookup failed'), {
+                            email: trimmedEmail,
+                            orgLookupUrl,
+                            orgResult,
+                        });
                     }
                     return;
                 }
+
+                logSuccess('auth:org_lookup_success', {
+                    email: trimmedEmail,
+                    organization: orgResult.orgId
+                });
 
                 const organization = orgResult.orgId!;
                 const session = { email: trimmedEmail, organization };
                 setupPulseAuthProvider(session, redirectUri);
 
+                logSuccess('auth:provider_setup_complete', {
+                    email: trimmedEmail,
+                    organization
+                });
+
                 await signIn();
+
+                logSuccess('auth:signin_complete', { email: trimmedEmail });
 
                 persistStoredSession(session);
                 setAppEmail(trimmedEmail);
             } catch (err) {
-                console.error('Sign-in failed', err);
+                const errorMessage = 'Sign-in failed. Please try again.';
+                setError(errorMessage);
+                logAuthError('auth:signin_failed', err, {
+                    email: trimmedEmail,
+                    step: 'signin_or_setup',
+                });
                 clearPulseAuthState();
-                alert('Sign-in failed. Please try again.');
             } finally {
                 setConnecting(false);
             }
@@ -128,7 +159,11 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                     type="email"
                     placeholder="you@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        // Clear error when user starts typing
+                        if (error) setError(null);
+                    }}
                     className="pulse-input"
                     style={{ margin: '8px 0' }}
                     autoComplete="email"
@@ -138,6 +173,24 @@ export function Unauthenticated({ setEmail: setAppEmail }: Props) {
                         }
                     }}
                 />
+
+                {error && (
+                    <div
+                        className="pulse-error-message"
+                        style={{
+                            color: '#d13438',
+                            fontSize: '12px',
+                            marginTop: '4px',
+                            marginBottom: '8px',
+                            padding: '8px',
+                            backgroundColor: '#fdf2f2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '4px'
+                        }}
+                    >
+                        {error}
+                    </div>
+                )}
 
                 <div className="actions" style={{ marginTop: 8 }}>
                     <button

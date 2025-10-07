@@ -13,6 +13,7 @@ import {
 } from '../services/pulseAuth';
 import { Unauthenticated } from './Unauthenticated';
 import { initializeLocalStorage } from '../services/localStorage';
+import { initializeSentry } from '../services/sentry';
 
 let initialized = false;
 let pendingView: View | null = null;
@@ -62,6 +63,9 @@ export function Taskpane({ api }: { api: TaskpaneApi }) {
 const taskpaneApi = new TaskpaneApi();
 
 Office.onReady().then(() => {
+    // Initialize Sentry for error tracking
+    initializeSentry();
+
     Office.addin.setStartupBehavior(Office.StartupBehavior.load);
 
     initializeLocalStorage();

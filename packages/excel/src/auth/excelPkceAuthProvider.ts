@@ -288,38 +288,102 @@ export class ExcelPKCEAuthProvider implements AuthProvider {
 
     /** Retrieve a valid access token, refreshing if needed. */
     async getAccessToken(): Promise<string> {
-        const raw = sessionStorage.getItem('pkce_token');
+        try {
+            const raw = sessionStorage.getItem('pkce_token');
 
-        if (!raw) {
-            await this.signIn();
-            return await this.getAccessToken();
-        }
-        const data = JSON.parse(raw) as {
-            access_token: string;
-            refresh_token?: string;
-            expires_at: number;
-        };
-        // If token expired (with 1min buffer)
-        if (Date.now() > data.expires_at - 60000) {
-            if (!data.refresh_token) {
-                sessionStorage.removeItem('pkce_token');
+            if (!raw) {
+                logSuccess('getAccessToken:no_token_found', {
+                    action: 'triggering_signin',
+                });
+                await this.signIn();
                 return await this.getAccessToken();
             }
-            const refreshed = await refreshAccessToken(
-                this.domain,
-                this.clientId,
-                data.refresh_token,
-            );
-            const newExpiry = Date.now() + refreshed.expires_in * 1000;
-            const newData = {
-                access_token: refreshed.access_token,
-                refresh_token: refreshed.refresh_token || data.refresh_token,
-                expires_at: newExpiry,
+
+            const data = JSON.parse(raw) as {
+                access_token: string;
+                refresh_token?: string;
+                expires_at: number;
             };
-            sessionStorage.setItem('pkce_token', JSON.stringify(newData));
-            return newData.access_token;
+
+            const now = Date.now();
+            const expiresAt = data.expires_at;
+            const timeUntilExpiry = expiresAt - now;
+            const isExpired = now > expiresAt - 60000; // 1min buffer
+
+            logSuccess('getAccessToken:token_check', {
+                hasAccessToken: Boolean(data.access_token),
+                hasRefreshToken: Boolean(data.refresh_token),
+                timeUntilExpiry,
+                isExpired,
+            });
+
+            // If token expired (with 1min buffer)
+            if (isExpired) {
+                if (!data.refresh_token) {
+                    logSuccess('getAccessToken:no_refresh_token', {
+                        action: 'clearing_token_and_signin',
+                    });
+                    sessionStorage.removeItem('pkce_token');
+                    return await this.getAccessToken();
+                }
+
+                try {
+                    logSuccess('getAccessToken:refreshing_token', {
+                        domain: this.domain,
+                        clientId: this.clientId,
+                    });
+
+                    const refreshed = await refreshAccessToken(
+                        this.domain,
+                        this.clientId,
+                        data.refresh_token,
+                    );
+
+                    logSuccess('getAccessToken:token_refresh_success', {
+                        hasNewAccessToken: Boolean(refreshed.access_token),
+                        hasNewRefreshToken: Boolean(refreshed.refresh_token),
+                        newExpiresIn: refreshed.expires_in,
+                    });
+
+                    const newExpiry = Date.now() + refreshed.expires_in * 1000;
+                    const newData = {
+                        access_token: refreshed.access_token,
+                        refresh_token:
+                            refreshed.refresh_token || data.refresh_token,
+                        expires_at: newExpiry,
+                    };
+                    sessionStorage.setItem(
+                        'pkce_token',
+                        JSON.stringify(newData),
+                    );
+                    return newData.access_token;
+                } catch (refreshError) {
+                    logAuthError(
+                        'getAccessToken:token_refresh_failed',
+                        refreshError,
+                        {
+                            domain: this.domain,
+                            clientId: this.clientId,
+                            hasRefreshToken: Boolean(data.refresh_token),
+                        },
+                    );
+                    // Clear invalid tokens and retry
+                    sessionStorage.removeItem('pkce_token');
+                    return await this.getAccessToken();
+                }
+            }
+
+            logSuccess('getAccessToken:returning_valid_token', {
+                timeUntilExpiry,
+            });
+            return data.access_token;
+        } catch (error) {
+            logError('getAccessToken:general_error', error, {
+                domain: this.domain,
+                email: this.email,
+            });
+            throw error;
         }
-        return data.access_token;
     }
 
     /** Clear stored tokens/PKCE data. */
