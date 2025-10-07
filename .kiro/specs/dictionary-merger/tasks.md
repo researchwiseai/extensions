@@ -7,9 +7,9 @@
     - Implement basic similarity calculation methods
     - _Requirements: 1.1, 1.2_
 
-- [ ]   2. Implement merger suggestion generation logic
+- [x]   2. Implement merger suggestion generation logic
 
-    - [ ] 2.1 Create fuzzy matching algorithm for dictionary items
+    - [x] 2.1 Create fuzzy matching algorithm for dictionary items
 
         - Implement calculateSimilarity method using multiple matching
           strategies
@@ -18,14 +18,14 @@
         - Write unit tests for similarity calculation edge cases
         - _Requirements: 1.1, 1.3_
 
-    - [ ] 2.2 Build suggestion generation engine
+    - [x] 2.2 Build suggestion generation engine
         - Implement generateSuggestions method with configurable thresholds
         - Add timeout handling for large dictionary processing
         - Create suggestion ranking and filtering logic
         - Write unit tests for suggestion generation scenarios
         - _Requirements: 1.2, 1.4, 5.4_
 
-- [ ]   3. Create merger application logic
+- [-] 3. Create merger application logic
 
     - [ ] 3.1 Implement merger data processing
 
