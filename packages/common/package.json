@@ -5,7 +5,8 @@
     "main": "dist/index.js",
     "source": "src/index.ts",
     "dependencies": {
-        "cross-fetch": "^3.1.5"
+        "cross-fetch": "^3.1.5",
+        "fuse.js": "^7.1.0"
     },
     "exports": {
         ".": "./src/index.ts",
@@ -22,7 +23,8 @@
         "./output": "./src/output.ts",
         "./saveThemesToSheet": "./src/saveThemesToSheet.ts",
         "./split": "./src/split.ts",
-        "./summarize": "./src/summarize.ts"
+        "./summarize": "./src/summarize.ts",
+        "./dictionaryMerger": "./src/dictionaryMerger.ts"
     },
     "scripts": {
         "build": "tsc -b",

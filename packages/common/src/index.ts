@@ -15,3 +15,4 @@ export * from './dataUtils.js';
 export * from './saveThemesToSheet.js';
 export * from './summarize.js';
 export * from './credits.js';
+export * from './dictionaryMerger.js';
