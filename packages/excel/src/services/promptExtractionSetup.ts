@@ -3,6 +3,7 @@ import { getRelativeUrl } from './relativeUrl';
 export type ExtractionSetup = {
     sheetName: string | null;
     hasHeader: boolean;
+    autoGroupRareEntities?: boolean;
 };
 
 export function promptExtractionSetup(
@@ -39,11 +40,15 @@ export function promptExtractionSetup(
                             const startRow = hasHeader ? 1 : 0;
                             let count = 0;
                             for (let r = startRow; r < rowCount; r++) {
-                                const a = (values[r]?.[0] ?? '').toString().trim();
+                                const a = (values[r]?.[0] ?? '')
+                                    .toString()
+                                    .trim();
                                 if (!a) continue;
                                 for (let c = 1; c < colCount; c++) {
                                     const v = values[r]?.[c];
-                                    const t = (v == null ? '' : String(v)).trim();
+                                    const t = (
+                                        v == null ? '' : String(v)
+                                    ).trim();
                                     if (t) count += 1;
                                 }
                             }
@@ -53,12 +58,16 @@ export function promptExtractionSetup(
 
                     const onMessage = async (arg: any) => {
                         if ('error' in arg) {
-                            try { dialog.close(); } catch {}
+                            try {
+                                dialog.close();
+                            } catch {}
                             reject(arg.error);
                             return;
                         }
                         let msg: any = {};
-                        try { msg = JSON.parse(arg.message); } catch {}
+                        try {
+                            msg = JSON.parse(arg.message);
+                        } catch {}
                         // selection changed → compute risk and notify child
                         if (msg && msg.type === 'selection-changed') {
                             try {
@@ -82,11 +91,15 @@ export function promptExtractionSetup(
                         }
                         // final submit/cancel
                         if (msg && (msg.cancelled || 'sheetName' in msg)) {
-                            try { dialog.close(); } catch {}
+                            try {
+                                dialog.close();
+                            } catch {}
                             if (msg.cancelled) return resolve(null);
                             return resolve({
                                 sheetName: msg.sheetName ?? null,
                                 hasHeader: !!msg.hasHeader,
+                                autoGroupRareEntities:
+                                    !!msg.autoGroupRareEntities,
                             });
                         }
                     };

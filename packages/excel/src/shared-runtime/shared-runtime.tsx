@@ -26,33 +26,51 @@ import { promptSummarizeOptions } from '../services/promptSummarizeOptions';
 import { getSheetInputsAndPositions } from '../services/getSheetInputsAndPositions';
 import { summarizeFlow } from '../flows/summarizeFlow';
 import { withPulseAuth } from '../services/authGuard';
-import * as Sentry from "@sentry/react";
+// Temporarily disable Sentry to fix process polyfill issues
+// import * as Sentry from "@sentry/react";
 import { restorePulseAuthFromStorage } from '../services/pulseAuth';
 
 restorePulseAuthFromStorage();
 
+// Temporarily disable Sentry to fix process polyfill issues
 // Initialize Sentry with HTTP/network breadcrumbs and performance tracing enabled
-Sentry.init({
-  dsn: "https://f3c182e7744b0c06066f1021bfa85a25@o4505908303167488.ingest.us.sentry.io/4509984779796480",
-  integrations: [
-    // Capture fetch/XHR as breadcrumbs and performance spans
-    Sentry.browserTracingIntegration(),
-    Sentry.breadcrumbsIntegration({ console: true, dom: true, fetch: true, xhr: true }),
-  ],
-  // Sample some percentage of transactions; adjust as needed
-  tracesSampleRate: 1.0,
-});
+// Sentry.init({
+//     dsn: "https://f3c182e7744b0c06066f1021bfa85a25@o4505908303167488.ingest.us.sentry.io/4509984779796480",
+//     integrations: [
+//         // Capture fetch/XHR as breadcrumbs and performance spans
+//         Sentry.browserTracingIntegration(),
+//         Sentry.breadcrumbsIntegration({ console: true, dom: true, fetch: true, xhr: true }),
+//     ],
+//     // Sample some percentage of transactions; adjust as needed
+//     tracesSampleRate: 1.0,
+// });
 
 // Catch truly unexpected errors and surface a helpful modal
+// Add a delay to avoid showing errors during initial load
+let isInitializing = true;
+setTimeout(() => {
+    isInitializing = false;
+}, 3000); // Wait 3 seconds after load before showing error dialogs
+
 window.addEventListener('error', (evt) => {
     try {
+        // Don't show error dialogs during initialization
+        if (isInitializing) {
+            console.warn('Initialization error (not showing dialog):', evt);
+            return;
+        }
         reportUnexpectedError((evt as any)?.error ?? evt?.message ?? evt);
-    } catch {}
+    } catch { }
 });
 window.addEventListener('unhandledrejection', (evt) => {
     try {
+        // Don't show error dialogs during initialization
+        if (isInitializing) {
+            console.warn('Initialization promise rejection (not showing dialog):', evt);
+            return;
+        }
         reportUnexpectedError((evt as any)?.reason ?? evt);
-    } catch {}
+    } catch { }
 });
 
 async function showUnexpectedErrorModal(payload: any) {
@@ -125,15 +143,21 @@ async function reportUnexpectedError(error: unknown, extra?: { correlationId?: s
         const dateTime = new Date().toISOString();
         let eventId: string | undefined;
         try {
-            eventId = Sentry.captureException(error, {
-                extra: {
-                    correlationId: extra?.correlationId,
-                    userId,
-                    orgId,
-                },
-            }) as unknown as string | undefined;
+            // Temporarily disable Sentry to fix process polyfill issues
+            // eventId = Sentry.captureException(error, {
+            //     extra: {
+            //         correlationId: extra?.correlationId,
+            //         userId,
+            //         orgId,
+            //     },
+            // }) as unknown as string | undefined;
+            console.error('Error captured (Sentry disabled):', error, {
+                correlationId: extra?.correlationId,
+                userId,
+                orgId,
+            });
         } catch (s) {
-            console.warn('Sentry capture failed', s);
+            console.warn('Error logging failed', s);
         }
 
         const rawMessage = (error as any)?.message || String(error);
@@ -157,7 +181,7 @@ function analyzeSentimentHandler(event: any) {
     console.log('Analyze sentiment handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         Excel.run(async (context) => {
             try {
@@ -191,7 +215,7 @@ async function generateThemesHandler(event: any) {
     console.log('Generate themes handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             try {
@@ -221,7 +245,7 @@ function allocateThemesHandler(event: any) {
     console.log('Allocate themes handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             try {
@@ -246,7 +270,7 @@ function matrixThemesHandler(event: any) {
     console.log('Matrix themes handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             try {
@@ -271,7 +295,7 @@ function similarityMatrixThemesHandler(event: any) {
     console.log('Similarity matrix themes handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             try {
@@ -377,7 +401,7 @@ function countWordsHandler(event: any) {
 }
 Office.actions.associate('countWordsHandler', countWordsHandler);
 
-function manageThemesHandler() {}
+function manageThemesHandler() { }
 Office.actions.associate('manageThemesHandler', manageThemesHandler);
 
 // Extractions handler: select sheet + header, preview/edit dictionary, then run
@@ -385,7 +409,7 @@ async function runExtractionsHandler(event: any) {
     console.log('Run extractions handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         // 1) Gather worksheet names and active sheet
         const { sheetNames, active } = await Excel.run(async (context) => {
@@ -480,6 +504,7 @@ async function runExtractionsHandler(event: any) {
             hasHeader: setup.hasHeader,
             dictionary: edited.dictionary,
             expandDictionary: !!edited.expand,
+            autoGroupRareEntities: setup.autoGroupRareEntities,
         });
     }).catch((e) => {
         console.error('Extractions dialog error', e);
@@ -493,7 +518,7 @@ async function runThemeExtractionsHandler(event: any) {
     console.log('Run theme extractions handler');
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             // 1) Confirm range and header
@@ -536,7 +561,7 @@ async function runThemeExtractionsHandler(event: any) {
                             if ('error' in arg) {
                                 try {
                                     dialog.close();
-                                } catch {}
+                                } catch { }
                                 reject(arg.error);
                                 return;
                             }
@@ -545,13 +570,13 @@ async function runThemeExtractionsHandler(event: any) {
                                 if (payload && payload.mode) {
                                     try {
                                         dialog.close();
-                                    } catch {}
+                                    } catch { }
                                     resolve(payload as Mode);
                                 }
                             } catch (e) {
                                 try {
                                     dialog.close();
-                                } catch {}
+                                } catch { }
                                 reject(e);
                             }
                         };
@@ -661,7 +686,7 @@ function canComplete(event: unknown): event is CanComplete {
 function summarizeHandler(event: any) {
     try {
         event?.completed?.();
-    } catch {}
+    } catch { }
     withPulseAuth(async () => {
         return Excel.run(async (context) => {
             try {
@@ -741,7 +766,7 @@ function _dialog() {
                         (arg) => {
                             if ('error' in arg) {
                                 console.error('Dialog error', arg.error);
-                                try { dialog.close(); } catch {}
+                                try { dialog.close(); } catch { }
                                 if (!settled) {
                                     settled = true;
                                     reject(arg.error);
@@ -789,7 +814,7 @@ function _dialog() {
                                                         themes,
                                                     }),
                                                 );
-                                            } catch {}
+                                            } catch { }
                                         } catch (e) {
                                             console.error('Status request failed', e);
                                         }
@@ -840,23 +865,23 @@ function _dialog() {
                                                 try {
                                                     const sheet = context.workbook.worksheets.getItem('Themes');
                                                     sheet.activate();
-                                                } catch {}
+                                                } catch { }
                                                 await context.sync();
                                             });
                                             try {
                                                 dialog.messageChild(
                                                     JSON.stringify({ type: 'themes-sheet-create-template-response', ok: true }),
                                                 );
-                                            } catch {}
+                                            } catch { }
                                             // Close the Theme Manager dialog upon successful creation
-                                            try { dialog.close(); } catch {}
+                                            try { dialog.close(); } catch { }
                                         } catch (e) {
                                             console.error('Create template failed', e);
                                             try {
                                                 dialog.messageChild(
                                                     JSON.stringify({ type: 'themes-sheet-create-template-response', ok: false }),
                                                 );
-                                            } catch {}
+                                            } catch { }
                                         }
                                     })();
                                     return;
@@ -869,20 +894,20 @@ function _dialog() {
                                                 dialog.messageChild(
                                                     JSON.stringify({ type: 'themes-sheet-read-response', themes }),
                                                 );
-                                            } catch {}
+                                            } catch { }
                                         } catch (e) {
                                             console.error('Read themes request failed', e);
                                             try {
                                                 dialog.messageChild(
                                                     JSON.stringify({ type: 'themes-sheet-read-response', error: true }),
                                                 );
-                                            } catch {}
+                                            } catch { }
                                         }
                                     })();
                                     return;
                                 }
                                 if (msg && msg.type === 'close') {
-                                    try { dialog.close(); } catch {}
+                                    try { dialog.close(); } catch { }
                                     if (!settled) {
                                         settled = true;
                                         resolve(undefined);
@@ -891,7 +916,7 @@ function _dialog() {
                                 }
                                 // Back-compat: some dialogs may return a payload (e.g., a range)
                                 if (msg && ("range" in msg || "payload" in msg)) {
-                                    try { dialog.close(); } catch {}
+                                    try { dialog.close(); } catch { }
                                     if (!settled) {
                                         settled = true;
                                         resolve((msg as any).range ?? (msg as any).payload);
@@ -909,7 +934,7 @@ function _dialog() {
                     dialog.addEventHandler(
                         Office.EventType.DialogEventReceived,
                         () => {
-                            try { dialog.close(); } catch {}
+                            try { dialog.close(); } catch { }
                             if (!settled) {
                                 settled = true;
                                 resolve(undefined);

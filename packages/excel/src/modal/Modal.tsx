@@ -25,6 +25,19 @@ Office.onReady().then(() => {
                     });
                 } else if (msg && msg.type === 'unexpected-error') {
                     modalApi.goToView('unexpectedError', 'show', msg.payload);
+                } else if (msg && msg.type === 'dictionary-merger') {
+                    console.log('Modal: Received dictionary-merger message', {
+                        dictionary: msg.dictionary,
+                        dictionaryLength: msg.dictionary?.length,
+                        extractions: msg.extractions,
+                        extractionsLength: msg.extractions?.length,
+                        autoGroupRareEntities: msg.autoGroupRareEntities
+                    });
+                    modalApi.goToView('dictionaryMerger', 'show', {
+                        dictionary: msg.dictionary,
+                        extractions: msg.extractions,
+                        autoGroupRareEntities: msg.autoGroupRareEntities,
+                    });
                 }
             } catch (e) {
                 console.error('Failed to parse parent message', e);

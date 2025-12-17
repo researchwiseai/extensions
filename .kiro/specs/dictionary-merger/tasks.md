@@ -15,7 +15,7 @@
           strategies
         - Add substring matching for cases like "Microsoft Copilot" and
           "Copilot"
-        - Write unit tests for similarity calculation edge cases
+        - Write unit tests for similarity calculation edge casesx
         - _Requirements: 1.1, 1.3_
 
     - [x] 2.2 Build suggestion generation engine
@@ -42,16 +42,16 @@
         - Write unit tests for error scenarios
         - _Requirements: 5.1, 5.3, 5.5_
 
-- [ ]   4. Create modal dialog infrastructure for merger UI
+- [x]   4. Create modal dialog infrastructure for merger UI
 
-    - [ ] 4.1 Extend modal system for dictionary merger dialog
+    - [x] 4.1 Extend modal system for dictionary merger dialog
 
         - Add 'dictionaryMerger' to ModalView type definitions
         - Update modal API to handle merger dialog communication
         - Create base DictionaryMergerDialog React component structure
         - _Requirements: 2.1, 2.2_
 
-    - [ ] 4.2 Implement automatic suggestions UI component
+    - [x] 4.2 Implement automatic suggestions UI component
         - Create AutomaticSuggestions component with Android-style merger
           interface
         - Add accept/reject/modify controls for each suggestion
@@ -59,76 +59,76 @@
         - Style component to match existing Fluent UI patterns
         - _Requirements: 2.2, 2.3, 2.4_
 
-- [ ]   5. Build manual merger functionality
+- [x]   5. Build manual merger functionality
 
-    - [ ] 5.1 Create manual merger selection interface
+    - [x] 5.1 Create manual merger selection interface
 
         - Implement ManualMerger component with selectable dictionary items
         - Add multi-select functionality for creating custom mergers
         - Create custom merger name input and validation
         - _Requirements: 3.1, 3.2, 3.4_
 
-    - [ ] 5.2 Integrate manual and automatic merger workflows
+    - [x] 5.2 Integrate manual and automatic merger workflows
         - Combine automatic suggestions and manual merger in single dialog
         - Implement state management for merger selections
         - Add confirmation step before applying all mergers
         - _Requirements: 3.3, 3.5, 3.6_
 
-- [ ]   6. Integrate merger functionality with extraction workflow
+- [x]   6. Integrate merger functionality with extraction workflow
 
-    - [ ] 6.1 Modify extractElementsFromWorksheet to support mergers
+    - [x] 6.1 Modify extractElementsFromWorksheet to support mergers
 
         - Add merger dialog invocation after extraction completion
         - Implement conditional merger flow based on expandDictionary setting
         - Create dialog communication for passing extraction data
         - _Requirements: 1.1, 2.1, 4.1_
 
-    - [ ] 6.2 Implement post-merger data writing
+    - [x] 6.2 Implement post-merger data writing
         - Modify sheet writing logic to handle merged dictionary and extractions
         - Add confirmation messaging for completed mergers
         - Implement fallback to original data on merger cancellation
         - _Requirements: 4.4, 4.5, 4.6, 5.2_
 
-- [ ]   7. Add comprehensive error handling and user feedback
+- [x]   7. Add comprehensive error handling and user feedback
 
-    - [ ] 7.1 Implement dialog error handling
+    - [x] 7.1 Implement dialog error handling
 
         - Add error boundaries for merger dialog components
         - Implement graceful fallback when dialog fails to open
         - Create user-friendly error messages for merger failures
         - _Requirements: 5.1, 5.2, 5.3_
 
-    - [ ] 7.2 Add progress indicators and user feedback
+    - [x] 7.2 Add progress indicators and user feedback
         - Implement loading states during fuzzy matching processing
         - Add progress indicators for merger application
         - Create success confirmation messages
         - _Requirements: 4.6, 5.4_
 
-- [ ]   8. Create comprehensive test suite
+- [x]   8. Create comprehensive test suite
 
-    - [ ] 8.1 Write unit tests for common package functionality
+    - [x] 8.1 Write unit tests for common package functionality
 
         - Test fuzzy matching algorithms with various input scenarios
         - Test merger application logic with complex extraction data
         - Test error handling and edge cases
         - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
 
-    - [ ] 8.2 Write integration tests for Excel workflow
+    - [x] 8.2 Write integration tests for Excel workflow
         - Test end-to-end merger workflow from extraction to sheet writing
         - Test dialog communication and state management
         - Test error scenarios and fallback behaviors
         - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6_
 
-- [ ]   9. Optimize performance and finalize implementation
+- [x]   9. Optimize performance and finalize implementation
 
-    - [ ] 9.1 Optimize fuzzy matching performance
+    - [x] 9.1 Optimize fuzzy matching performance
 
         - Implement batch processing for large dictionaries
         - Add caching for repeated similarity calculations
         - Optimize UI rendering for large suggestion lists
         - _Requirements: 5.4_
 
-    - [ ] 9.2 Final integration and testing
+    - [x] 9.2 Final integration and testing
         - Test complete workflow with realistic data sets
         - Verify backward compatibility with existing extraction flows
         - Perform user acceptance testing scenarios

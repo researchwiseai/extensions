@@ -5,6 +5,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const CustomFunctionsMetadataPlugin = require('custom-functions-metadata-plugin');
+const webpack = require('webpack');
 const path = require('path');
 
 const urlDev = 'https://localhost:3000';
@@ -47,6 +48,7 @@ module.exports = async (env, options) => {
             extensions: ['.tsx', '.ts', '.html', '.js'],
             fallback: {
                 crypto: false,
+                process: 'process/browser',
             },
         },
         module: {
@@ -95,9 +97,29 @@ module.exports = async (env, options) => {
                         filename: 'assets/[name][ext][query]',
                     },
                 },
+                {
+                    test: /node_modules\/process\/browser\.js$/,
+                    use: {
+                        loader: 'babel-loader',
+                        options: {
+                            presets: ['@babel/preset-env'],
+                        },
+                    },
+                },
             ],
         },
         plugins: [
+            new webpack.DefinePlugin({
+                'process.env.NODE_ENV': JSON.stringify(
+                    dev ? 'development' : 'production',
+                ),
+                'process.env.SENTRY_DSN': JSON.stringify(
+                    process.env.SENTRY_DSN || '',
+                ),
+            }),
+            new webpack.ProvidePlugin({
+                process: 'process/browser',
+            }),
             new MiniCssExtractPlugin({
                 filename: dev ? '[name].css' : '[name].min.css',
             }),

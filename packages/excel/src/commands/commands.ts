@@ -61,11 +61,15 @@ async function runExtractions(event: Office.AddinCommands.Event) {
             activeSheet.load('name');
             await context.sync();
             const sheetNames = worksheets.items.map((ws) => ws.name);
-            const setup = await promptExtractionSetup(sheetNames, activeSheet.name);
+            const setup = await promptExtractionSetup(
+                sheetNames,
+                activeSheet.name,
+            );
             if (!setup) return;
-            const used = (setup.sheetName
-                ? context.workbook.worksheets.getItem(setup.sheetName)
-                : context.workbook.worksheets.getActiveWorksheet()
+            const used = (
+                setup.sheetName
+                    ? context.workbook.worksheets.getItem(setup.sheetName)
+                    : context.workbook.worksheets.getActiveWorksheet()
             ).getUsedRange();
             used.load(['values', 'rowCount', 'columnCount']);
             await context.sync();
@@ -94,7 +98,9 @@ async function runExtractions(event: Office.AddinCommands.Event) {
                 async (draft) => {
                     return await Excel.run(async (context) => {
                         const sheet = setup.sheetName
-                            ? context.workbook.worksheets.getItem(setup.sheetName)
+                            ? context.workbook.worksheets.getItem(
+                                  setup.sheetName,
+                              )
                             : context.workbook.worksheets.getActiveWorksheet();
                         const used = sheet.getUsedRange();
                         used.load(['values', 'rowCount', 'columnCount']);
@@ -110,7 +116,10 @@ async function runExtractions(event: Office.AddinCommands.Event) {
                             for (let c = 1; c < colCount; c++) {
                                 const v = values[r]?.[c];
                                 const t = (v == null ? '' : String(v)).trim();
-                                if (t) { anyExisting = true; break; }
+                                if (t) {
+                                    anyExisting = true;
+                                    break;
+                                }
                             }
                             if (anyExisting) break;
                         }
@@ -124,6 +133,7 @@ async function runExtractions(event: Office.AddinCommands.Event) {
                 hasHeader: setup.hasHeader,
                 dictionary: edited.dictionary,
                 expandDictionary: !!edited.expand,
+                autoGroupRareEntities: setup.autoGroupRareEntities,
             });
         });
     } catch (err) {

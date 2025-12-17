@@ -1,110 +1,225 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-  <title>Named Entity Extraction – Setup</title>
-  <style>
-    body { font-family: 'Segoe UI', sans-serif; margin: 20px; }
-    label { display:block; margin: 8px 0 4px 0; font-weight:600; }
-    .row { margin-top: 8px; }
-    .pulse-input { width: 100%; padding: 8px 10px; border: 1px solid #8a8886; border-radius: 4px; background: #fff; box-sizing: border-box; transition: border-color .15s ease, box-shadow .15s ease, background-color .15s ease; }
-    .pulse-input:hover { border-color: #605e5c; }
-    .pulse-input:focus { outline: none; border-color: #0f766e; box-shadow: 0 0 0 2px rgba(15,118,110,.15); }
-    .pulse-btn { display:inline-flex; align-items:center; justify-content:center; padding:6px 10px; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer; border:1px solid transparent; text-decoration:none; transition: background-color .15s ease, box-shadow .15s ease, border-color .15s ease, color .15s ease; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
-    .pulse-btn--primary { background:#0f766e; border-color:#0f766e; color:#fff; }
-    .pulse-btn--primary:hover { background:#0d665f; }
-    .pulse-btn--secondary { background:#fff; border-color:#0f766e; color:#0f766e; }
-    .pulse-btn--secondary:hover { background:#f3f2f1; }
-    .actions { margin-top: 16px; text-align: right; }
-    .hint { color:#605e5c; font-size:12px; margin-top:4px; }
-  </style>
-</head>
-<body>
-  <div>
-    <label for="sheetSelect">Worksheet</label>
-    <select id="sheetSelect" class="pulse-input"></select>
-    <div class="hint">Defaults to the current sheet.</div>
-  </div>
-  <div class="row">
-    <label><input id="hasHeader" type="checkbox" checked /> First row contains headers</label>
-  </div>
-  <div class="actions">
-    <button id="cancelBtn" class="pulse-btn pulse-btn--secondary" style="margin-right:8px;">Cancel</button>
-    <button id="okBtn" class="pulse-btn pulse-btn--primary">Continue</button>
-  </div>
-  <script>
-    function safeMessageParent(payload) {
-      try { Office.context.ui.messageParent(JSON.stringify(payload)); }
-      catch (e) { try { window.parent.postMessage(JSON.stringify(payload), '*'); } catch {} }
-    }
-    function getParams() {
-      const p = new URLSearchParams(location.search);
-      return {
-        sheets: JSON.parse(p.get('sheets') || '[]'),
-        current: p.get('current') || null,
-      };
-    }
-    function populateSheets(select, sheets, current) {
-      select.innerHTML = '';
-      sheets.forEach((name) => {
-        const opt = document.createElement('option');
-        opt.value = name; opt.textContent = name;
-        if (current && name === current) opt.selected = true;
-        select.appendChild(opt);
-      });
-    }
-    Office.onReady(function() {
-      const { sheets, current } = getParams();
-      const sheetSelect = document.getElementById('sheetSelect');
-      const hasHeader = document.getElementById('hasHeader');
-      const warn = document.createElement('div');
-      warn.id = 'overwriteWarnSetup';
-      warn.style.cssText = 'display:none;margin-top:10px;padding:8px;border:1px solid #f3bf72;background:#fff8e1;border-radius:4px;';
-      warn.textContent = 'Heads-up: existing values in data rows (from column B) will be overwritten.';
-      sheetSelect.parentElement?.appendChild(warn);
-
-      populateSheets(sheetSelect, sheets, current);
-      function notifyChange() {
-        const sheetName = sheetSelect.value || current || (sheets[0] || null);
-        safeMessageParent({ type: 'selection-changed', sheetName, hasHeader: !!(hasHeader).checked });
-      }
-      sheetSelect.addEventListener('change', notifyChange);
-      hasHeader.addEventListener('change', notifyChange);
-      // fire initial
-      setTimeout(notifyChange, 0);
-
-      document.getElementById('okBtn').addEventListener('click', function () {
-        const sheetName = sheetSelect.value || current || (sheets[0] || null);
-        safeMessageParent({ sheetName, hasHeader: !!(hasHeader).checked });
-      });
-      document.getElementById('cancelBtn').addEventListener('click', function () {
-        safeMessageParent({ cancelled: true });
-      });
-
-      // Parent→child warnings
-      try {
-        Office.context.ui.addHandlerAsync(Office.EventType.DialogParentMessageReceived, (arg) => {
-          try {
-            const msg = JSON.parse((arg && arg.message) || '{}');
-            if (msg && msg.type === 'overwrite-risk') {
-              const any = !!msg.anyExisting;
-              const count = Number(msg.count || 0);
-              if (any) {
-                warn.style.display = 'block';
-                warn.textContent = count > 0
-                  ? `Heads-up: ${count} existing cell${count===1?'':'s'} in data rows (from column B) will be overwritten.`
-                  : 'Heads-up: existing values in data rows (from column B) will be overwritten.';
-              } else {
-                warn.style.display = 'none';
-              }
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+        <title>Named Entity Extraction – Setup</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', sans-serif;
+                margin: 20px;
             }
-          } catch {}
-        });
-      } catch {}
-    });
-  </script>
-</body>
+            label {
+                display: block;
+                margin: 8px 0 4px 0;
+                font-weight: 600;
+            }
+            .row {
+                margin-top: 8px;
+            }
+            .pulse-input {
+                width: 100%;
+                padding: 8px 10px;
+                border: 1px solid #8a8886;
+                border-radius: 4px;
+                background: #fff;
+                box-sizing: border-box;
+                transition:
+                    border-color 0.15s ease,
+                    box-shadow 0.15s ease,
+                    background-color 0.15s ease;
+            }
+            .pulse-input:hover {
+                border-color: #605e5c;
+            }
+            .pulse-input:focus {
+                outline: none;
+                border-color: #0f766e;
+                box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+            }
+            .pulse-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 6px 10px;
+                border-radius: 4px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                border: 1px solid transparent;
+                text-decoration: none;
+                transition:
+                    background-color 0.15s ease,
+                    box-shadow 0.15s ease,
+                    border-color 0.15s ease,
+                    color 0.15s ease;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+            }
+            .pulse-btn--primary {
+                background: #0f766e;
+                border-color: #0f766e;
+                color: #fff;
+            }
+            .pulse-btn--primary:hover {
+                background: #0d665f;
+            }
+            .pulse-btn--secondary {
+                background: #fff;
+                border-color: #0f766e;
+                color: #0f766e;
+            }
+            .pulse-btn--secondary:hover {
+                background: #f3f2f1;
+            }
+            .actions {
+                margin-top: 16px;
+                text-align: right;
+            }
+            .hint {
+                color: #605e5c;
+                font-size: 12px;
+                margin-top: 4px;
+            }
+        </style>
+    </head>
+    <body>
+        <div>
+            <label for="sheetSelect">Worksheet</label>
+            <select id="sheetSelect" class="pulse-input"></select>
+            <div class="hint">Defaults to the current sheet.</div>
+        </div>
+        <div class="row">
+            <label
+                ><input id="hasHeader" type="checkbox" checked /> First row
+                contains headers</label
+            >
+        </div>
+        <div class="row">
+            <label
+                ><input id="autoGroupRareEntities" type="checkbox" /> Auto-group
+                rare entities (&lt; 0.5% frequency) into 'Other'</label
+            >
+            <div class="hint">
+                Automatically merge infrequent named entities into a single
+                "Other" category during extraction.
+            </div>
+        </div>
+        <div class="actions">
+            <button
+                id="cancelBtn"
+                class="pulse-btn pulse-btn--secondary"
+                style="margin-right: 8px"
+            >
+                Cancel
+            </button>
+            <button id="okBtn" class="pulse-btn pulse-btn--primary">
+                Continue
+            </button>
+        </div>
+        <script>
+            function safeMessageParent(payload) {
+                try {
+                    Office.context.ui.messageParent(JSON.stringify(payload));
+                } catch (e) {
+                    try {
+                        window.parent.postMessage(JSON.stringify(payload), '*');
+                    } catch {}
+                }
+            }
+            function getParams() {
+                const p = new URLSearchParams(location.search);
+                return {
+                    sheets: JSON.parse(p.get('sheets') || '[]'),
+                    current: p.get('current') || null,
+                };
+            }
+            function populateSheets(select, sheets, current) {
+                select.innerHTML = '';
+                sheets.forEach((name) => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    if (current && name === current) opt.selected = true;
+                    select.appendChild(opt);
+                });
+            }
+            Office.onReady(function () {
+                const { sheets, current } = getParams();
+                const sheetSelect = document.getElementById('sheetSelect');
+                const hasHeader = document.getElementById('hasHeader');
+                const warn = document.createElement('div');
+                warn.id = 'overwriteWarnSetup';
+                warn.style.cssText =
+                    'display:none;margin-top:10px;padding:8px;border:1px solid #f3bf72;background:#fff8e1;border-radius:4px;';
+                warn.textContent =
+                    'Heads-up: existing values in data rows (from column B) will be overwritten.';
+                sheetSelect.parentElement?.appendChild(warn);
+
+                populateSheets(sheetSelect, sheets, current);
+                function notifyChange() {
+                    const sheetName =
+                        sheetSelect.value || current || sheets[0] || null;
+                    safeMessageParent({
+                        type: 'selection-changed',
+                        sheetName,
+                        hasHeader: !!hasHeader.checked,
+                    });
+                }
+                sheetSelect.addEventListener('change', notifyChange);
+                hasHeader.addEventListener('change', notifyChange);
+                // fire initial
+                setTimeout(notifyChange, 0);
+
+                document
+                    .getElementById('okBtn')
+                    .addEventListener('click', function () {
+                        const sheetName =
+                            sheetSelect.value || current || sheets[0] || null;
+                        const autoGroupRareEntities = document.getElementById(
+                            'autoGroupRareEntities',
+                        );
+                        safeMessageParent({
+                            sheetName,
+                            hasHeader: !!hasHeader.checked,
+                            autoGroupRareEntities:
+                                !!autoGroupRareEntities.checked,
+                        });
+                    });
+                document
+                    .getElementById('cancelBtn')
+                    .addEventListener('click', function () {
+                        safeMessageParent({ cancelled: true });
+                    });
+
+                // Parent→child warnings
+                try {
+                    Office.context.ui.addHandlerAsync(
+                        Office.EventType.DialogParentMessageReceived,
+                        (arg) => {
+                            try {
+                                const msg = JSON.parse(
+                                    (arg && arg.message) || '{}',
+                                );
+                                if (msg && msg.type === 'overwrite-risk') {
+                                    const any = !!msg.anyExisting;
+                                    const count = Number(msg.count || 0);
+                                    if (any) {
+                                        warn.style.display = 'block';
+                                        warn.textContent =
+                                            count > 0
+                                                ? `Heads-up: ${count} existing cell${count === 1 ? '' : 's'} in data rows (from column B) will be overwritten.`
+                                                : 'Heads-up: existing values in data rows (from column B) will be overwritten.';
+                                    } else {
+                                        warn.style.display = 'none';
+                                    }
+                                }
+                            } catch {}
+                        },
+                    );
+                } catch {}
+            });
+        </script>
+    </body>
 </html>
